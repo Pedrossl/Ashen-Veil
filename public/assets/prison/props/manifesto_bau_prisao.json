@@ -1,0 +1,14 @@
+{
+  "versao": 1,
+  "arquivo": "sprite_sheet_bau_prisao_fechado_aberto_2_frames.png",
+  "grade": {
+    "colunas": 2,
+    "linhas": 1,
+    "larguraQuadro": 887,
+    "alturaQuadro": 887
+  },
+  "frames": {
+    "0": "fechado",
+    "1": "aberto"
+  }
+}
