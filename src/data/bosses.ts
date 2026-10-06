@@ -18,7 +18,7 @@ export const REAPER_KING = {
   // O boss desperta quando o jogador passa desta linha da arena.
   awakenX: 900,
   // Corpo vulnerável, a partir dos pés.
-  hurtbox: { width: 96, height: 250 },
+  hurtbox: { width: 170, height: 260 },
   // Distâncias horizontais entre o boss e o jogador.
   slashRange: 270,
   throwRange: { min: 260, max: 620 },
