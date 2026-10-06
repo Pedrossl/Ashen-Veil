@@ -12,6 +12,8 @@ export const CONTROL_BINDINGS = {
   dodge: [KeyCodes.K],
   run: [KeyCodes.SPACE],
   interact: [KeyCodes.E],
+  // Bebe a ampola de cura.
+  useItem: [KeyCodes.R],
   // Só em desenvolvimento: liga/desliga a vida infinita.
   devInfiniteHealth: [KeyCodes.I],
 } as const;
@@ -28,6 +30,7 @@ export class Controls {
       up: CONTROL_BINDINGS.up.map((code) => keyboard.addKey(code)),
       down: CONTROL_BINDINGS.down.map((code) => keyboard.addKey(code)),
       attack: CONTROL_BINDINGS.attack.map((code) => keyboard.addKey(code)),
+      useItem: CONTROL_BINDINGS.useItem.map((code) => keyboard.addKey(code)),
       dodge: CONTROL_BINDINGS.dodge.map((code) => keyboard.addKey(code)),
       run: CONTROL_BINDINGS.run.map((code) => keyboard.addKey(code)),
       interact: CONTROL_BINDINGS.interact.map((code) => keyboard.addKey(code)),

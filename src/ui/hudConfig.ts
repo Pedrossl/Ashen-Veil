@@ -16,6 +16,8 @@ export const HUD_LAYOUT = {
   slots: { x: 10, bottom: 12, scale: 0.78 },
   // Centro do slot alto (arma) em pixels do quadro 'slots' e tamanho do ícone.
   weaponSlot: { centerX: 66, centerY: 50, iconLength: 96, angle: 38 },
+  // Slot quadrado de consumível: ícone e número de cargas no canto.
+  consumableSlot: { centerX: 63, centerY: 107, iconLength: 40, countOffset: { x: 18, y: 16 } },
   // Barra do boss, centralizada na parte de baixo da tela.
   bossBar: { width: 620, height: 11, bottom: 54 },
 } as const;

@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 
+import { spawnHealBurst } from '../../components/HealEffect';
 import { MotionTrail, spawnDust } from '../../components/MotionTrail';
 import type { Controls } from '../../core/controls';
 import { COMBAT_FEEDBACK } from '../../data/combat';
+import { AMPOULE, ITEM_IMAGES } from '../../data/items';
 import {
   PLAYER_ANIMATION,
   PLAYER_ARMED_IDLE,
@@ -40,6 +42,17 @@ const HIT_FLASH_TINT = 0xff8a8a;
 const HIT_FLASH_MS = 120;
 const HIT_KNOCKBACK_SPEED = 140;
 
+// Ampola na mão durante o gole: sai da cintura, sobe até a boca, vira e desce.
+// Posições relativas aos pés (x para a frente); a imagem é a arte do item.
+const AMPOULE_IN_HAND = {
+  height: 30,
+  hip: { forward: 32, up: 80, angle: 10 },
+  mouth: { forward: 32, up: 124, angle: -100 },
+  // Frações do gole: subindo até `raiseUntil`, na boca até `lowerFrom`.
+  raiseUntil: 0.35,
+  lowerFrom: 0.72,
+} as const;
+
 const { walk, pickup, dodge } = PLAYER_SPRITE.sheets;
 
 const attackAnimationKey = (id: PlayerAttackAnimationId): string =>
@@ -66,6 +79,10 @@ export class Player
   private runDustTimer = 0;
   // Já agachado na fogueira, esperando o jogador se levantar.
   private isSeatedAtFire = false;
+  // Bebendo a ampola: tempo desde o início do gole (indefinido fora dele).
+  private drinkElapsedMs?: number;
+  private hasHealedThisDrink = false;
+  private ampouleInHand?: Phaser.GameObjects.Image;
 
   constructor(
     scene: Phaser.Scene,
@@ -102,8 +119,13 @@ export class Player
     this.refreshWeapon();
   }
 
+  // Livre para interagir: sem ação em curso e sem estar bebendo.
   get isFree(): boolean {
-    return this.action === 'free';
+    return this.action === 'free' && !this.isDrinking;
+  }
+
+  get isDrinking(): boolean {
+    return this.drinkElapsedMs !== undefined;
   }
 
   get isClimbing(): boolean {
@@ -177,7 +199,15 @@ export class Player
       return;
     }
 
-    if (!this.isFree) {
+    if (this.action !== 'free') {
+      return;
+    }
+
+    // Bebendo, continua andando, só que mais devagar e sem outras ações.
+    if (this.isDrinking) {
+      this.updateDrink(elapsed);
+      this.updateMovement(body, AMPOULE.moveSpeedFactor);
+      this.updateMovementAnimation(body.velocity.x, AMPOULE.moveSpeedFactor);
       return;
     }
 
@@ -193,6 +223,10 @@ export class Player
     if (this.controls.justPressed('attack')) {
       this.attack(body);
       return;
+    }
+
+    if (this.controls.justPressed('useItem')) {
+      this.startDrink();
     }
 
     this.updateMovement(body);
@@ -298,6 +332,7 @@ export class Player
 
   // Cai de joelhos e escurece; a scene cuida do renascimento.
   private die(body: Phaser.Physics.Arcade.Body): void {
+    this.endDrink();
     this.action = 'dead';
     this.isSeatedAtFire = false;
     this.ladder = undefined;
@@ -500,12 +535,13 @@ export class Player
     this.finishAction();
   }
 
-  private updateMovement(body: Phaser.Physics.Arcade.Body): void {
+  // `speedFactor` < 1 limita a velocidade e impede a corrida (ex.: bebendo).
+  private updateMovement(body: Phaser.Physics.Arcade.Body, speedFactor = 1): void {
     const direction = this.controls.horizontalAxis();
-    const isRunning = direction !== 0 && this.controls.isDown('run');
+    const isRunning = direction !== 0 && speedFactor === 1 && this.controls.isDown('run');
     const movement = isRunning ? PLAYER_RUN : PLAYER_MOVEMENT;
 
-    body.setMaxVelocityX(movement.maxSpeed);
+    body.setMaxVelocityX(movement.maxSpeed * speedFactor);
 
     if (isRunning && PLAYER_RUN.staminaPerSecond > 0) {
       this.state.stamina.spend((PLAYER_RUN.staminaPerSecond * this.scene.game.loop.delta) / 1000);
@@ -569,7 +605,7 @@ export class Player
     this.setScale(PLAYER_SPRITE.scale, PLAYER_SPRITE.scale * (1 + amplitude * Math.sin(phase)));
   }
 
-  private updateMovementAnimation(velocityX: number): void {
+  private updateMovementAnimation(velocityX: number, speedFactor = 1): void {
     if (Math.abs(velocityX) < PLAYER_MOVEMENT.idleSpeedThreshold) {
       this.anims.timeScale = 1;
       this.showIdlePose();
@@ -579,8 +615,70 @@ export class Player
     this.setScale(PLAYER_SPRITE.scale);
 
     // Correndo, o mesmo ciclo toca mais rápido para os pés não deslizarem.
-    this.anims.timeScale = Math.max(1, Math.abs(velocityX) / PLAYER_MOVEMENT.maxSpeed);
+    this.anims.timeScale = Math.max(speedFactor, Math.abs(velocityX) / PLAYER_MOVEMENT.maxSpeed);
     this.play(PLAYER_WALK_ANIMATION, true);
+  }
+
+  // Gasta uma carga e começa o gole; sem cargas, nada acontece.
+  private startDrink(): void {
+    if (!this.state.useAmpoule()) {
+      return;
+    }
+
+    const image = ITEM_IMAGES[AMPOULE.itemId];
+    this.drinkElapsedMs = 0;
+    this.hasHealedThisDrink = false;
+    this.ampouleInHand = this.scene.add.image(this.x, this.y, image.key).setDepth(this.depth + 0.2);
+    this.ampouleInHand.setScale(AMPOULE_IN_HAND.height / this.ampouleInHand.height);
+    this.placeAmpoule(0);
+  }
+
+  private updateDrink(elapsed: number): void {
+    if (this.drinkElapsedMs === undefined) {
+      return;
+    }
+
+    this.drinkElapsedMs += elapsed;
+
+    if (!this.hasHealedThisDrink && this.drinkElapsedMs >= AMPOULE.healAtMs) {
+      this.hasHealedThisDrink = true;
+      this.state.health.heal(AMPOULE.healAmount);
+      spawnHealBurst(this.scene, this.x, this.y, this.depth);
+    }
+
+    if (this.drinkElapsedMs >= AMPOULE.drinkMs) {
+      this.endDrink();
+      return;
+    }
+
+    this.placeAmpoule(this.drinkElapsedMs / AMPOULE.drinkMs);
+  }
+
+  // Leva a ampola da cintura à boca e de volta, acompanhando o jogador.
+  private placeAmpoule(progress: number): void {
+    if (!this.ampouleInHand) {
+      return;
+    }
+
+    const { hip, mouth, raiseUntil, lowerFrom } = AMPOULE_IN_HAND;
+    const toMouth =
+      progress < raiseUntil
+        ? Phaser.Math.Easing.Quadratic.Out(progress / raiseUntil)
+        : progress < lowerFrom
+          ? 1
+          : 1 - Phaser.Math.Easing.Quadratic.In((progress - lowerFrom) / (1 - lowerFrom));
+    const lerp = (from: number, to: number): number => from + (to - from) * toMouth;
+
+    this.ampouleInHand
+      .setPosition(this.x + this.facing * lerp(hip.forward, mouth.forward), this.y - lerp(hip.up, mouth.up))
+      .setAngle(this.facing * lerp(hip.angle, mouth.angle))
+      .setFlipX(this.facing < 0);
+  }
+
+  private endDrink(): void {
+    this.drinkElapsedMs = undefined;
+    this.ampouleInHand?.destroy();
+    this.ampouleInHand = undefined;
   }
 
   private createAnimations(): void {

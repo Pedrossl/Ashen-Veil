@@ -4,6 +4,8 @@ export const GAME_EVENTS = {
   playerHealthChanged: 'player:health-changed',
   playerStaminaChanged: 'player:stamina-changed',
   playerWeaponChanged: 'player:weapon-changed',
+  // Cargas da ampola de cura (slot de consumível do HUD).
+  playerConsumableChanged: 'player:consumable-changed',
   // O jogador morreu; o HUD mostra a mensagem e a scene renasce na fogueira.
   playerDied: 'player:died',
   playerRested: 'player:rested',
@@ -24,6 +26,13 @@ export type BossEngaged = {
 export type StatChange = {
   current: number;
   max: number;
+};
+
+export type ConsumableChange = {
+  name: string;
+  icon: string;
+  charges: number;
+  maxCharges: number;
 };
 
 export type WeaponChange = {

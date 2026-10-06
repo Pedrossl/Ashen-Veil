@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import {
   GAME_EVENTS,
   type BossEngaged,
+  type ConsumableChange,
   type StatChange,
   type WeaponChange,
 } from '../core/gameEvents';
@@ -26,6 +27,7 @@ export class HudScene extends Phaser.Scene {
   private root?: Phaser.GameObjects.Container;
   private equipment?: Phaser.GameObjects.Image;
   private weaponIcon?: Phaser.GameObjects.Image;
+  private consumable?: { icon: Phaser.GameObjects.Image; count: Phaser.GameObjects.Text };
   private bossBar?: { root: Phaser.GameObjects.Container; name: Phaser.GameObjects.Text; bar: StatBar };
   private health?: StatBar;
   private stamina?: StatBar;
@@ -67,6 +69,7 @@ export class HudScene extends Phaser.Scene {
     this.listen(GAME_EVENTS.playerHealthChanged, this.health);
     this.listen(GAME_EVENTS.playerStaminaChanged, this.stamina);
     this.createWeaponIcon();
+    this.createConsumableSlot();
     this.createBossBar();
     this.listenForDeath();
   }
@@ -78,6 +81,8 @@ export class HudScene extends Phaser.Scene {
       this.root.setVisible(visible);
       this.equipment?.setVisible(visible);
       this.weaponIcon?.setVisible(visible && this.weaponIcon.texture.key !== '__DEFAULT');
+      this.consumable?.icon.setVisible(visible && this.consumable.icon.texture.key !== '__DEFAULT');
+      this.consumable?.count.setVisible(visible && this.consumable.icon.texture.key !== '__DEFAULT');
 
       if (visible) {
         this.scene.bringToTop();
@@ -236,6 +241,64 @@ export class HudScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off(GAME_EVENTS.playerWeaponChanged, handler);
     });
+  }
+
+  // Ampola no slot quadrado, com as cargas restantes; vazia, fica apagada.
+  private createConsumableSlot(): void {
+    const { slots, consumableSlot } = HUD_LAYOUT;
+    const slotsHeight = this.textures.getFrame(HUD_ATLAS.key, 'slots').height;
+    const x = slots.x + consumableSlot.centerX * slots.scale;
+    const y = this.scale.height - slots.bottom - (slotsHeight - consumableSlot.centerY) * slots.scale;
+
+    const icon = this.add.image(x, y, '__DEFAULT').setVisible(false);
+    const count = this.add
+      .text(x + consumableSlot.countOffset.x * slots.scale, y + consumableSlot.countOffset.y * slots.scale, '', {
+        color: '#f0e2c4',
+        fontFamily: 'Georgia, serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        stroke: '#0b0810',
+        strokeThickness: 3,
+      })
+      .setOrigin(1, 1)
+      .setVisible(false);
+    this.consumable = { icon, count };
+
+    const handler = (change: ConsumableChange): void => this.showConsumable(change);
+    this.game.events.on(GAME_EVENTS.playerConsumableChanged, handler);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(GAME_EVENTS.playerConsumableChanged, handler);
+    });
+  }
+
+  private showConsumable(change: ConsumableChange): void {
+    if (!this.consumable || !this.textures.exists(change.icon)) {
+      return;
+    }
+
+    const { icon, count } = this.consumable;
+    const { slots, consumableSlot } = HUD_LAYOUT;
+    const visible = this.root?.visible ?? false;
+    const previous = Number(count.text || change.charges);
+    const empty = change.charges === 0;
+
+    icon
+      .setTexture(change.icon)
+      .setScale((consumableSlot.iconLength * slots.scale) / this.textures.getFrame(change.icon).height)
+      .setAlpha(empty ? 0.35 : 1)
+      .setTint(empty ? 0x6a6070 : 0xffffff)
+      .setVisible(visible);
+    count.setText(String(change.charges)).setColor(empty ? '#8a7f8c' : '#f0e2c4').setVisible(visible);
+
+    // Gastou uma carga: o ícone pulsa.
+    if (change.charges < previous) {
+      this.tweens.add({
+        targets: icon,
+        scale: { from: icon.scale * 1.3, to: icon.scale },
+        duration: 260,
+        ease: 'Back.Out',
+      });
+    }
   }
 
   private showWeapon(change: WeaponChange): void {

@@ -225,6 +225,7 @@ export class PrisonScene extends Phaser.Scene {
           bonfire.kindle();
           state.health.restore();
           state.stamina.restore();
+          state.refillAmpoules();
           this.world?.setFlag(bonfire.id);
           this.world?.setCheckpoint(bonfire.checkpoint);
           this.game.events.emit(GAME_EVENTS.playerRested);
@@ -249,6 +250,7 @@ export class PrisonScene extends Phaser.Scene {
         const state = PlayerState.of(this.game);
         state.health.restore();
         state.stamina.restore();
+        state.refillAmpoules();
 
         const checkpoint = this.world?.checkpoint;
         this.scene.restart({ roomId: checkpoint?.roomId, entryId: checkpoint?.entryId });

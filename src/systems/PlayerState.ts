@@ -2,7 +2,13 @@ import Phaser from 'phaser';
 
 import { Health } from '../components/Health';
 import { Stamina } from '../components/Stamina';
-import { GAME_EVENTS, type StatChange, type WeaponChange } from '../core/gameEvents';
+import {
+  GAME_EVENTS,
+  type ConsumableChange,
+  type StatChange,
+  type WeaponChange,
+} from '../core/gameEvents';
+import { AMPOULE, ITEM_ICONS } from '../data/items';
 import { PLAYER_STATS } from '../data/player';
 import { WEAPONS, type WeaponDefinition, type WeaponId } from '../data/weapons';
 
@@ -14,6 +20,7 @@ export class PlayerState {
   readonly health = new Health(PLAYER_STATS.maxHealth);
   readonly stamina = new Stamina(PLAYER_STATS.stamina);
   private weaponId: WeaponId = PLAYER_STATS.startingWeapon;
+  private ampouleCharges: number = AMPOULE.maxCharges;
   // Atalho de teste: golpes não tiram vida. Começa ligado em desenvolvimento
   // e nunca existe no build de produção.
   infiniteHealth = import.meta.env.DEV;
@@ -48,6 +55,27 @@ export class PlayerState {
     this.emitWeapon();
   }
 
+  get ampoules(): number {
+    return this.ampouleCharges;
+  }
+
+  // Gasta uma carga da ampola; falso quando não sobrou nenhuma.
+  useAmpoule(): boolean {
+    if (this.ampouleCharges <= 0) {
+      return false;
+    }
+
+    this.ampouleCharges -= 1;
+    this.emitConsumable();
+    return true;
+  }
+
+  // Descanso e renascimento devolvem todas as cargas.
+  refillAmpoules(): void {
+    this.ampouleCharges = AMPOULE.maxCharges;
+    this.emitConsumable();
+  }
+
   // Reenvia os valores atuais (ex.: HUD recém-criado ou sala recarregada).
   broadcast(): void {
     this.emit(GAME_EVENTS.playerHealthChanged, {
@@ -59,6 +87,17 @@ export class PlayerState {
       max: this.stamina.max,
     });
     this.emitWeapon();
+    this.emitConsumable();
+  }
+
+  private emitConsumable(): void {
+    const change: ConsumableChange = {
+      name: AMPOULE.name,
+      icon: ITEM_ICONS[AMPOULE.itemId].key,
+      charges: this.ampouleCharges,
+      maxCharges: AMPOULE.maxCharges,
+    };
+    this.events.emit(GAME_EVENTS.playerConsumableChanged, change);
   }
 
   private emitWeapon(): void {
