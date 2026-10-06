@@ -2,12 +2,16 @@ type StaminaListener = (current: number, max: number) => void;
 
 export type StaminaConfig = {
   max: number;
+  // Regeneração contínua, mesmo logo após gastar.
+  trickleRegenPerSecond: number;
+  // Regeneração cheia, depois de um tempo sem ações.
   regenPerSecond: number;
-  // Espera após gastar antes de começar a regenerar.
+  // Tempo sem gastar (nem agir) até a regeneração cheia.
   regenDelayMs: number;
 };
 
-// Recurso de ações: ataques e esquivas gastam, e ela volta depois de um intervalo.
+// Recurso de ações: ataques e esquivas gastam. Volta sempre devagar e, depois
+// de um respiro sem ações, rápido.
 export class Stamina {
   private value: number;
   private regenCooldownMs = 0;
@@ -40,22 +44,22 @@ export class Stamina {
     this.set(Math.max(0, this.value - cost));
   }
 
-  // `paused` congela a regeneração durante ações (golpe, esquiva).
-  update(deltaMs: number, paused: boolean): void {
-    if (paused) {
-      this.regenCooldownMs = Math.max(this.regenCooldownMs, this.config.regenDelayMs * 0.5);
+  // `acting` (golpe, esquiva) adia a regeneração cheia, mas não a contínua.
+  update(deltaMs: number, acting: boolean): void {
+    if (acting) {
+      this.regenCooldownMs = Math.max(this.regenCooldownMs, this.config.regenDelayMs);
+    } else {
+      this.regenCooldownMs = Math.max(0, this.regenCooldownMs - deltaMs);
+    }
+
+    if (this.value >= this.config.max) {
       return;
     }
 
-    if (this.regenCooldownMs > 0) {
-      this.regenCooldownMs -= deltaMs;
-      return;
-    }
-
-    if (this.value < this.config.max) {
-      const gain = (this.config.regenPerSecond * deltaMs) / 1000;
-      this.set(Math.min(this.config.max, this.value + gain));
-    }
+    const rate = this.regenCooldownMs > 0
+      ? this.config.trickleRegenPerSecond
+      : this.config.regenPerSecond;
+    this.set(Math.min(this.config.max, this.value + (rate * deltaMs) / 1000));
   }
 
   restore(): void {

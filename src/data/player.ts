@@ -43,7 +43,10 @@ export const PLAYER_DODGE = {
 // Atributos iniciais; números provisórios do planejamento.
 export const PLAYER_STATS = {
   maxHealth: 100,
-  stamina: { max: 160, regenPerSecond: 75, regenDelayMs: 420 },
+  // Regenera sempre um pouco (inclusive no meio de golpes e rolamentos); depois
+  // de `regenDelayMs` sem gastar, acelera para `regenPerSecond`. Andar e correr
+  // não contam como ação.
+  stamina: { max: 160, trickleRegenPerSecond: 20, regenPerSecond: 80, regenDelayMs: 700 },
   startingWeapon: 'unarmed' as WeaponId,
 } as const;
 
