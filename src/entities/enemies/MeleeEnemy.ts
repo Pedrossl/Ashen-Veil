@@ -3,19 +3,18 @@ import Phaser from 'phaser';
 import { spawnGroundImpact, spawnSwingArc } from '../../components/AttackEffects';
 import { Health } from '../../components/Health';
 import { MotionTrail, spawnDust } from '../../components/MotionTrail';
-import { ENEMIES } from '../../data/enemies';
 import {
-  CHAINED_PRISONER_SPRITE as SPRITE,
-  type ChainedPrisonerAnimation,
-} from '../../data/enemySprites';
+  ENEMIES,
+  type EnemyAttackDefinition,
+  type EnemyDefinition,
+} from '../../data/enemies';
+import type { EnemyAnimation, EnemySpriteDefinition } from '../../data/enemySprites';
 import type {
   ActiveAttack,
   Attacker,
   Damageable,
   Hit,
 } from '../../systems/CombatSystem';
-
-const DEFINITION = ENEMIES.chainedPrisoner;
 
 // Comportamento fora de combate: arrasta-se devagar entre dois pontos.
 const PATROL = {
@@ -55,19 +54,17 @@ export type EnemyTarget = {
   readonly isAlive: boolean;
 };
 
-type AttackDefinition = (typeof DEFINITION.attacks)[keyof typeof DEFINITION.attacks];
+type AttackDefinition = EnemyAttackDefinition;
 
-const attackAnimationKey = (attack: AttackDefinition): string =>
-  `${SPRITE.key}-${attack.animation}-timed`;
+export type EnemyKind = keyof typeof ENEMIES;
 
-// Alcance do golpe mais longo: a partir daí ele já para e ataca.
-const MAX_ATTACK_RANGE = Math.max(
-  ...Object.values(DEFINITION.attacks).map((attack) => attack.range),
-);
+const attackAnimationKey = (sprite: EnemySpriteDefinition, attack: AttackDefinition): string =>
+  `${sprite.key}-${attack.animation}-timed`;
 // Diferença de altura acima da qual o alvo está em outro andar e é ignorado.
 const SAME_FLOOR_TOLERANCE = 90;
 
-export type ChainedPrisonerConfig = {
+export type MeleeEnemyConfig = {
+  kind: EnemyKind;
   x: number;
   floorY: number;
   patrolMinX: number;
@@ -75,20 +72,26 @@ export type ChainedPrisonerConfig = {
   facing: 'left' | 'right';
 };
 
-// Primeiro inimigo da prisão: patrulha, nota o jogador, persegue e golpeia
-// com a corrente. Apanhar interrompe o golpe (hit stun); com vida zerada, morre.
-export class ChainedPrisoner
+// Inimigo comum corpo a corpo, montado pelos dados (`ENEMIES[kind]`): patrulha,
+// nota o jogador, persegue e golpeia. Apanhar pode interromper o golpe (hit
+// stun, por chance); com vida zerada, morre. Prisioneiro acorrentado e
+// Carcereiro do Véu usam esta mesma classe com números e sprites próprios.
+export class MeleeEnemy
   extends Phaser.Physics.Arcade.Sprite
   implements Damageable, Attacker
 {
   readonly faction = 'enemy' as const;
-  readonly health = new Health(DEFINITION.maxHealth);
+  readonly definition: EnemyDefinition;
+  readonly health: Health;
+  private readonly sprite: EnemySpriteDefinition;
+  // Alcance do golpe mais longo: a partir daí ele já para e ataca.
+  private readonly maxAttackRange: number;
   private state: EnemyState = 'idle';
   private stateTimeLeft = 0;
   private direction: -1 | 1;
   private target?: EnemyTarget;
   private attackPhase: AttackPhase = 'windup';
-  private currentAttack: AttackDefinition = DEFINITION.attacks.sweep;
+  private currentAttack: AttackDefinition;
   private attackElapsedMs = 0;
   private attackCooldownMs = 0;
   private swingId = 0;
@@ -96,20 +99,28 @@ export class ChainedPrisoner
 
   constructor(
     scene: Phaser.Scene,
-    private readonly config: ChainedPrisonerConfig,
+    private readonly config: MeleeEnemyConfig,
   ) {
-    super(scene, config.x, config.floorY + 1, SPRITE.key, SPRITE.animations.idle.start);
+    const definition: EnemyDefinition = ENEMIES[config.kind];
+    super(scene, config.x, config.floorY + 1, definition.sprite.key, definition.sprite.animations.idle.start);
+
+    this.definition = definition;
+    this.sprite = definition.sprite;
+    this.health = new Health(definition.maxHealth);
+    const attacks = Object.values(definition.attacks);
+    this.currentAttack = attacks[0];
+    this.maxAttackRange = Math.max(...attacks.map((attack) => attack.range));
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.setScale(SPRITE.scale);
+    this.setScale(this.sprite.scale);
     this.setDepth(9.8);
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setSize(
-      DEFINITION.hurtbox.width / SPRITE.scale,
-      DEFINITION.hurtbox.height / SPRITE.scale,
+      this.definition.hurtbox.width / this.sprite.scale,
+      this.definition.hurtbox.height / this.sprite.scale,
     );
 
     this.direction = config.facing === 'left' ? -1 : 1;
@@ -117,10 +128,6 @@ export class ChainedPrisoner
     this.createAnimations();
     this.trail = new MotionTrail(scene, this, ATTACK_FEEL.trail);
     this.enterIdle();
-  }
-
-  get definition(): typeof DEFINITION {
-    return DEFINITION;
   }
 
   get isAlive(): boolean {
@@ -169,8 +176,8 @@ export class ChainedPrisoner
 
     const isAttacking = this.state === 'attack';
     const chance = isAttacking
-      ? DEFINITION.staggerChanceWhileAttacking
-      : DEFINITION.staggerChance;
+      ? this.definition.staggerChanceWhileAttacking
+      : this.definition.staggerChance;
 
     if (Math.random() < chance) {
       this.enterHit(hit.direction);
@@ -240,12 +247,12 @@ export class ChainedPrisoner
   // espelhar a origem e o corpo físico junto com a textura.
   setFacing(direction: -1 | 1): this {
     const flipped = direction < 0;
-    const feetX = flipped ? SPRITE.frameWidth - SPRITE.feetX : SPRITE.feetX;
+    const feetX = flipped ? this.sprite.frameWidth - this.sprite.feetX : this.sprite.feetX;
     const body = this.body as Phaser.Physics.Arcade.Body;
 
     this.setFlipX(flipped);
-    this.setOrigin(feetX / SPRITE.frameWidth, SPRITE.feetY / SPRITE.frameHeight);
-    body.setOffset(feetX - body.sourceWidth / 2, SPRITE.feetY - body.sourceHeight);
+    this.setOrigin(feetX / this.sprite.frameWidth, this.sprite.feetY / this.sprite.frameHeight);
+    body.setOffset(feetX - body.sourceWidth / 2, this.sprite.feetY - body.sourceHeight);
     return this;
   }
 
@@ -267,14 +274,14 @@ export class ChainedPrisoner
   }
 
   private updateChase(): void {
-    if (!this.hasLiveTarget() || this.distanceToTarget() > DEFINITION.loseInterestRange) {
+    if (!this.hasLiveTarget() || this.distanceToTarget() > this.definition.loseInterestRange) {
       this.enterIdle();
       return;
     }
 
     this.faceTarget();
 
-    if (this.distanceToTarget() <= MAX_ATTACK_RANGE) {
+    if (this.distanceToTarget() <= this.maxAttackRange) {
       this.setVelocityX(0);
 
       if (this.attackCooldownMs <= 0) {
@@ -285,7 +292,7 @@ export class ChainedPrisoner
       return;
     }
 
-    this.setVelocityX(DEFINITION.moveSpeed * this.direction);
+    this.setVelocityX(this.definition.moveSpeed * this.direction);
     this.playAnimation('walk');
   }
 
@@ -372,7 +379,7 @@ export class ChainedPrisoner
 
   private enterAlert(): void {
     this.state = 'alert';
-    this.stateTimeLeft = DEFINITION.alertMs;
+    this.stateTimeLeft = this.definition.alertMs;
     this.setVelocityX(0);
     this.faceTarget();
     this.playAnimation('idle');
@@ -382,12 +389,20 @@ export class ChainedPrisoner
     this.state = 'chase';
   }
 
-  // Perto o bastante para os dois: costuma esmagar; mais longe, só a varredura alcança.
+  // Entre os golpes que alcançam, `closeAttackChance` decide se prefere o de
+  // menor alcance (ex.: o prisioneiro costuma esmagar quando está colado).
   private chooseAttack(): AttackDefinition {
-    const { sweep, smash } = DEFINITION.attacks;
-    const closeEnough = this.distanceToTarget() <= smash.range;
+    const distance = this.distanceToTarget();
+    const attacks = Object.values(this.definition.attacks).sort((a, b) => a.range - b.range);
+    const reachable = attacks.filter((attack) => attack.range >= distance);
 
-    return closeEnough && Math.random() < DEFINITION.closeAttackChance ? smash : sweep;
+    if (reachable.length === 0) {
+      return attacks[attacks.length - 1];
+    }
+
+    return Math.random() < this.definition.closeAttackChance
+      ? reachable[0]
+      : reachable[reachable.length - 1];
   }
 
   private enterAttack(attack: AttackDefinition): void {
@@ -398,7 +413,7 @@ export class ChainedPrisoner
     this.swingId += 1;
     this.setVelocityX(0);
     this.faceTarget();
-    this.play(attackAnimationKey(attack));
+    this.play(attackAnimationKey(this.sprite, attack));
   }
 
   // Só nota o jogador à frente, no mesmo andar; muito perto, nota mesmo de costas.
@@ -414,8 +429,8 @@ export class ChainedPrisoner
 
     return (
       sameFloor &&
-      distance <= DEFINITION.detectionRange &&
-      (inFront || distance <= MAX_ATTACK_RANGE)
+      distance <= this.definition.detectionRange &&
+      (inFront || distance <= this.maxAttackRange)
     );
   }
 
@@ -443,7 +458,7 @@ export class ChainedPrisoner
   // Vira para quem bateu e recua com o impacto, preso no atordoamento.
   private enterHit(direction: 1 | -1): void {
     this.state = 'hit';
-    this.stateTimeLeft = DEFINITION.hitStunMs;
+    this.stateTimeLeft = this.definition.hitStunMs;
     // Apanhar também reinicia a pausa entre golpes, para não revidar no ato.
     this.attackCooldownMs = this.currentAttack.cooldownMs;
     this.direction = direction === 1 ? -1 : 1;
@@ -468,17 +483,17 @@ export class ChainedPrisoner
   private enterWalk(): void {
     this.state = 'walk';
     this.setFacing(this.direction);
-    this.setVelocityX(DEFINITION.moveSpeed * PATROL.speedFactor * this.direction);
+    this.setVelocityX(this.definition.moveSpeed * PATROL.speedFactor * this.direction);
     this.playAnimation('walk');
   }
 
-  private playAnimation(name: ChainedPrisonerAnimation): void {
-    this.play(`${SPRITE.key}-${name}`, true);
+  private playAnimation(name: EnemyAnimation): void {
+    this.play(`${this.sprite.key}-${name}`, true);
   }
 
   private createAnimations(): void {
-    for (const [name, frames] of Object.entries(SPRITE.animations)) {
-      const key = `${SPRITE.key}-${name}`;
+    for (const [name, frames] of Object.entries(this.sprite.animations)) {
+      const key = `${this.sprite.key}-${name}`;
 
       if (this.scene.anims.exists(key)) {
         continue;
@@ -486,7 +501,7 @@ export class ChainedPrisoner
 
       this.scene.anims.create({
         key,
-        frames: this.scene.anims.generateFrameNumbers(SPRITE.key, {
+        frames: this.scene.anims.generateFrameNumbers(this.sprite.key, {
           start: frames.start,
           end: frames.end,
         }),
@@ -501,14 +516,14 @@ export class ChainedPrisoner
   // Quadros de cada golpe sincronizados com as fases da definição: os quadros
   // de cada fase dividem igualmente o tempo dela.
   private createTimedAttackAnimation(): void {
-    for (const attack of Object.values(DEFINITION.attacks)) {
-      const key = attackAnimationKey(attack);
+    for (const attack of Object.values(this.definition.attacks)) {
+      const key = attackAnimationKey(this.sprite, attack);
 
       if (this.scene.anims.exists(key)) {
         continue;
       }
 
-      const phases = SPRITE.attacks[attack.animation];
+      const phases = this.sprite.attacks[attack.animation];
       const frames = (
         [
           [phases.windup, attack.windupMs],
@@ -518,7 +533,7 @@ export class ChainedPrisoner
       ).flatMap(([[first, last], phaseMs]) => {
         const count = last - first + 1;
         return Array.from({ length: count }, (_, index) => ({
-          key: SPRITE.key,
+          key: this.sprite.key,
           frame: first + index,
           duration: phaseMs / count,
         }));

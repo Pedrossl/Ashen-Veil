@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import { ITEM_IMAGES, ITEMS } from '../../data/items';
+import { MeleeEnemy } from '../../entities/enemies/MeleeEnemy';
 import { Bonfire } from '../../entities/world/Bonfire';
 import { Chest } from '../../entities/world/Chest';
 import { Ladder } from '../../entities/world/Ladder';
@@ -110,6 +111,16 @@ export function createChainWell(scene: Phaser.Scene, world: WorldState): Room {
     addProp(scene, prop);
   }
 
+  // O Carcereiro do Véu guarda o pé da escadaria, sob o feixe da lua.
+  const jailer = new MeleeEnemy(scene, {
+    kind: 'veilJailer',
+    x: 600,
+    floorY: FLOOR_Y,
+    patrolMinX: 470,
+    patrolMaxX: 680,
+    facing: 'left',
+  });
+
   addCageOnChain(scene, 'hanging-cage', 560, 300);
   addCageOnChain(scene, 'hanging-cage-small', 980, 170);
   addCageOnChain(scene, 'hanging-cage', 1440, 30);
@@ -145,7 +156,7 @@ export function createChainWell(scene: Phaser.Scene, world: WorldState): Room {
     ],
     gates: [],
     pickups: [],
-    enemies: [],
+    enemies: [jailer],
     stairs: [stairs],
     ladders: [ladder],
     chests: [chest],

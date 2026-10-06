@@ -1,9 +1,14 @@
 import type { HitboxDefinition } from './combat';
+import {
+  CHAINED_PRISONER_SPRITE,
+  VEIL_JAILER_SPRITE,
+  type EnemySpriteDefinition,
+} from './enemySprites';
 
 // Valores provisórios; a dificuldade deve vir de padrão e timing, não de vida alta.
 export type EnemyAttackDefinition = {
-  // Animação do golpe (ver data/enemySprites.ts).
-  animation: 'sweep' | 'smash';
+  // Animação do golpe: chave em `attacks` do sprite (data/enemySprites.ts).
+  animation: string;
   damage: number;
   // Distância (centro a centro) em que ele decide golpear.
   range: number;
@@ -27,6 +32,7 @@ export type EnemyAttackDefinition = {
 export type EnemyDefinition = {
   id: string;
   name: string;
+  sprite: EnemySpriteDefinition;
   maxHealth: number;
   moveSpeed: number;
   // Distâncias horizontais a partir do centro do inimigo.
@@ -52,6 +58,7 @@ export const ENEMIES = {
   chainedPrisoner: {
     id: 'chained-prisoner',
     name: 'Prisioneiro Acorrentado',
+    sprite: CHAINED_PRISONER_SPRITE,
     maxHealth: 40,
     moveSpeed: 70,
     detectionRange: 280,
@@ -91,5 +98,38 @@ export const ENEMIES = {
       },
     },
     closeAttackChance: 0.6,
+  },
+  // Inimigo pesado da prisão (05_documentacao/inimigos/CARCEREIRO_DO_VEU.md):
+  // lento, não corre, quase não se interrompe e tem um golpe só, forte, com
+  // aviso longo e recuperação longa para ser punido.
+  veilJailer: {
+    id: 'veil-jailer',
+    name: 'Carcereiro do Véu',
+    sprite: VEIL_JAILER_SPRITE,
+    maxHealth: 90,
+    moveSpeed: 55,
+    detectionRange: 300,
+    loseInterestRange: 420,
+    alertMs: 600,
+    hitStunMs: 380,
+    staggerChance: 0.12,
+    staggerChanceWhileAttacking: 0,
+    hurtbox: { width: 70, height: 160 },
+    attacks: {
+      // Puxão do gancho: avança o gancho na horizontal, alcance médio.
+      hook: {
+        animation: 'hook',
+        damage: 28,
+        range: 150,
+        windupMs: 760,
+        activeMs: 240,
+        recoveryMs: 1050,
+        hitbox: { forward: 25, up: 115, width: 125, height: 60 },
+        cooldownMs: 700,
+        cooldownJitterMs: 500,
+        motion: { windupDrawBackSpeed: 35, lungeSpeed: 260, effect: 'sweep-arc' },
+      },
+    },
+    closeAttackChance: 0,
   },
 } as const satisfies Record<string, EnemyDefinition>;

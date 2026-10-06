@@ -2,8 +2,8 @@ import Phaser from 'phaser';
 
 import { REAPER_KING_SPRITE, SPECTRAL_SCYTHE_IMAGE } from '../data/bossSprites';
 import { CHECKPOINT_LANTERN_SPRITE } from '../data/checkpointSprites';
-import { CHAINED_PRISONER_SPRITE } from '../data/enemySprites';
-import { ITEM_IMAGES } from '../data/items';
+import { ENEMIES } from '../data/enemies';
+import { ITEM_ICONS, ITEM_IMAGES } from '../data/items';
 import { PLAYER_SPRITE } from '../data/player';
 import {
   CELL_BED_KEY,
@@ -51,7 +51,7 @@ export class PreloadScene extends Phaser.Scene {
       PRISON_ATLAS_DATA_PATH,
     );
     this.load.image(CELL_BED_KEY, CELL_BED_PATH);
-    for (const image of Object.values(ITEM_IMAGES)) {
+    for (const image of [...Object.values(ITEM_IMAGES), ...Object.values(ITEM_ICONS)]) {
       this.load.image(image.key, image.path);
     }
     this.load.image(SPECTRAL_SCYTHE_IMAGE.key, SPECTRAL_SCYTHE_IMAGE.path);
@@ -63,10 +63,12 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: REAPER_KING_SPRITE.frameWidth,
       frameHeight: REAPER_KING_SPRITE.frameHeight,
     });
-    this.load.spritesheet(CHAINED_PRISONER_SPRITE.key, CHAINED_PRISONER_SPRITE.path, {
-      frameWidth: CHAINED_PRISONER_SPRITE.frameWidth,
-      frameHeight: CHAINED_PRISONER_SPRITE.frameHeight,
-    });
+    for (const { sprite } of Object.values(ENEMIES)) {
+      this.load.spritesheet(sprite.key, sprite.path, {
+        frameWidth: sprite.frameWidth,
+        frameHeight: sprite.frameHeight,
+      });
+    }
     for (const sheet of Object.values(PLAYER_SPRITE.sheets)) {
       this.load.spritesheet(sheet.key, sheet.path, {
         frameWidth: PLAYER_SPRITE.frameWidth,

@@ -1,0 +1,51 @@
+{
+  "id": "carcereiro-do-veu",
+  "name": "Carcereiro do Véu",
+  "facing": "right",
+  "animations": {
+    "idle": {
+      "file": "idle_8_frames.png",
+      "frameWidth": 384,
+      "frameHeight": 512,
+      "frameCount": 8,
+      "frameRate": 6,
+      "repeat": -1
+    },
+    "walk": {
+      "file": "caminhada_8_frames.png",
+      "frameWidth": 384,
+      "frameHeight": 512,
+      "frameCount": 8,
+      "frameRate": 8,
+      "repeat": -1
+    },
+    "hookAttack": {
+      "file": "ataque_gancho_12_frames.png",
+      "frameWidth": 384,
+      "frameHeight": 341,
+      "frameCount": 12,
+      "repeat": 0,
+      "phases": {
+        "windup": [0, 3],
+        "active": [4, 6],
+        "recovery": [7, 11]
+      }
+    },
+    "hit": {
+      "file": "dano_4_frames.png",
+      "frameWidth": 768,
+      "frameHeight": 512,
+      "frameCount": 4,
+      "frameRate": 10,
+      "repeat": 0
+    },
+    "death": {
+      "file": "morte_8_frames.png",
+      "frameWidth": 443,
+      "frameHeight": 443,
+      "frameCount": 8,
+      "frameRate": 8,
+      "repeat": 0
+    }
+  }
+}

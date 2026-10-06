@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { ChainedPrisoner } from '../../entities/enemies/ChainedPrisoner';
+import { MeleeEnemy } from '../../entities/enemies/MeleeEnemy';
 import type { WorldState } from '../../systems/WorldState';
 import type { Room } from '../types';
 import {
@@ -86,7 +86,8 @@ export function createCellBlockCorridor(scene: Phaser.Scene, _world: WorldState)
   addDarkness(scene);
 
   // O primeiro inimigo ronda o fim do corredor, diante do arco.
-  const prisoner = new ChainedPrisoner(scene, {
+  const prisoner = new MeleeEnemy(scene, {
+    kind: 'chainedPrisoner',
     x: 2330,
     floorY: FLOOR_Y,
     patrolMinX: 2150,

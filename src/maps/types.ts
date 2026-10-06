@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 
 import type { ReaperKing } from '../entities/bosses/ReaperKing';
-import type { ChainedPrisoner } from '../entities/enemies/ChainedPrisoner';
+import type { MeleeEnemy } from '../entities/enemies/MeleeEnemy';
 import type { Bonfire } from '../entities/world/Bonfire';
 import type { CellGate } from '../entities/world/CellGate';
 import type { Chest } from '../entities/world/Chest';
@@ -46,7 +46,7 @@ export type Room = {
   colliders: Phaser.GameObjects.Rectangle[];
   gates: CellGate[];
   pickups: ItemPickup[];
-  enemies: ChainedPrisoner[];
+  enemies: MeleeEnemy[];
   stairs: Staircase[];
   ladders?: Ladder[];
   bosses?: ReaperKing[];
