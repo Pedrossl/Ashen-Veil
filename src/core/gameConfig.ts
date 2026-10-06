@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { BootScene } from '../scenes/BootScene';
 import { PreloadScene } from '../scenes/PreloadScene';
 import { PrisonScene } from '../scenes/PrisonScene';
+import { HudScene } from '../ui/HudScene';
 
 export const GAME_WIDTH = 1280;
 export const GAME_HEIGHT = 720;
@@ -13,7 +14,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   width: GAME_WIDTH,
   height: GAME_HEIGHT,
   backgroundColor: '#08070d',
-  scene: [BootScene, PreloadScene, PrisonScene],
+  scene: [BootScene, PreloadScene, PrisonScene, HudScene],
   physics: {
     default: 'arcade',
     arcade: {
