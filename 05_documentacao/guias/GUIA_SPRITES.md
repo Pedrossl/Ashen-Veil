@@ -78,7 +78,7 @@ Hoje são gerados por recorte ou código e ficariam melhores com arte própria:
 
 - **Respiração parada do jogador** (idle): hoje gerada pelo recorte da caminhada.
 - **Ciclo de caminhada completo** (6–8 quadros): o atual é montado por recorte a partir de um único quadro.
-- **Descer escada de corda e subir/descer escada de pedra**: ainda reaproveitam a caminhada. A subida da escada de corda já possui entrada, ciclo e saída próprios em `01_sprites/personagem_jogador/escada_corda/`.
+- **Descer escadas e subir/descer escada de pedra**: ainda reaproveitam a caminhada. Existem dois conjuntos próprios para subir: a escada de corda lateral em `01_sprites/personagem_jogador/escada_corda/` e a escada rígida de madeira vista de costas em `01_sprites/personagem_jogador/escada_madeira_parede/`.
 - **Pulo** (impulso, no ar, queda, aterrissagem).
 - **Morte do jogador**: hoje reaproveita o agachamento da coleta.
 - **Morte do boss**: hoje é só um efeito de fumaça.
