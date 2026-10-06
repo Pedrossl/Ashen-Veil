@@ -31,4 +31,4 @@ npm run build
 
 ## Estado atual
 
-O bootstrap usa Phaser 4.2.1, TypeScript 7.0.2 e Vite 8.3.2. O fluxo inicial contém `BootScene`, `PreloadScene` e `PrisonScene`. O próximo marco é montar a primeira cela e implementar movimento e colisão do jogador.
+O bootstrap usa Phaser 4.2.1, TypeScript 7.0.2 e Vite 8.3.2. O fluxo inicial contém `BootScene`, `PreloadScene` e `PrisonScene`. A primeira cela já é composta com peças do atlas medieval, e o personagem pode andar horizontalmente com animação e colisão. O próximo marco é preparar a saída da cela e o primeiro corredor.

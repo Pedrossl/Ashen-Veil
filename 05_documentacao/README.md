@@ -1,40 +1,19 @@
-# Ashen Veil
+# jogo_clone_ds
 
-Projeto de um action RPG 2D soulslike, desenvolvido com Phaser 4, TypeScript e Vite.
+Pasta de assets do jogo clone DS/soulslike.
 
-As regras de continuidade para Codex, Gemini, Claude e outros assistentes estão no `AGENTS.md` da raiz. Todo assistente deve lê-lo antes de alterar o projeto.
+## Estrutura
 
-## Estrutura atual
+- `01_sprites/personagem_jogador`: sprites e referencias do personagem jogavel.
+- `01_sprites/inimigos`: inimigos comuns.
+- `01_sprites/bosses`: sprites e referencias de bosses.
+- `02_cenarios_e_tilesets`: tilesets, mapas, cenarios e masmorra/prisao.
+- `03_itens_e_armas`: armas e itens visuais.
+- `04_hud_interface`: barras de vida/stamina/mana, molduras e elementos de HUD.
+- `04_referencias_visuais/conceitos_gerados`: imagens de estilo, conceito, moodboard e ideias visuais do jogo.
+- `05_documentacao`: notas de organizacao e ideias.
+- `05_documentacao/guias/GUIA_SPRITES.md`: tamanhos, grade e regras para pedir sprites novos.
 
-### Assets de produção
+## Regra de nome
 
-- `01_sprites/personagem_jogador`: referências e sprites do personagem jogável.
-- `01_sprites/inimigos`: sprites dos inimigos comuns.
-- `01_sprites/bosses`: sprites dos bosses.
-- `02_cenarios_e_tilesets/cenarios`: conceitos e composições de cenário.
-- `02_cenarios_e_tilesets/tilesets`: tilesets e atlas modulares.
-- `03_itens_e_armas/armas`: artes das armas.
-- `03_itens_e_armas/itens`: artes dos demais itens.
-- `04_referencias_visuais/conceitos_gerados`: conceitos, moodboard e referências de estilo.
-
-### Projeto do jogo
-
-- `src/core`: inicialização, eventos e constantes globais.
-- `src/scenes`: scenes do Phaser.
-- `src/entities`: jogador, inimigos, bosses e armas.
-- `src/components`: capacidades reutilizáveis das entidades.
-- `src/systems`: regras de gameplay que coordenam entidades e componentes.
-- `src/states`: estados e máquinas de estado.
-- `src/ui`: HUD e menus.
-- `src/data`: definições configuráveis de armas, inimigos, itens e áreas.
-- `src/maps`: composição das áreas e salas; a primeira será a prisão.
-
-### Documentação
-
-- `05_documentacao/planejamento/PLANEJAMENTO_SOULSLIKE_2D.md`: planejamento geral e escopo da primeira vertical slice.
-
-## Convenções
-
-Use nomes de arquivos de assets em `snake_case`, com prefixos como `sprite_`, `sprite_sheet_`, `tileset_`, `cenario_`, `arma_` e `conceito_visual_`.
-
-O código TypeScript seguirá os nomes de classes em `PascalCase` e os demais identificadores em `camelCase` quando o bootstrap do projeto for criado.
+Use nomes em snake_case, com prefixos como `sprite_`, `sprite_sheet_`, `tileset_`, `cenario_`, `arma_`, `hud_` e `conceito_visual_`.
