@@ -1,0 +1,38 @@
+:root {
+  color: #e9e1f5;
+  background: #050409;
+  font-family: system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#game-container {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 35%, rgb(45 31 61 / 55%), transparent 42%),
+    #050409;
+}
+
+#game-container {
+  display: grid;
+  place-items: center;
+}
+
+canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 24px 90px rgb(0 0 0 / 70%);
+}
