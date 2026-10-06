@@ -1,0 +1,12 @@
+{
+  "textureKey": "retrato-dialogo-jogador",
+  "image": "assets/ui/dialogos/retratos/personagem_jogador/retratos_dialogo_4_expressoes.png",
+  "frameWidth": 768,
+  "frameHeight": 512,
+  "frames": {
+    "triste": 0,
+    "feliz": 1,
+    "metido": 2,
+    "preocupado": 3
+  }
+}
