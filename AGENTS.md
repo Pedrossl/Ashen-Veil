@@ -281,7 +281,30 @@ Ao encerrar uma etapa relevante, deixe o repositório compreensível para o pró
 
 Não assuma que o próximo assistente tem acesso ao histórico da conversa. O estado necessário para continuar deve estar no repositório.
 
-## 17. Próximo passo recomendado
+## 17. Padrão de commits
+
+Escreva todas as mensagens de commit em português, de forma curta e direta, dizendo somente o que foi feito.
+
+Exemplos:
+
+- `configura o projeto com Phaser 4`
+- `organiza os sprites dos inimigos`
+- `adiciona a cena inicial da prisão`
+- `corrige o consumo de stamina`
+
+Regras:
+
+- não use mensagens longas, emojis ou explicações desnecessárias;
+- não use prefixos como `feat:`, `fix:` ou `chore:`;
+- não inclua assinatura automática de assistente ou texto de coautoria;
+- faça cada commit tratar de um único assunto coerente;
+- evite colocar muitos arquivos em um só commit;
+- quando a tarefa alterar áreas diferentes, divida em commits menores e independentes;
+- não divida artificialmente arquivos que fazem parte da mesma mudança funcional;
+- antes de commitar, confira o diff e inclua somente os arquivos relacionados ao assunto daquele commit;
+- não faça commit sem o usuário pedir ou autorizar.
+
+## 18. Próximo passo recomendado
 
 O próximo marco técnico esperado é:
 
