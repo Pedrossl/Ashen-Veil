@@ -66,3 +66,23 @@ Total: 50 efeitos curtos e dois loops (52 WAVs). Gerador `scripts/generate_inter
 Não foram adicionados sons de passagem genéricos: atravessar um arco aberto não deve soar como abrir uma porta. Fogo/correntes localizados, mecanismo do portão de arena e música continuam pendentes.
 
 Validação: nove arquivos reproduzidos no Phaser; abertura/fechamento do inventário com sons, pausa/retomada do ambiente e limpeza dos efeitos confirmados no navegador. TypeScript aprovado; WAVs conferidos sem clipping; sem build. Aterrissagens e escadas ainda precisam de avaliação de sincronismo durante gameplay.
+
+## Trilhas e finalização do ambiente — 8 de outubro
+
+O pacote soma **60 WAVs: 53 efeitos curtos, quatro loops ambientais e três trilhas**. Arquivos listados em `public/assets/audio/manifesto.json`. Gerador adicional: `python3 scripts/generate_soundscape.py`, sem dependências externas. As músicas são composições instrumentais simples de síntese, sem samples, gravações ou melodias de referência.
+
+- Exploração: notas espaçadas e camadas graves (28,8 s).
+- Ceifador: pulsação e timbres ressonantes (19,2 s).
+- Raiz: registro mais grave e intervalos tensos (22,4 s).
+- Fogo localizado: tochas que usam `addTorchGlow`, fogo do ossuário e lanternas de checkpoint acesas.
+- Correntes localizadas: gaiolas do corredor e do Poço das Correntes.
+- Portão da Raiz: fechamento no início do encontro e abertura após a vitória, nos mesmos callbacks do estado visual. Respeitam distância; podem não ser audíveis se o jogador estiver longe, inclusive no fosso.
+- Vitória de boss: breve resolução sonora ao receber `boss:defeated`.
+
+Configuração em `src/data/soundscape.ts`; execução em `src/systems/Soundscape.ts`. Fontes locais são registradas durante a construção da sala com `addAmbientSource`. Cada tipo usa uma única voz compartilhada, escolhendo a fonte habilitada mais próxima do centro da câmera, com atenuação até 650 unidades e panorama estéreo. Lanternas apagadas não emitem fogo. Música de exploração e boss fazem transição de volume; a música esvanece na morte. Todos os sons contínuos pausam com a scene e são destruídos ao sair. Não há música no menu inicial nesta versão.
+
+Em 8 de outubro, os loops amplos de vento e água foram retirados da reprodução porque o ruído sintetizado soava como chiado/chuva constante. Os arquivos continuam preservados em `public/assets/audio/ambience/`, mas não são iniciados pelas salas. Fogo e correntes localizados continuam ativos.
+
+Prévia `previa_trilhas.wav`: oito segundos de exploração, Ceifador e Raiz, nessa ordem. As versões completas estão em `public/assets/audio/music/`. O volume da prévia é maior que a mixagem de fundo usada no jogo.
+
+Validação no navegador: carregamento das três músicas e dos dois novos ambientes; reprodução/transição exploração→Raiz; Ceifador e retorno à exploração após vitória; fogo/correntes; efeitos do portão/vitória; pausa/retomada; substituição das vozes ao trocar de sala. TypeScript e `git diff --check` aprovados, arquivos PCM sem clipping. Sem build ou commit. A avaliação musical e o equilíbrio final em combates completos continuam dependendo da escuta do usuário.

@@ -63,4 +63,4 @@ export const SOUND_EFFECTS = {
 export type SoundEffect = keyof typeof SOUND_EFFECTS;
 export const soundKey = (effect: SoundEffect): string => `sfx-${effect}`;
 export const soundPath = (effect: SoundEffect): string =>
-  `assets/audio/sfx/${SOUND_EFFECTS[effect].file}.wav`;
+  `assets/audio/sfx/${SOUND_EFFECTS[effect].file}.m4a`;

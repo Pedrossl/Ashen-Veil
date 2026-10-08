@@ -1,5 +1,9 @@
 import type { RoomId } from '../maps/types';
 
+// Desligados (soavam como chiado contínuo) e fora da build: os arquivos estão
+// em 06_assets_nao_carregados/audio/ambience/. Para religar, gere a versão
+// .m4a em public/assets/audio/ambience/, volte a carregá-los no PreloadScene
+// e chame o sistema Ambience na PrisonScene.
 export const AMBIENCE = {
   prison: { key: 'ambience-prison', path: 'assets/audio/ambience/prisao_vento.wav', volume: 0.10 },
   sewer: { key: 'ambience-sewer', path: 'assets/audio/ambience/esgoto_agua.wav', volume: 0.12 },
