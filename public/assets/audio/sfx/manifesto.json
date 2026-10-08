@@ -2,6 +2,14 @@
   "origem": "Síntese original local",
   "sons": [
     {
+      "arquivo": "arena_portao_abrir.wav",
+      "duracao_segundos": 1.6
+    },
+    {
+      "arquivo": "arena_portao_fechar.wav",
+      "duracao_segundos": 1.1
+    },
+    {
       "arquivo": "aterrissagem_agua.wav",
       "duracao_segundos": 0.48
     },
@@ -200,6 +208,10 @@
     {
       "arquivo": "suplicante_morte.wav",
       "duracao_segundos": 0.8
+    },
+    {
+      "arquivo": "vitoria_boss.wav",
+      "duracao_segundos": 2.0
     }
   ]
 }

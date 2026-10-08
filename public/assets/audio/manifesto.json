@@ -1,14 +1,42 @@
 {
   "formato": "WAV PCM mono 44100 Hz / 16 bits",
-  "origem": "Síntese original local",
+  "origem": "Síntese original local, sem samples externos",
   "arquivos": [
+    {
+      "arquivo": "ambience/correntes_distantes.wav",
+      "segundos": 12.0
+    },
     {
       "arquivo": "ambience/esgoto_agua.wav",
       "segundos": 12.0
     },
     {
+      "arquivo": "ambience/fogo_proximo.wav",
+      "segundos": 12.0
+    },
+    {
       "arquivo": "ambience/prisao_vento.wav",
       "segundos": 12.0
+    },
+    {
+      "arquivo": "music/ceifador_lamento.wav",
+      "segundos": 19.2
+    },
+    {
+      "arquivo": "music/exploracao_cinzas.wav",
+      "segundos": 28.8
+    },
+    {
+      "arquivo": "music/raiz_profundezas.wav",
+      "segundos": 22.4
+    },
+    {
+      "arquivo": "sfx/arena_portao_abrir.wav",
+      "segundos": 1.6
+    },
+    {
+      "arquivo": "sfx/arena_portao_fechar.wav",
+      "segundos": 1.1
     },
     {
       "arquivo": "sfx/aterrissagem_agua.wav",
@@ -209,6 +237,10 @@
     {
       "arquivo": "sfx/suplicante_morte.wav",
       "segundos": 0.8
+    },
+    {
+      "arquivo": "sfx/vitoria_boss.wav",
+      "segundos": 2.0
     }
   ]
 }
