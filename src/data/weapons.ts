@@ -38,6 +38,9 @@ export type WeaponDefinition = {
   sprite?: string;
   // Tamanho da lâmina na mão em relação ao padrão (WEAPON_BLADE_LENGTH).
   bladeScale?: number;
+  // Ponto vertical da arte que corresponde à mão. Algumas armas têm cabo
+  // maior que outras e não podem compartilhar exatamente o mesmo encaixe.
+  gripOriginY?: number;
   // Velocidade do golpe: > 1 mais rápido, < 1 mais lento (mesma animação da categoria).
   attackSpeed?: number;
   moveset: {
@@ -74,6 +77,9 @@ export const WEAPONS = {
     critChance: 0.15,
     critMultiplier: 1.8,
     sprite: 'item-bamboo-sword',
+    // O cabo de bambu é comprido: a mão deve ficar no meio dele, abaixo da
+    // guarda, e não no começo da empunhadura.
+    gripOriginY: 0.87,
     attackSpeed: 1.2,
     moveset: {
       light: {

@@ -19,6 +19,9 @@ type ChestConfig = {
 };
 
 const OPEN_ANIMATION = 'prison-chest-open';
+// Itens de origem têm resoluções muito diferentes. A revelação é uma pequena
+// leitura visual acima do baú, nunca uma ilustração em tamanho integral.
+const ITEM_REVEAL_MAX = { width: 64, height: 58 } as const;
 
 export class Chest {
   private readonly sprite: Phaser.GameObjects.Sprite;
@@ -121,10 +124,15 @@ export class Chest {
     const item = this.scene.add
       .image(x, floorY - 20, itemTextureKey)
       .setOrigin(0.5, 1)
-      .setScale(0.5)
       .setAngle(-12)
       .setDepth(depth + 0.3)
       .setAlpha(0);
+    const itemScale = Math.min(
+      ITEM_REVEAL_MAX.width / item.width,
+      ITEM_REVEAL_MAX.height / item.height,
+    );
+
+    item.setScale(itemScale);
 
     this.scene.tweens.chain({
       targets: item,

@@ -36,3 +36,22 @@ canvas {
   max-height: 100%;
   box-shadow: 0 24px 90px rgb(0 0 0 / 70%);
 }
+
+#boot-loading {
+  margin: 0;
+  color: #9d90b4;
+  font-family: Georgia, serif;
+  font-size: 20px;
+  font-style: italic;
+  animation: boot-pulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes boot-pulse {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / 'public/assets/player/dano_e_morte/morte_8_frames.png'
+SOURCE = ROOT / '06_assets_nao_carregados/player/dano_e_morte/morte_8_frames.png'
 OUTPUT = ROOT / 'public/assets/player/sprite_sheet_jogador_morte.png'
 FRAME = (420, 340)
 GROUND = 332  # mesma linha da idle; oito pixels até a origem física

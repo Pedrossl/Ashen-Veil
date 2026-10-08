@@ -3,6 +3,8 @@ import { playSound } from '../systems/SoundEffects';
 
 import { Controls } from '../core/controls';
 import { DEMO } from '../data/demo';
+import { setDifficulty, type DifficultyId } from '../data/difficulty';
+import { hasSave, loadGame, startNewGame } from '../systems/SaveGame';
 
 type MenuOption = {
   label: string;
@@ -29,8 +31,8 @@ const SELECTED_COLOR = '#f0e2c4';
 const IDLE_COLOR = '#8f84a0';
 const FADE_MS = 700;
 
-// Menu inicial simples: iniciar ou sair. Teclado (W/S ou setas, Enter ou E)
-// e mouse.
+// Menu inicial: o modo fácil reduz somente a troca de dano. Teclado (W/S ou
+// setas, Enter ou E) e mouse.
 export class MenuScene extends Phaser.Scene {
   private controls?: Controls;
   private options: Phaser.GameObjects.Text[] = [];
@@ -62,8 +64,12 @@ export class MenuScene extends Phaser.Scene {
       .text(width / 2, height * 0.34 + 56, 'sob as cinzas, o véu', { ...OPTION_STYLE, fontSize: '16px', color: '#6f6680' })
       .setOrigin(0.5);
 
+    const saved = hasSave();
+    const newGame = saved ? 'Novo jogo' : 'Iniciar';
     const entries: MenuOption[] = [
-      { label: 'Iniciar', select: () => this.startGame() },
+      ...(saved ? [{ label: 'Continuar', select: () => this.continueGame() }] : []),
+      { label: `${newGame} — Normal`, select: () => this.startGame('normal') },
+      { label: `${newGame} — Fácil`, select: () => this.startGame('easy') },
       { label: 'Sair', select: () => this.quitGame() },
     ];
 
@@ -80,6 +86,13 @@ export class MenuScene extends Phaser.Scene {
     });
 
     this.highlight(0);
+    this.add
+      .text(width / 2, height * 0.62 + entries.length * 48, 'Fácil: inimigos recebem 2× dano e causam 45%.', {
+        ...OPTION_STYLE,
+        fontSize: '14px',
+        color: '#6f6680',
+      })
+      .setOrigin(0.5);
     this.add
       .text(width - 24, height - 20, `${DEMO.version} · ${DEMO.label}`, { ...OPTION_STYLE, fontSize: '14px', color: '#5f5670' })
       .setOrigin(1, 1);
@@ -113,13 +126,29 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
-  private startGame(): void {
+  // Novo jogo apaga o save anterior.
+  private startGame(difficulty: DifficultyId): void {
     if (this.leaving) return;
+    startNewGame(this.game);
+    setDifficulty(this.game, difficulty);
+    this.leaveTo({});
+  }
+
+  // Continua na última lanterna em que descansou, já sentado nela.
+  private continueGame(): void {
+    if (this.leaving) return;
+    const checkpoint = loadGame(this.game);
+    // Sem descanso ainda, o checkpoint é a cela (não há lanterna para sentar).
+    const resting = checkpoint !== undefined && checkpoint.roomId !== 'prison-cell';
+    this.leaveTo(checkpoint ? { roomId: checkpoint.roomId, entryId: checkpoint.entryId, resting } : {});
+  }
+
+  private leaveTo(data: object): void {
     playSound(this, 'uiConfirm');
     this.leaving = true;
     this.cameras.main.fadeOut(FADE_MS, 4, 3, 8);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.scene.start('PrisonScene');
+      this.scene.start('PrisonScene', data);
     });
   }
 

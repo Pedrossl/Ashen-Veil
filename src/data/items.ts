@@ -40,20 +40,20 @@ export const ITEMS = {
 export const ITEM_IMAGES = {
   'bamboo-sword': {
     key: 'item-bamboo-sword',
-    path: 'assets/weapons/arma_espada_bambu.png',
+    path: 'assets/weapons/arma_espada_bambu.webp',
   },
   'dark-sword': {
     key: 'item-dark-sword',
-    path: 'assets/weapons/arma_espada_medieval_sombria.png',
+    path: 'assets/weapons/arma_espada_medieval_sombria.webp',
   },
   'veiled-ember-ampoule': {
     key: 'item-veiled-ember-ampoule',
-    path: 'assets/items/consumiveis/ampola_brasa_velada.png',
+    path: 'assets/items/consumiveis/ampola_brasa_velada.webp',
   },
   // Originais em 03_itens_e_armas/itens/aneis/anel_folego_velado/.
   'veiled-breath-ring': {
     key: 'item-veiled-breath-ring',
-    path: 'assets/items/aneis/item_anel_folego_velado_grande_128.png',
+    path: 'assets/items/aneis/item_anel_folego_velado_grande_128.webp',
   },
 } as const satisfies Partial<Record<string, { key: string; path: string }>>;
 
@@ -61,11 +61,11 @@ export const ITEM_IMAGES = {
 export const ITEM_ICONS = {
   'veiled-ember-ampoule': {
     key: 'icon-veiled-ember-ampoule',
-    path: 'assets/items/consumiveis/icone_ampola_brasa_velada.png',
+    path: 'assets/items/consumiveis/icone_ampola_brasa_velada.webp',
   },
   'veiled-breath-ring': {
     key: 'icon-veiled-breath-ring',
-    path: 'assets/items/aneis/item_anel_folego_velado_medio_64.png',
+    path: 'assets/items/aneis/item_anel_folego_velado_medio_64.webp',
   },
 } as const satisfies Partial<Record<string, { key: string; path: string }>>;
 

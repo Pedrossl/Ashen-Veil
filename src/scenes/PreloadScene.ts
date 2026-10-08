@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { MUSIC, LOCAL_AMBIENCE } from '../data/soundscape';
-import { AMBIENCE } from '../data/ambience';
 import { SOUND_EFFECTS, soundKey, soundPath, type SoundEffect } from '../data/audio';
 
 import {
@@ -26,6 +25,8 @@ import {
   PRISON_ATLAS_KEY,
 } from '../maps/prison/prisonKit';
 
+const LOADING_BAR = { width: 420, height: 6 } as const;
+
 export class PreloadScene extends Phaser.Scene {
   constructor() {
     super('PreloadScene');
@@ -33,35 +34,10 @@ export class PreloadScene extends Phaser.Scene {
 
   preload(): void {
     for (const track of [...Object.values(MUSIC), ...Object.values(LOCAL_AMBIENCE)]) this.load.audio(track.key, track.path);
-    for (const loop of Object.values(AMBIENCE)) this.load.audio(loop.key, loop.path);
     for (const effect of Object.keys(SOUND_EFFECTS) as SoundEffect[]) {
       this.load.audio(soundKey(effect), soundPath(effect));
     }
-    const { centerX, centerY } = this.cameras.main;
-
-    const progressTrack = this.add
-      .rectangle(centerX, centerY + 44, 280, 3, 0x2f2939)
-      .setOrigin(0.5);
-    const progressFill = this.add
-      .rectangle(centerX - 140, centerY + 44, 0, 3, 0x9a79c6)
-      .setOrigin(0, 0.5);
-    const loadingText = this.add
-      .text(centerX, centerY, 'Despertando sob as cinzas...', {
-        color: '#d8c9ff',
-        fontFamily: 'Georgia, serif',
-        fontSize: '24px',
-      })
-      .setOrigin(0.5);
-
-    this.load.on(Phaser.Loader.Events.PROGRESS, (progress: number) => {
-      progressFill.width = 280 * progress;
-    });
-
-    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
-      loadingText.destroy();
-      progressTrack.destroy();
-      progressFill.destroy();
-    });
+    this.showLoadingScreen();
 
     this.load.atlas(
       PRISON_ATLAS_KEY,
@@ -111,6 +87,62 @@ export class PreloadScene extends Phaser.Scene {
         frameHeight: PLAYER_SPRITE.frameHeight,
       });
     }
+  }
+
+  // Tela de carregamento: barra com porcentagem e contagem de arquivos, e um
+  // brilho pulsando para não parecer travado enquanto um arquivo grande baixa.
+  private showLoadingScreen(): void {
+    const { centerX, centerY } = this.cameras.main;
+    const width = LOADING_BAR.width;
+    const left = centerX - width / 2;
+    const barY = centerY + 40;
+
+    const title = this.add
+      .text(centerX, centerY - 60, 'ASHEN VEIL', {
+        color: '#d9c8f2',
+        fontFamily: 'Georgia, serif',
+        fontSize: '44px',
+        stroke: '#120a1c',
+        strokeThickness: 5,
+      })
+      .setOrigin(0.5);
+    const subtitle = this.add
+      .text(centerX, centerY, 'Despertando sob as cinzas...', {
+        color: '#9d90b4',
+        fontFamily: 'Georgia, serif',
+        fontSize: '18px',
+        fontStyle: 'italic',
+      })
+      .setOrigin(0.5);
+    const track = this.add
+      .rectangle(centerX, barY, width + 4, LOADING_BAR.height + 4, 0x0d0a12)
+      .setStrokeStyle(1, 0x5a4a70);
+    const fill = this.add
+      .rectangle(left, barY, 0, LOADING_BAR.height, 0x9a79c6)
+      .setOrigin(0, 0.5);
+    const glow = this.add
+      .rectangle(left, barY, 18, LOADING_BAR.height + 6, 0xe0c8ff, 0.5)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    const percent = this.add
+      .text(centerX, barY + 26, '0%', { color: '#cfc3e0', fontFamily: 'Georgia, serif', fontSize: '16px' })
+      .setOrigin(0.5);
+    const files = this.add
+      .text(centerX, barY + 50, '', { color: '#6f6680', fontFamily: 'Georgia, serif', fontSize: '13px' })
+      .setOrigin(0.5);
+
+    this.tweens.add({ targets: [subtitle, glow], alpha: { from: 0.35, to: 1 }, duration: 900, yoyo: true, repeat: -1 });
+
+    const update = (progress: number): void => {
+      fill.width = width * progress;
+      glow.x = left + width * progress;
+      percent.setText(`${Math.floor(progress * 100)}%`);
+      files.setText(`${this.load.totalComplete} de ${this.load.totalToLoad} arquivos`);
+    };
+    this.load.on(Phaser.Loader.Events.PROGRESS, update);
+    this.load.on(Phaser.Loader.Events.FILE_COMPLETE, () => update(this.load.progress));
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      [title, subtitle, track, fill, glow, percent, files].forEach((object) => object.destroy());
+    });
   }
 
   create(): void {

@@ -90,6 +90,9 @@ export class Player
   private action: PlayerAction = 'free';
   private readonly stats: PlayerState;
   private currentAttack?: AttackDefinition;
+  // O ataque pode ser cancelado por esquiva. Guardamos o listener para que a
+  // conclusão da animação interrompida não encerre uma esquiva futura.
+  private attackCompletion?: { event: string; handler: () => void };
   private swingId = 0;
   private isCriticalSwing = false;
   private lastUpdateAt?: number;
@@ -191,7 +194,11 @@ export class Player
 
   // Mostra na mão a arma equipada no PlayerState (chamar após equipar).
   refreshWeapon(): void {
-    this.weaponSocket.equip(this.stats.weapon.sprite, this.stats.weapon.bladeScale);
+    this.weaponSocket.equip(
+      this.stats.weapon.sprite,
+      this.stats.weapon.bladeScale,
+      this.stats.weapon.gripOriginY,
+    );
 
     if (this.isFree) {
       this.showIdlePose();
@@ -242,6 +249,15 @@ export class Player
 
     this.stats.stamina.update(elapsed, this.action === 'attack' || this.action === 'dodge');
     this.updateMotionEffects(body, elapsed);
+
+    // Uma esquiva corta o golpe em curso. Ela ainda precisa de stamina e usa
+    // os mesmos i-frames da esquiva iniciada parado.
+    if (this.action === 'attack') {
+      if (this.controls.justPressed('dodge')) {
+        this.dodge(body);
+      }
+      return;
+    }
 
     if (this.action === 'dodge') {
       this.updateDodge(body);
@@ -556,9 +572,15 @@ export class Player
     this.isCriticalSwing = rollCritical(this.stats.weapon);
     this.swingId += 1;
     this.startAction('attack', body);
-    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + animation, () =>
-      this.finishAction(),
-    );
+    const event = Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + animation;
+    const handler = (): void => {
+      this.attackCompletion = undefined;
+      if (this.action === 'attack') {
+        this.finishAction();
+      }
+    };
+    this.attackCompletion = { event, handler };
+    this.once(event, handler);
     this.play(animation);
     this.anims.timeScale = this.stats.weapon.attackSpeed ?? 1;
   }
@@ -569,10 +591,15 @@ export class Player
       return;
     }
 
+    const cancelsAttack = this.action === 'attack';
+    this.cancelAttack();
+
     const input = this.controls.horizontalAxis();
     const direction = input === 0 ? this.facing : input;
 
-    this.stats.stamina.spend(PLAYER_DODGE.staminaCost);
+    this.stats.stamina.spend(
+      cancelsAttack ? PLAYER_DODGE.attackCancelStaminaCost : PLAYER_DODGE.staminaCost,
+    );
     spawnDust(this.scene, this.x, this.y, direction, 7);
     this.setFlipX(direction < 0);
     this.action = 'dodge';
@@ -719,6 +746,16 @@ export class Player
     this.action = 'free';
     this.currentAttack = undefined;
     this.showIdlePose();
+  }
+
+  private cancelAttack(): void {
+    if (!this.attackCompletion) {
+      return;
+    }
+
+    this.off(this.attackCompletion.event, this.attackCompletion.handler);
+    this.attackCompletion = undefined;
+    this.currentAttack = undefined;
   }
 
   // Armado, fica em guarda segurando a arma; desarmado, respira parado.

@@ -5,10 +5,10 @@ import { EXPANSION_ATLASES, type ExpansionAtlas } from '../../data/prisonSprites
 
 // Peças da prisão recortadas do tileset medieval com fundo transparente.
 export const PRISON_ATLAS_KEY = 'prison-cell-atlas';
-export const PRISON_ATLAS_IMAGE_PATH = 'assets/prison/atlas_cela_prisao.png';
+export const PRISON_ATLAS_IMAGE_PATH = 'assets/prison/atlas_cela_prisao.webp';
 export const PRISON_ATLAS_DATA_PATH = 'assets/prison/atlas_cela_prisao.json';
 export const CELL_BED_KEY = 'cell-bed';
-export const CELL_BED_PATH = 'assets/prison/cama_cela_original.png';
+export const CELL_BED_PATH = 'assets/prison/cama_cela_original.webp';
 
 // Atlas da expansão e baú ficam em data/ (entidades também usam as chaves).
 export {

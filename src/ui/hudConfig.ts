@@ -2,7 +2,7 @@
 // (moldura ornamentada vazia, preenchimentos de vida e stamina e moldura de slots).
 export const HUD_ATLAS = {
   key: 'hud-atlas',
-  imagePath: 'assets/hud/atlas_hud.png',
+  imagePath: 'assets/hud/atlas_hud.webp',
   dataPath: 'assets/hud/atlas_hud.json',
 } as const;
 

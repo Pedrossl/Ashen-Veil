@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { startSoundscape } from '../systems/Soundscape';
-import { startAmbience } from '../systems/Ambience';
 
 import { Controls } from '../core/controls';
 import { GAME_EVENTS } from '../core/gameEvents';
@@ -21,6 +20,7 @@ import { GroundMessageSystem } from '../systems/GroundMessageSystem';
 import { InteractionSystem } from '../systems/InteractionSystem';
 import { nextWeaponId, ownedWeaponIds, weaponIdForItem } from '../systems/Equipment';
 import { PlayerState } from '../systems/PlayerState';
+import { saveGame } from '../systems/SaveGame';
 import { applyItemEffect } from '../systems/Rewards';
 import { TerrainSystem } from '../systems/TerrainSystem';
 import { WorldState } from '../systems/WorldState';
@@ -72,10 +72,20 @@ export class PrisonScene extends Phaser.Scene {
     const controls = new Controls(keyboard);
     this.controls = controls;
 
-    const onPickup = (): void => playSound(this, 'pickup');
+    // Salva um instante depois: o item entra no inventário antes de a arma ser
+    // equipada (ou o anel aplicado), e a flag do boss é gravada após o evento.
+    const onPickup = (): void => {
+      playSound(this, 'pickup');
+      this.time.delayedCall(100, () => saveGame(this.game));
+    };
+    const onBossDefeated = (): void => {
+      this.time.delayedCall(100, () => saveGame(this.game));
+    };
     this.game.events.on(INVENTORY_ITEM_ADDED, onPickup);
+    this.game.events.on(GAME_EVENTS.bossDefeated, onBossDefeated);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off(INVENTORY_ITEM_ADDED, onPickup);
+      this.game.events.off(GAME_EVENTS.bossDefeated, onBossDefeated);
     });
     if (data.resting) playSound(this, 'rest');
     this.isTransitioning = false;
@@ -133,10 +143,11 @@ export class PrisonScene extends Phaser.Scene {
     this.groundMessages = new GroundMessageSystem(this, this.room.groundMessages ?? []);
 
     this.setUpCamera(this.room, this.player);
-    startAmbience(this, roomId);
     startSoundscape(this, roomId);
     this.announceFirstVisit(roomId, this.room);
     this.watchForDemoEnd();
+    // Toda chegada numa sala (troca de sala, descanso, renascimento) salva.
+    saveGame(this.game);
   }
 
   private isDemoOver(): boolean {

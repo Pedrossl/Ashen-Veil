@@ -5,6 +5,10 @@ import './styles.css';
 
 const game = new Phaser.Game(gameConfig);
 
+// O aviso do index.html cobre o download do código; a partir daqui o
+// PreloadScene mostra a barra de carregamento.
+game.events.once(Phaser.Core.Events.READY, () => document.getElementById('boot-loading')?.remove());
+
 // Tab abre o inventário: não deixa o navegador tirar o foco do jogo, mesmo em
 // scenes sem tecla capturada (o Esc de sair da tela cheia o navegador não deixa
 // bloquear).

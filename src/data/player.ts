@@ -41,6 +41,8 @@ export const PLAYER_CLIMB = {
 // Rolamento: impulso curto com invulnerabilidade no meio do giro.
 export const PLAYER_DODGE = {
   staminaCost: 25,
+  // Cortar um golpe em curso é forte: custa mais do que uma esquiva normal.
+  attackCancelStaminaCost: 40,
   speed: 390,
   // Agacha, enrola, gira, apoia, levanta, passada (ms por quadro).
   frameDurations: [60, 80, 85, 85, 90, 80],
@@ -115,35 +117,35 @@ export const PLAYER_SPRITE = {
   sheets: {
     death: {
       key: 'player-death-sheet',
-      path: 'assets/player/sprite_sheet_jogador_morte.png',
+      path: 'assets/player/sprite_sheet_jogador_morte.webp',
     },
     walk: {
       key: 'player-walk-sheet',
-      path: 'assets/player/sprite_sheet_jogador_caminhada.png',
+      path: 'assets/player/sprite_sheet_jogador_caminhada.webp',
     },
     unarmedAttack: {
       key: 'player-unarmed-attack-sheet',
-      path: 'assets/player/sprite_sheet_jogador_soco.png',
+      path: 'assets/player/sprite_sheet_jogador_soco.webp',
     },
     pickup: {
       key: 'player-pickup-sheet',
-      path: 'assets/player/sprite_sheet_jogador_coleta.png',
+      path: 'assets/player/sprite_sheet_jogador_coleta.webp',
     },
     dodge: {
       key: 'player-dodge-sheet',
-      path: 'assets/player/sprite_sheet_jogador_rolamento.png',
+      path: 'assets/player/sprite_sheet_jogador_rolamento.webp',
     },
     // Idle natural desarmado (05_documentacao/personagem/IDLE_NATURAL.md),
     // 8 quadros normalizados e alinhados pelos pés plantados.
     idle: {
       key: 'player-idle-sheet',
-      path: 'assets/player/sprite_sheet_jogador_idle.png',
+      path: 'assets/player/sprite_sheet_jogador_idle.webp',
     },
     // Sentar e levantar na lanterna (05_documentacao/personagem/DESCANSO_NA_LANTERNA.md),
     // normalizada para os quadros do jogador; sem encaixe de arma, ela some.
     rest: {
       key: 'player-rest-sheet',
-      path: 'assets/player/sprite_sheet_jogador_descanso.png',
+      path: 'assets/player/sprite_sheet_jogador_descanso.webp',
     },
     // Subindo a escada de madeira de costas (ciclo de 05_documentacao/personagem/
     // ESCADA_MADEIRA_PAREDE.md), normalizada para os quadros do jogador.
@@ -151,23 +153,23 @@ export const PLAYER_SPRITE = {
     // andando, ele usa a caminhada com a ampola na mão.
     drink: {
       key: 'player-drink-sheet',
-      path: 'assets/player/sprite_sheet_jogador_cura.png',
+      path: 'assets/player/sprite_sheet_jogador_cura.webp',
     },
     climb: {
       key: 'player-climb-sheet',
-      path: 'assets/player/sprite_sheet_jogador_escada.png',
+      path: 'assets/player/sprite_sheet_jogador_escada.webp',
     },
     // Arrastado para baixo da terra: a saída da escada de corda
     // (public/assets/player/escada_corda/saida_8_frames.png) invertida, de pé
     // até só o tronco para fora; tocada ao contrário, ele sai do buraco.
     dragged: {
       key: 'player-dragged-sheet',
-      path: 'assets/player/sprite_sheet_jogador_arrastado.png',
+      path: 'assets/player/sprite_sheet_jogador_arrastado.webp',
     },
     // Corpo sem arma; a arma é desenhada por cima pelo WeaponSocket.
     swordAttack: {
       key: 'player-sword-attack-sheet',
-      path: 'assets/player/sprite_sheet_jogador_espada.png',
+      path: 'assets/player/sprite_sheet_jogador_espada.webp',
     },
   },
 } as const;
