@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { playSound } from '../../systems/SoundEffects';
 
 import { Health } from '../../components/Health';
 import { MotionTrail, spawnDust } from '../../components/MotionTrail';
@@ -15,6 +16,7 @@ import type {
   Damageable,
   Hit,
 } from '../../systems/CombatSystem';
+import type { EnemyTarget } from '../enemies/MeleeEnemy';
 import { SpectralScythe } from './SpectralScythe';
 
 const PHASE_TWO = BOSS.phaseTwo;
@@ -61,14 +63,14 @@ export class ReaperKing
 {
   readonly faction = 'enemy' as const;
   readonly health = new Health(BOSS.maxHealth);
-  private state: BossState = 'dormant';
+  private behavior: BossState = 'dormant';
   private stateTimeLeft = 0;
   private phase: AttackPhase = 'windup';
   private phaseTimeLeft = 0;
   private currentAttack?: BossAttackDefinition;
   private swingId = 0;
   private direction: -1 | 1 = -1;
-  private target?: Phaser.GameObjects.Sprite;
+  private target?: EnemyTarget;
   private readonly aura: Phaser.GameObjects.Ellipse;
   private readonly baseY: number;
   private isPhaseTwo = false;
@@ -129,10 +131,10 @@ export class ReaperKing
 
   // Sumido no meio do teleporte, não pode ser atingido.
   get isInvulnerable(): boolean {
-    return this.state === 'hidden' || this.state === 'dormant';
+    return this.behavior === 'hidden' || this.behavior === 'dormant';
   }
 
-  setTarget(target: Phaser.GameObjects.Sprite): void {
+  setTarget(target: EnemyTarget): void {
     this.target = target;
   }
 
@@ -147,7 +149,7 @@ export class ReaperKing
   }
 
   getActiveAttack(): ActiveAttack | undefined {
-    if (!this.currentAttack || (this.state !== 'slash' && this.state !== 'throw')) {
+    if (!this.currentAttack || (this.behavior !== 'slash' && this.behavior !== 'throw')) {
       return undefined;
     }
 
@@ -171,7 +173,7 @@ export class ReaperKing
 
     if (!this.isAlive) {
       this.die();
-    } else if (this.state === 'dormant') {
+    } else if (this.behavior === 'dormant') {
       this.awaken();
     } else if (
       !this.isPhaseTwo &&
@@ -186,13 +188,13 @@ export class ReaperKing
     this.scythe?.update(delta);
     this.updateMotionEffects(delta);
 
-    if (this.state === 'dead' || !this.target) {
+    if (this.behavior === 'dead' || !this.target) {
       return;
     }
 
     this.stateTimeLeft -= delta;
 
-    switch (this.state) {
+    switch (this.behavior) {
       case 'dormant':
         if (this.target.x >= BOSS.awakenX) {
           this.awaken();
@@ -233,15 +235,15 @@ export class ReaperKing
   // Rastro roxo em todo deslocamento rápido e no golpe; poeira ao correr.
   private updateMotionEffects(delta: number): void {
     const moving =
-      this.state === 'run' ||
-      this.state === 'glide' ||
-      this.state === 'vanish' ||
-      this.state === 'appear' ||
-      (this.state === 'slash' && this.phase === 'active') ||
-      (this.isPhaseTwo && this.state === 'enrage');
+      this.behavior === 'run' ||
+      this.behavior === 'glide' ||
+      this.behavior === 'vanish' ||
+      this.behavior === 'appear' ||
+      (this.behavior === 'slash' && this.phase === 'active') ||
+      (this.isPhaseTwo && this.behavior === 'enrage');
 
     // Na segunda fase o rastro nunca desliga: o corpo tremeluz em roxo.
-    this.trail.setEnabled(moving || (this.isPhaseTwo && this.state !== 'hidden'));
+    this.trail.setEnabled(moving || (this.isPhaseTwo && this.behavior !== 'hidden'));
     this.trail.setConfig(
       this.isPhaseTwo
         ? { intervalMs: moving ? 40 : 110, lifetimeMs: moving ? 480 : 600, alpha: moving ? 0.6 : 0.35 }
@@ -249,7 +251,7 @@ export class ReaperKing
     );
     this.trail.update(delta);
 
-    if (this.state === 'run') {
+    if (this.behavior === 'run') {
       this.dustTimer += delta;
 
       if (this.dustTimer >= 160) {
@@ -266,14 +268,15 @@ export class ReaperKing
 
   // Metade da vida: urra, explode em fumaça e passa a brilhar mais forte.
   private enterPhaseTwo(): void {
+    playSound(this.scene, 'reaperPhase', this);
     this.isPhaseTwo = true;
 
-    if (this.state === 'hidden' || this.state === 'vanish' || this.state === 'appear') {
+    if (this.behavior === 'hidden' || this.behavior === 'vanish' || this.behavior === 'appear') {
       this.scene.tweens.killTweensOf(this);
       this.setAlpha(1);
     }
 
-    this.state = 'enrage';
+    this.behavior = 'enrage';
     this.stateTimeLeft = PHASE_TWO.enrageMs;
     this.currentAttack = undefined;
     this.faceTarget();
@@ -330,7 +333,7 @@ export class ReaperKing
 
   // Arremesso giratório (só na segunda fase): carrega, solta e flutua sem a foice.
   private startFling(): void {
-    this.state = 'fling';
+    this.behavior = 'fling';
     this.flingReleased = false;
     this.stateTimeLeft = FLING.windupMs / this.speed;
     this.faceTarget();
@@ -354,6 +357,7 @@ export class ReaperKing
   }
 
   private releaseScythe(): void {
+    playSound(this.scene, 'reaperThrow', this);
     const hand = this.handPosition();
 
     this.scythe = new SpectralScythe(this.scene, {
@@ -369,7 +373,7 @@ export class ReaperKing
     this.combat?.addAttacker(this.scythe);
 
     // De mão vazia (último quadro do arremesso), flutua pela arena.
-    this.state = 'glide';
+    this.behavior = 'glide';
     this.glideTime = 0;
     this.setFrame(SPRITE.animations.throwScythe.end);
   }
@@ -396,7 +400,7 @@ export class ReaperKing
 
     this.y = this.baseY;
 
-    if (this.state === 'glide') {
+    if (this.behavior === 'glide') {
       this.enterIdle();
     }
   }
@@ -407,7 +411,8 @@ export class ReaperKing
 
   // Ergue a foice com a aura (quadro de invocação) e mostra a barra de vida.
   private awaken(): void {
-    this.state = 'intro';
+    playSound(this.scene, 'reaperWake', this);
+    this.behavior = 'intro';
     this.stateTimeLeft = BOSS.introMs;
     this.faceTarget();
     this.stop();
@@ -447,7 +452,7 @@ export class ReaperKing
   }
 
   private enterIdle(): void {
-    this.state = 'idle';
+    this.behavior = 'idle';
     this.stateTimeLeft = (BOSS.cooldownMs + Math.random() * BOSS.cooldownJitterMs) / this.speed;
     this.currentAttack = undefined;
     this.faceTarget();
@@ -455,7 +460,7 @@ export class ReaperKing
   }
 
   private startRun(): void {
-    this.state = 'run';
+    this.behavior = 'run';
     this.stateTimeLeft = BOSS.maxRunMs;
     this.faceTarget();
     this.playAnimation('run');
@@ -474,7 +479,7 @@ export class ReaperKing
   }
 
   private startAttack(kind: 'slash' | 'throw'): void {
-    this.state = kind;
+    this.behavior = kind;
     this.currentAttack = kind === 'slash' ? BOSS.slash : BOSS.throwScythe;
     this.swingId += 1;
     this.faceTarget();
@@ -489,8 +494,9 @@ export class ReaperKing
       return;
     }
 
-    const frames = this.state === 'slash' ? SLASH_FRAMES : THROW_FRAMES;
+    const frames = this.behavior === 'slash' ? SLASH_FRAMES : THROW_FRAMES;
     this.phase = phase;
+    if (phase === 'active') playSound(this.scene, this.behavior === 'slash' ? 'reaperSlash' : 'reaperThrow', this);
     const duration =
       phase === 'windup' ? attack.windupMs : phase === 'active' ? attack.activeMs : attack.recoveryMs;
     this.phaseTimeLeft = duration / this.speed;
@@ -509,7 +515,7 @@ export class ReaperKing
 
     // Na segunda metade do aviso, troca para o quadro mais carregado.
     if (this.phase === 'windup' && this.phaseTimeLeft < attack.windupMs / this.speed / 2) {
-      const frames = this.state === 'slash' ? SLASH_FRAMES : THROW_FRAMES;
+      const frames = this.behavior === 'slash' ? SLASH_FRAMES : THROW_FRAMES;
       this.setFrame(frames.windup[1]);
     }
 
@@ -528,7 +534,8 @@ export class ReaperKing
 
   // Some numa nuvem roxa e reaparece perto do jogador, às vezes às costas.
   private startTeleport(): void {
-    this.state = 'vanish';
+    playSound(this.scene, 'reaperTeleport', this);
+    this.behavior = 'vanish';
     this.stop();
     this.setFrame(SPRITE.animations.summon.start);
     this.spawnSmoke(this.x, this.y);
@@ -538,14 +545,14 @@ export class ReaperKing
       duration: TELEPORT.fadeMs / this.speed,
       ease: 'Quad.In',
       onComplete: () => {
-        this.state = 'hidden';
+        this.behavior = 'hidden';
         this.stateTimeLeft = TELEPORT.hiddenMs / this.speed;
       },
     });
   }
 
   private updateTeleport(): void {
-    if (this.state !== 'hidden' || this.stateTimeLeft > 0) {
+    if (this.behavior !== 'hidden' || this.stateTimeLeft > 0) {
       return;
     }
 
@@ -555,7 +562,8 @@ export class ReaperKing
       this.config.minX,
       this.config.maxX,
     );
-    this.state = 'appear';
+    this.behavior = 'appear';
+    playSound(this.scene, 'reaperTeleport', this);
     this.faceTarget();
     this.spawnSmoke(this.x, this.y);
     this.scene.tweens.add({
@@ -569,7 +577,8 @@ export class ReaperKing
   }
 
   private die(): void {
-    this.state = 'dead';
+    playSound(this.scene, 'reaperDeath', this);
+    this.behavior = 'dead';
     this.currentAttack = undefined;
     this.y = this.baseY;
     this.phaseTwoMotes?.remove();

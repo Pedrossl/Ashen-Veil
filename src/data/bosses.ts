@@ -13,6 +13,7 @@ export type BossAttackDefinition = {
 export const REAPER_KING = {
   id: 'reaper-king',
   name: 'Rei Ceifador',
+  defeatedFlag: 'boss-defeated:reaper-king',
   maxHealth: 320,
   runSpeed: 290,
   // O boss desperta quando o jogador passa desta linha da arena.
@@ -78,3 +79,84 @@ export const REAPER_KING = {
   slash: BossAttackDefinition;
   throwScythe: BossAttackDefinition;
 } & Record<string, unknown>;
+
+// Raiz dos Condenados (05_documentacao/bosses/RAIZ_DOS_CONDENADOS.md). Golpes
+// em quadros da animação (o manifesto define os ativos); números provisórios.
+export const ROOT_OF_CONDEMNED = {
+  id: 'root-of-condemned',
+  name: 'Raiz dos Condenados',
+  defeatedFlag: 'boss-defeated:root-of-condemned',
+  // Vencida na arena: +1 carga de ampola. Vencida no Fosso Afogado (luta mais
+  // difícil): +2 cargas e o Anel do Fôlego Velado.
+  rewards: {
+    normal: { ampoules: 1, items: [] },
+    drowned: { ampoules: 2, items: ['veiledBreathRing'] },
+  },
+  maxHealth: 420,
+  crawlSpeed: 110,
+  // Desperta (emerge do ninho) quando o jogador passa desta linha.
+  awakenX: 800,
+  hurtbox: { width: 320, height: 220 },
+  // Alcances horizontais (centro a centro).
+  biteRange: 290,
+  sweepRange: 380,
+  cageRange: 300,
+  spitMinRange: 460,
+  // Pausa entre decisões; a fase 3 encurta só esta pausa, nunca os avisos.
+  cooldownMs: 700,
+  cooldownJitterMs: 500,
+  maxCrawlMs: 1800,
+  // Pausa depois de se virar no fim da varredura (janela para bater de novo).
+  turnAfterSweepMs: 550,
+  // Fase 2 abaixo de 65% (travessia e cárcere), fase 3 abaixo de 30%.
+  phaseTwoRatio: 0.65,
+  phaseThreeRatio: 0.3,
+  phaseThreeCooldownFactor: 0.7,
+  burrowChance: 0.3,
+  cageChance: 0.35,
+  // Mordida à frente; varredura atrás (pega quem fica nas costas).
+  bite: { damage: 30, hitbox: { forward: 50, up: 220, width: 240, height: 200 } },
+  sweep: { damage: 24, hitbox: { forward: -410, up: 190, width: 460, height: 170 } },
+  // Cárcere: estacas dos dois lados, com zona segura colada ao corpo.
+  cage: { damage: 26, safeHalfWidth: 90, reach: 420, height: 280 },
+  spit: {
+    damage: 22,
+    mouth: { forward: 190, up: 150 },
+    speed: 520,
+    lift: 420,
+    gravity: 900,
+  },
+  // Travessia: o rastro persegue o jogador, para e trava o destino antes da erupção.
+  burrow: {
+    chaseMs: 1700,
+    trailSpeed: 260,
+    lockMs: 800,
+    damage: 26,
+    eruptionWidth: 300,
+    eruptionHeight: 250,
+  },
+  // Raízes no corpo: cada golpe do chão que conecta (estacas do Cárcere e
+  // erupção) enche a barra verde do jogador; cheia, a Raiz o arrasta para o
+  // fosso alagado. Só existe da fase 2 em diante (é quando esses golpes
+  // aparecem), então ela nunca começa a luta afogada, e acontece uma vez.
+  drowning: {
+    max: 100,
+    perHit: 35,
+    decayDelayMs: 5000,
+    decayPerSecond: 6,
+    // Fade verde antes de chegar ao fosso.
+    dragMs: 700,
+    // No fosso ela volta com a vida cheia, mas fica frágil: 420 / 1,6 ≈ 262
+    // de vida efetiva, o mesmo que restava no começo da fase 2; quanto mais
+    // tarde o jogador se deixar arrastar, mais ele perde.
+    damageTakenFactor: 1.6,
+    // Mais rápida em tudo: rastejo, pausas e animações (os avisos encurtam
+    // pouco, para continuar legível); o jogador anda devagar na água, mas o
+    // rolamento não perde velocidade.
+    crawlSpeedFactor: 1.5,
+    cooldownFactor: 0.55,
+    animationSpeed: 1.15,
+    waterSpeedFactor: 0.55,
+    glowTint: 0x9dffb0,
+  },
+} as const;

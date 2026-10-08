@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { ENEMY_AUDIO } from '../../data/enemyAudio';
+import { playSound } from '../../systems/SoundEffects';
 
 import { spawnGroundImpact, spawnSwingArc } from '../../components/AttackEffects';
 import { Health } from '../../components/Health';
@@ -12,9 +14,11 @@ import type { EnemyAnimation, EnemySpriteDefinition } from '../../data/enemySpri
 import type {
   ActiveAttack,
   Attacker,
+  CombatSystem,
   Damageable,
   Hit,
 } from '../../systems/CombatSystem';
+import { SludgeBall } from './SludgeBall';
 
 // Comportamento fora de combate: arrasta-se devagar entre dois pontos.
 const PATROL = {
@@ -60,6 +64,9 @@ export type EnemyKind = keyof typeof ENEMIES;
 
 const attackAnimationKey = (sprite: EnemySpriteDefinition, attack: AttackDefinition): string =>
   `${sprite.key}-${attack.animation}-timed`;
+const ALERT_JITTER_MS = 250;
+const FACE_DEAD_ZONE = 18;
+const ENGAGE_SPREAD = 40;
 // Diferença de altura acima da qual o alvo está em outro andar e é ignorado.
 const SAME_FLOOR_TOLERANCE = 90;
 
@@ -86,7 +93,7 @@ export class MeleeEnemy
   private readonly sprite: EnemySpriteDefinition;
   // Alcance do golpe mais longo: a partir daí ele já para e ataca.
   private readonly maxAttackRange: number;
-  private state: EnemyState = 'idle';
+  private behavior: EnemyState = 'idle';
   private stateTimeLeft = 0;
   private direction: -1 | 1;
   private target?: EnemyTarget;
@@ -95,6 +102,13 @@ export class MeleeEnemy
   private attackElapsedMs = 0;
   private attackCooldownMs = 0;
   private swingId = 0;
+  private combat?: CombatSystem;
+  // Outro inimigo colado à esquerda/direita neste quadro (avisado pela scene).
+  private crowdedLeft = false;
+  private crowdedRight = false;
+  // Cada um para a uma distância um pouco diferente do alvo, para o grupo
+  // não se amontoar no mesmo ponto.
+  private readonly engageOffset = Phaser.Math.Between(0, ENGAGE_SPREAD);
   private readonly trail: MotionTrail;
 
   constructor(
@@ -130,6 +144,21 @@ export class MeleeEnemy
     this.enterIdle();
   }
 
+  // A scene avisa, a cada quadro, se há outro inimigo colado de cada lado.
+  setCrowding(left: boolean, right: boolean): void {
+    this.crowdedLeft = left;
+    this.crowdedRight = right;
+  }
+
+  private get isBlockedAhead(): boolean {
+    return this.direction > 0 ? this.crowdedRight : this.crowdedLeft;
+  }
+
+  // Largura do corpo, usada para separar inimigos que se amontoam.
+  get bodyWidth(): number {
+    return this.definition.hurtbox.width;
+  }
+
   get isAlive(): boolean {
     return !this.health.isDepleted;
   }
@@ -142,8 +171,13 @@ export class MeleeEnemy
     this.target = target;
   }
 
+  // Inimigos que arremessam precisam registrar os projéteis no combate.
+  attachCombat(combat: CombatSystem): void {
+    this.combat = combat;
+  }
+
   getActiveAttack(): ActiveAttack | undefined {
-    if (this.state !== 'attack') {
+    if (this.behavior !== 'attack' || this.currentAttack.projectile) {
       return undefined;
     }
 
@@ -174,7 +208,7 @@ export class MeleeEnemy
       return;
     }
 
-    const isAttacking = this.state === 'attack';
+    const isAttacking = this.behavior === 'attack';
     const chance = isAttacking
       ? this.definition.staggerChanceWhileAttacking
       : this.definition.staggerChance;
@@ -185,7 +219,7 @@ export class MeleeEnemy
     }
 
     // Aguentou o golpe: só pisca. Se estava distraído, vira e parte para cima.
-    if (this.state === 'idle' || this.state === 'walk' || this.state === 'alert') {
+    if (this.behavior === 'idle' || this.behavior === 'walk' || this.behavior === 'alert') {
       this.direction = hit.direction === 1 ? -1 : 1;
       this.setFacing(this.direction);
       this.enterChase();
@@ -195,10 +229,10 @@ export class MeleeEnemy
   update(delta: number): void {
     this.stateTimeLeft -= delta;
     this.attackCooldownMs = Math.max(0, this.attackCooldownMs - delta);
-    this.trail.setEnabled(this.state === 'attack' && this.attackPhase === 'active');
+    this.trail.setEnabled(this.behavior === 'attack' && this.attackPhase === 'active');
     this.trail.update(delta);
 
-    switch (this.state) {
+    switch (this.behavior) {
       case 'dead':
         return;
       case 'hit':
@@ -226,7 +260,7 @@ export class MeleeEnemy
       return;
     }
 
-    if (this.state === 'idle') {
+    if (this.behavior === 'idle') {
       if (this.stateTimeLeft <= 0) {
         this.enterWalk();
       }
@@ -235,7 +269,9 @@ export class MeleeEnemy
 
     const reachedEnd =
       (this.direction < 0 && this.x <= this.config.patrolMinX) ||
-      (this.direction > 0 && this.x >= this.config.patrolMaxX);
+      (this.direction > 0 && this.x >= this.config.patrolMaxX) ||
+      // Outro inimigo no caminho: dá meia-volta em vez de trombar.
+      this.isBlockedAhead;
 
     if (reachedEnd) {
       this.direction = this.direction < 0 ? 1 : -1;
@@ -281,7 +317,19 @@ export class MeleeEnemy
 
     this.faceTarget();
 
-    if (this.distanceToTarget() <= this.maxAttackRange) {
+    const inRange = this.distanceToTarget() <= Math.max(
+      this.maxAttackRange * 0.6,
+      this.maxAttackRange - this.engageOffset,
+    );
+
+    // Com outro inimigo colado na frente, espera a vez em vez de empurrar.
+    if (!inRange && this.isBlockedAhead) {
+      this.setVelocityX(0);
+      this.playAnimation('idle');
+      return;
+    }
+
+    if (inRange) {
       this.setVelocityX(0);
 
       if (this.attackCooldownMs <= 0) {
@@ -317,6 +365,9 @@ export class MeleeEnemy
     }
 
     if (this.attackPhase === 'active' && previousPhase === 'windup') {
+      const sound = this.config.kind === 'chainedPrisoner' && this.currentAttack.animation === 'smash'
+        ? 'chainSmash' : ENEMY_AUDIO[this.config.kind].attack;
+      playSound(this.scene, sound, this);
       this.releaseAttack();
     }
 
@@ -344,6 +395,11 @@ export class MeleeEnemy
     const { hitbox, motion } = this.currentAttack;
     const reachX = this.x + this.direction * (hitbox.forward + hitbox.width / 2);
     spawnDust(this.scene, this.x, this.y, this.direction, 4);
+    this.throwProjectile();
+
+    if (motion.effect === 'none') {
+      return;
+    }
 
     if (motion.effect === 'sweep-arc') {
       spawnSwingArc(this.scene, {
@@ -378,15 +434,17 @@ export class MeleeEnemy
   }
 
   private enterAlert(): void {
-    this.state = 'alert';
-    this.stateTimeLeft = this.definition.alertMs;
+    this.behavior = 'alert';
+    playSound(this.scene, ENEMY_AUDIO[this.config.kind].alert, this);
+    // Atraso individual: em grupo, cada um parte para cima num momento diferente.
+    this.stateTimeLeft = this.definition.alertMs + Phaser.Math.Between(0, ALERT_JITTER_MS);
     this.setVelocityX(0);
     this.faceTarget();
     this.playAnimation('idle');
   }
 
   private enterChase(): void {
-    this.state = 'chase';
+    this.behavior = 'chase';
   }
 
   // Entre os golpes que alcançam, `closeAttackChance` decide se prefere o de
@@ -407,7 +465,7 @@ export class MeleeEnemy
 
   private enterAttack(attack: AttackDefinition): void {
     this.currentAttack = attack;
-    this.state = 'attack';
+    this.behavior = 'attack';
     this.attackPhase = 'windup';
     this.attackElapsedMs = 0;
     this.swingId += 1;
@@ -447,7 +505,14 @@ export class MeleeEnemy
       return;
     }
 
-    const direction = this.target.x < this.x ? -1 : 1;
+    const dx = this.target.x - this.x;
+
+    // Com o alvo quase em cima, não fica virando de um lado para o outro.
+    if (Math.abs(dx) < FACE_DEAD_ZONE) {
+      return;
+    }
+
+    const direction = dx < 0 ? -1 : 1;
 
     if (direction !== this.direction) {
       this.direction = direction;
@@ -457,7 +522,7 @@ export class MeleeEnemy
 
   // Vira para quem bateu e recua com o impacto, preso no atordoamento.
   private enterHit(direction: 1 | -1): void {
-    this.state = 'hit';
+    this.behavior = 'hit';
     this.stateTimeLeft = this.definition.hitStunMs;
     // Apanhar também reinicia a pausa entre golpes, para não revidar no ato.
     this.attackCooldownMs = this.currentAttack.cooldownMs;
@@ -468,20 +533,48 @@ export class MeleeEnemy
   }
 
   private enterDeath(): void {
-    this.state = 'dead';
+    this.behavior = 'dead';
+    playSound(this.scene, ENEMY_AUDIO[this.config.kind].death, this);
     this.setVelocityX(0);
     this.playAnimation('death');
   }
 
+  // Arremesso: a bola sai da mão e segue em arco na direção do alvo.
+  private throwProjectile(): void {
+    const projectile = this.currentAttack.projectile;
+
+    if (!projectile || !this.combat) {
+      return;
+    }
+
+    const { hand, speed, lift, gravity } = projectile;
+    const distance = this.target ? Math.abs(this.target.x - this.x) : speed;
+    // Ajusta a velocidade horizontal para a bola cair perto do alvo.
+    const flightTime = (2 * lift) / gravity;
+    const velocityX = Math.min(speed, distance / flightTime) * this.direction;
+
+    new SludgeBall(this.scene, {
+      x: this.x + this.direction * hand.forward,
+      y: this.y - hand.up,
+      velocityX,
+      velocityY: -lift,
+      gravity,
+      damage: this.currentAttack.damage,
+      // Piso onde ele está agora (não o de nascimento): a bola cai até ali.
+      floorY: Math.max(this.y, this.target?.y ?? this.y),
+      combat: this.combat,
+    });
+  }
+
   private enterIdle(): void {
-    this.state = 'idle';
+    this.behavior = 'idle';
     this.stateTimeLeft = Phaser.Math.Between(PATROL.pauseMinMs, PATROL.pauseMaxMs);
     this.setVelocityX(0);
     this.playAnimation('idle');
   }
 
   private enterWalk(): void {
-    this.state = 'walk';
+    this.behavior = 'walk';
     this.setFacing(this.direction);
     this.setVelocityX(this.definition.moveSpeed * PATROL.speedFactor * this.direction);
     this.playAnimation('walk');

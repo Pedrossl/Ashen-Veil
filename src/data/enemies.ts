@@ -1,6 +1,8 @@
 import type { HitboxDefinition } from './combat';
 import {
   CHAINED_PRISONER_SPRITE,
+  SHACKLE_RAT_SPRITE,
+  SLUDGE_SUPPLICANT_SPRITE,
   VEIL_JAILER_SPRITE,
   type EnemySpriteDefinition,
 } from './enemySprites';
@@ -22,10 +24,18 @@ export type EnemyAttackDefinition = {
   cooldownJitterMs: number;
   // Sensação de peso: recua um pouco no aviso e avança no acerto (velocidade
   // inicial, que cai até zero no fim da fase). `effect` é o rastro do golpe.
+  // Golpe à distância: no início do acerto solta um projétil em arco, saindo
+  // da mão (relativa aos pés), em vez de usar a hitbox.
+  projectile?: {
+    hand: { forward: number; up: number };
+    speed: number;
+    lift: number;
+    gravity: number;
+  };
   motion: {
     windupDrawBackSpeed: number;
     lungeSpeed: number;
-    effect: 'sweep-arc' | 'ground-smash';
+    effect: 'sweep-arc' | 'ground-smash' | 'none';
   };
 };
 
@@ -98,6 +108,69 @@ export const ENEMIES = {
       },
     },
     closeAttackChance: 0.6,
+  },
+  // Inimigo de enxame (05_documentacao/inimigos/RATO_DO_GRILHAO.md): frágil,
+  // rápido em trajetos curtos, morde de perto e quase sempre se interrompe.
+  shackleRat: {
+    id: 'shackle-rat',
+    name: 'Rato do Grilhão',
+    sprite: SHACKLE_RAT_SPRITE,
+    maxHealth: 14,
+    moveSpeed: 160,
+    detectionRange: 240,
+    loseInterestRange: 420,
+    alertMs: 220,
+    hitStunMs: 260,
+    staggerChance: 0.9,
+    staggerChanceWhileAttacking: 0.6,
+    hurtbox: { width: 70, height: 42 },
+    attacks: {
+      bite: {
+        animation: 'bite',
+        damage: 6,
+        range: 75,
+        windupMs: 300,
+        activeMs: 210,
+        recoveryMs: 450,
+        hitbox: { forward: 10, up: 48, width: 70, height: 48 },
+        cooldownMs: 700,
+        cooldownJitterMs: 600,
+        motion: { windupDrawBackSpeed: 25, lungeSpeed: 380, effect: 'none' },
+      },
+    },
+    closeAttackChance: 0,
+  },
+  // Suplicante do Lodo: lento e frágil de perto, mas arremessa bolas de lodo
+  // em arco de longe. Fica parado arremessando quando o jogador está no alcance.
+  sludgeSupplicant: {
+    id: 'sludge-supplicant',
+    name: 'Suplicante do Lodo',
+    sprite: SLUDGE_SUPPLICANT_SPRITE,
+    maxHealth: 45,
+    moveSpeed: 45,
+    detectionRange: 520,
+    loseInterestRange: 700,
+    alertMs: 500,
+    hitStunMs: 300,
+    staggerChance: 0.5,
+    staggerChanceWhileAttacking: 0.3,
+    hurtbox: { width: 60, height: 140 },
+    attacks: {
+      throw: {
+        animation: 'throw',
+        damage: 12,
+        range: 430,
+        windupMs: 700,
+        activeMs: 160,
+        recoveryMs: 650,
+        hitbox: { forward: 0, up: 0, width: 0, height: 0 },
+        cooldownMs: 1200,
+        cooldownJitterMs: 800,
+        projectile: { hand: { forward: 70, up: 90 }, speed: 360, lift: 380, gravity: 900 },
+        motion: { windupDrawBackSpeed: 0, lungeSpeed: 0, effect: 'none' },
+      },
+    },
+    closeAttackChance: 0,
   },
   // Inimigo pesado da prisão (05_documentacao/inimigos/CARCEREIRO_DO_VEU.md):
   // lento, não corre, quase não se interrompe e tem um golpe só, forte, com
