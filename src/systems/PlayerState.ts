@@ -49,6 +49,11 @@ export class PlayerState {
     return state;
   }
 
+  // Novo jogo: o próximo `of` cria um estado limpo.
+  static reset(game: Phaser.Game): void {
+    game.registry.remove(REGISTRY_KEY);
+  }
+
   get equippedWeaponId(): WeaponId {
     return this.weaponId;
   }
@@ -98,6 +103,22 @@ export class PlayerState {
       .filter((effect): effect is RingEffect => effect !== undefined);
     const staminaFactor = effects.reduce((factor, effect) => factor * (effect.staminaRegenFactor ?? 1), 1);
     this.stamina.setRegenFactor(staminaFactor);
+  }
+
+  get bonusAmpouleCount(): number {
+    return this.bonusAmpoules;
+  }
+
+  get ringIds(): string[] {
+    return [...this.rings];
+  }
+
+  // Volta o equipamento de um save, com as ampolas cheias.
+  restore(weaponId: WeaponId, bonusAmpoules: number, rings: readonly string[]): void {
+    this.weaponId = weaponId in WEAPONS ? weaponId : PLAYER_STATS.startingWeapon;
+    this.bonusAmpoules = bonusAmpoules;
+    this.ampouleCharges = this.maxAmpoules;
+    rings.forEach((ring) => this.addRing(ring));
   }
 
   private get maxAmpoules(): number {

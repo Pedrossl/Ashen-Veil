@@ -33,6 +33,11 @@ export class WorldState {
     return state;
   }
 
+  // Novo jogo: o próximo `of` cria um estado limpo.
+  static reset(game: Phaser.Game): void {
+    game.registry.remove(REGISTRY_KEY);
+  }
+
   hasFlag(flag: string): boolean {
     return this.flags.has(flag);
   }
@@ -47,6 +52,16 @@ export class WorldState {
   }
 
   setCheckpoint(checkpoint: Checkpoint): void {
+    this.lastCheckpoint = checkpoint;
+  }
+
+  get flagList(): string[] {
+    return [...this.flags];
+  }
+
+  // Volta marcações e checkpoint de um save.
+  restore(flags: readonly string[], checkpoint: Checkpoint): void {
+    flags.forEach((flag) => this.flags.add(flag));
     this.lastCheckpoint = checkpoint;
   }
 }

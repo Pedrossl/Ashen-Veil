@@ -19,6 +19,11 @@ export class Inventory {
     return this.items.has(itemId);
   }
 
+  // Volta os itens de um save, sem avisar ninguém (não é uma coleta nova).
+  restore(items: readonly ItemDefinition[]): void {
+    items.forEach((item) => this.items.set(item.id, item));
+  }
+
   list(): ItemDefinition[] {
     return [...this.items.values()];
   }

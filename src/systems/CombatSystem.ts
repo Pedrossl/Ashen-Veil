@@ -7,6 +7,7 @@ import {
   type Faction,
   type HitboxDefinition,
 } from '../data/combat';
+import { getDifficulty } from '../data/difficulty';
 import { showCriticalHit } from '../ui/CriticalHit';
 
 // Golpe em andamento. `swingId` muda a cada golpe para que um mesmo golpe
@@ -114,8 +115,16 @@ export class CombatSystem {
 
       record.hit.add(target);
       const critical = attack.critical ?? false;
+      const difficulty = getDifficulty(this.scene.game);
+      const multiplier =
+        attacker.faction === 'player' && target.faction === 'enemy'
+          ? difficulty.playerDamageMultiplier
+          : attacker.faction === 'enemy' && target.faction === 'player'
+            ? difficulty.enemyDamageMultiplier
+            : 1;
+      const damage = attack.damage * multiplier;
       target.receiveHit({
-        damage: attack.damage,
+        damage,
         direction: attacker.facing,
         attackerFaction: attacker.faction,
         critical,
@@ -128,7 +137,7 @@ export class CombatSystem {
 
       if (critical) {
         const hurtbox = target.getHurtbox();
-        showCriticalHit(this.scene, hurtbox.centerX, hurtbox.top, attack.damage);
+        showCriticalHit(this.scene, hurtbox.centerX, hurtbox.top, damage);
       }
     }
   }
