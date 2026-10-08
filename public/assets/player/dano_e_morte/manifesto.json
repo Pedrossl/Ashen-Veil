@@ -1,0 +1,33 @@
+{
+  "id": "jogador_dano_e_morte",
+  "direcaoBase": "direita",
+  "armaInclusaNosSprites": false,
+  "alturaVisualSugerida": 150,
+  "origemSugerida": {
+    "x": 0.5,
+    "y": 0.92
+  },
+  "animacoes": {
+    "dano": {
+      "arquivo": "dano_4_frames.png",
+      "quadros": 4,
+      "colunas": 2,
+      "linhas": 2,
+      "larguraQuadro": 665,
+      "alturaQuadro": 591,
+      "fps": 12,
+      "repetir": 0
+    },
+    "morte": {
+      "arquivo": "morte_8_frames.png",
+      "quadros": 8,
+      "colunas": 4,
+      "linhas": 2,
+      "larguraQuadro": 443,
+      "alturaQuadro": 443,
+      "fps": 8,
+      "repetir": 0,
+      "manterUltimoQuadro": true
+    }
+  }
+}

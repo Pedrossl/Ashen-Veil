@@ -1,0 +1,30 @@
+{
+  "id": "jogador_descanso_lanterna",
+  "arquivo": "descanso_lanterna_8_frames.png",
+  "lanternaInclusaNoSprite": false,
+  "lanternaAoLado": "direita",
+  "direcaoBase": "direita",
+  "colunas": 4,
+  "linhas": 2,
+  "quadros": 8,
+  "larguraQuadro": 443,
+  "alturaQuadro": 443,
+  "origemSugerida": {
+    "x": 0.5,
+    "y": 0.92
+  },
+  "duracoesSentarMs": [120, 130, 140, 150, 160, 170, 180, 200],
+  "quadroEspera": 7,
+  "levantarReproduzAoContrario": false,
+  "animacaoLevantar": {
+    "arquivo": "levantar_lanterna_8_frames.png",
+    "quadros": 8,
+    "colunas": 4,
+    "linhas": 2,
+    "larguraQuadro": 443,
+    "alturaQuadro": 443,
+    "duracoesMs": [140, 130, 140, 150, 160, 150, 140, 130],
+    "repetir": 0
+  },
+  "alturaVisualSugerida": 150
+}

@@ -1,0 +1,19 @@
+{
+  "id": "jogador_cura_ampola",
+  "arquivo": "cura_ampola_8_frames.png",
+  "itemInclusoNoSprite": false,
+  "direcaoBase": "direita",
+  "colunas": 4,
+  "linhas": 2,
+  "quadros": 8,
+  "larguraQuadro": 443,
+  "alturaQuadro": 443,
+  "origemSugerida": {
+    "x": 0.5,
+    "y": 0.92
+  },
+  "duracoesMs": [110, 110, 120, 140, 250, 220, 140, 120],
+  "quadroAplicarCura": 4,
+  "repetir": 0,
+  "alturaVisualSugerida": 150
+}
