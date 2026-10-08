@@ -1,0 +1,214 @@
+{
+  "formato": "WAV PCM mono 44100 Hz / 16 bits",
+  "origem": "Síntese original local",
+  "arquivos": [
+    {
+      "arquivo": "ambience/esgoto_agua.wav",
+      "segundos": 12.0
+    },
+    {
+      "arquivo": "ambience/prisao_vento.wav",
+      "segundos": 12.0
+    },
+    {
+      "arquivo": "sfx/aterrissagem_agua.wav",
+      "segundos": 0.48
+    },
+    {
+      "arquivo": "sfx/aterrissagem_pedra.wav",
+      "segundos": 0.3
+    },
+    {
+      "arquivo": "sfx/bau_abertura.wav",
+      "segundos": 0.65
+    },
+    {
+      "arquivo": "sfx/carcereiro_alerta.wav",
+      "segundos": 0.75
+    },
+    {
+      "arquivo": "sfx/carcereiro_gancho.wav",
+      "segundos": 0.57
+    },
+    {
+      "arquivo": "sfx/carcereiro_morte.wav",
+      "segundos": 0.95
+    },
+    {
+      "arquivo": "sfx/ceifador_arremesso.wav",
+      "segundos": 0.85
+    },
+    {
+      "arquivo": "sfx/ceifador_despertar.wav",
+      "segundos": 1.6
+    },
+    {
+      "arquivo": "sfx/ceifador_fase.wav",
+      "segundos": 1.5
+    },
+    {
+      "arquivo": "sfx/ceifador_foice.wav",
+      "segundos": 0.65
+    },
+    {
+      "arquivo": "sfx/ceifador_morte.wav",
+      "segundos": 2.0
+    },
+    {
+      "arquivo": "sfx/ceifador_teleporte.wav",
+      "segundos": 0.65
+    },
+    {
+      "arquivo": "sfx/coleta.wav",
+      "segundos": 0.55
+    },
+    {
+      "arquivo": "sfx/cura_ampola.wav",
+      "segundos": 0.85
+    },
+    {
+      "arquivo": "sfx/descanso_lanterna.wav",
+      "segundos": 1.2
+    },
+    {
+      "arquivo": "sfx/equipar_arma.wav",
+      "segundos": 0.28
+    },
+    {
+      "arquivo": "sfx/escada_madeira.wav",
+      "segundos": 0.18
+    },
+    {
+      "arquivo": "sfx/esquiva.wav",
+      "segundos": 0.4
+    },
+    {
+      "arquivo": "sfx/impacto.wav",
+      "segundos": 0.25
+    },
+    {
+      "arquivo": "sfx/impacto_critico.wav",
+      "segundos": 0.43
+    },
+    {
+      "arquivo": "sfx/interface_confirmar.wav",
+      "segundos": 0.24
+    },
+    {
+      "arquivo": "sfx/interface_navegar.wav",
+      "segundos": 0.1
+    },
+    {
+      "arquivo": "sfx/inventario_abrir.wav",
+      "segundos": 0.24
+    },
+    {
+      "arquivo": "sfx/inventario_fechar.wav",
+      "segundos": 0.18
+    },
+    {
+      "arquivo": "sfx/lamina_ar.wav",
+      "segundos": 0.3
+    },
+    {
+      "arquivo": "sfx/lodo_respingo.wav",
+      "segundos": 0.37
+    },
+    {
+      "arquivo": "sfx/morte.wav",
+      "segundos": 1.5
+    },
+    {
+      "arquivo": "sfx/passo_agua.wav",
+      "segundos": 0.29
+    },
+    {
+      "arquivo": "sfx/passo_pedra.wav",
+      "segundos": 0.19
+    },
+    {
+      "arquivo": "sfx/porta_trancada.wav",
+      "segundos": 0.35
+    },
+    {
+      "arquivo": "sfx/portao_ferro.wav",
+      "segundos": 1.6
+    },
+    {
+      "arquivo": "sfx/prisioneiro_alerta.wav",
+      "segundos": 0.65
+    },
+    {
+      "arquivo": "sfx/prisioneiro_corrente.wav",
+      "segundos": 0.48
+    },
+    {
+      "arquivo": "sfx/prisioneiro_esmagamento.wav",
+      "segundos": 0.56
+    },
+    {
+      "arquivo": "sfx/prisioneiro_morte.wav",
+      "segundos": 0.85
+    },
+    {
+      "arquivo": "sfx/raiz_cuspe.wav",
+      "segundos": 0.6
+    },
+    {
+      "arquivo": "sfx/raiz_emergir.wav",
+      "segundos": 1.2
+    },
+    {
+      "arquivo": "sfx/raiz_enterrar.wav",
+      "segundos": 1.1
+    },
+    {
+      "arquivo": "sfx/raiz_estacas.wav",
+      "segundos": 0.8
+    },
+    {
+      "arquivo": "sfx/raiz_fase.wav",
+      "segundos": 1.1
+    },
+    {
+      "arquivo": "sfx/raiz_mordida.wav",
+      "segundos": 0.46
+    },
+    {
+      "arquivo": "sfx/raiz_morte.wav",
+      "segundos": 2.0
+    },
+    {
+      "arquivo": "sfx/raiz_varredura.wav",
+      "segundos": 0.65
+    },
+    {
+      "arquivo": "sfx/rato_alerta.wav",
+      "segundos": 0.28
+    },
+    {
+      "arquivo": "sfx/rato_mordida.wav",
+      "segundos": 0.16
+    },
+    {
+      "arquivo": "sfx/rato_morte.wav",
+      "segundos": 0.38
+    },
+    {
+      "arquivo": "sfx/soco_ar.wav",
+      "segundos": 0.18
+    },
+    {
+      "arquivo": "sfx/suplicante_alerta.wav",
+      "segundos": 0.78
+    },
+    {
+      "arquivo": "sfx/suplicante_arremesso.wav",
+      "segundos": 0.42
+    },
+    {
+      "arquivo": "sfx/suplicante_morte.wav",
+      "segundos": 0.8
+    }
+  ]
+}
