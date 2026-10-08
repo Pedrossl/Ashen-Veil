@@ -76,9 +76,9 @@ Coloque os arquivos originais em `01_sprites/...` (ou na pasta de origem corresp
 
 Hoje são gerados por recorte ou código e ficariam melhores com arte própria:
 
-- **Respiração parada do jogador** (idle): hoje gerada pelo recorte da caminhada.
+- **Integração da idle natural do jogador**: a folha própria já está em `01_sprites/personagem_jogador/idle_natural/`, mas ainda precisa substituir a versão montada por recorte usada no runtime principal.
 - **Ciclo de caminhada completo** (6–8 quadros): o atual é montado por recorte a partir de um único quadro.
 - **Descer escadas e subir/descer escada de pedra**: ainda reaproveitam a caminhada. Existem dois conjuntos próprios para subir: a escada de corda lateral em `01_sprites/personagem_jogador/escada_corda/` e a escada rígida de madeira vista de costas em `01_sprites/personagem_jogador/escada_madeira_parede/`.
 - **Pulo** (impulso, no ar, queda, aterrissagem).
-- **Morte do jogador**: hoje reaproveita o agachamento da coleta.
+- **Integração do dano e morte do jogador**: as folhas próprias estão em `01_sprites/personagem_jogador/dano_e_morte/`, mas ainda precisam substituir o flash/recuo e a queda provisória usados pelo código.
 - **Morte do boss**: hoje é só um efeito de fumaça.
