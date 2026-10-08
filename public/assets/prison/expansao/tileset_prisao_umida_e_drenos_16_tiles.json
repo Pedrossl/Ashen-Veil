@@ -1,0 +1,332 @@
+{
+ "frames": {
+  "ledge-wet": {
+   "frame": {
+    "x": 9,
+    "y": 75,
+    "w": 351,
+    "h": 145
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 351,
+    "h": 145
+   },
+   "sourceSize": {
+    "w": 351,
+    "h": 145
+   }
+  },
+  "ledge-wet-rings": {
+   "frame": {
+    "x": 375,
+    "y": 75,
+    "w": 342,
+    "h": 148
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 342,
+    "h": 148
+   },
+   "sourceSize": {
+    "w": 342,
+    "h": 148
+   }
+  },
+  "ledge-waterfall": {
+   "frame": {
+    "x": 732,
+    "y": 65,
+    "w": 342,
+    "h": 172
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 342,
+    "h": 172
+   },
+   "sourceSize": {
+    "w": 342,
+    "h": 172
+   }
+  },
+  "bridge": {
+   "frame": {
+    "x": 1090,
+    "y": 50,
+    "w": 355,
+    "h": 168
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 355,
+    "h": 168
+   },
+   "sourceSize": {
+    "w": 355,
+    "h": 168
+   }
+  },
+  "wall-seep": {
+   "frame": {
+    "x": 52,
+    "y": 247,
+    "w": 272,
+    "h": 274
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 272,
+    "h": 274
+   },
+   "sourceSize": {
+    "w": 272,
+    "h": 274
+   }
+  },
+  "wall-moss": {
+   "frame": {
+    "x": 415,
+    "y": 246,
+    "w": 266,
+    "h": 275
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 266,
+    "h": 275
+   },
+   "sourceSize": {
+    "w": 266,
+    "h": 275
+   }
+  },
+  "wall-waterfall": {
+   "frame": {
+    "x": 768,
+    "y": 246,
+    "w": 270,
+    "h": 276
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 270,
+    "h": 276
+   },
+   "sourceSize": {
+    "w": 270,
+    "h": 276
+   }
+  },
+  "wall-leak": {
+   "frame": {
+    "x": 1127,
+    "y": 246,
+    "w": 274,
+    "h": 277
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 274,
+    "h": 277
+   },
+   "sourceSize": {
+    "w": 274,
+    "h": 277
+   }
+  },
+  "channel": {
+   "frame": {
+    "x": 30,
+    "y": 607,
+    "w": 325,
+    "h": 161
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 325,
+    "h": 161
+   },
+   "sourceSize": {
+    "w": 325,
+    "h": 161
+   }
+  },
+  "channel-up-right": {
+   "frame": {
+    "x": 418,
+    "y": 549,
+    "w": 252,
+    "h": 245
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 252,
+    "h": 245
+   },
+   "sourceSize": {
+    "w": 252,
+    "h": 245
+   }
+  },
+  "channel-up-left": {
+   "frame": {
+    "x": 778,
+    "y": 548,
+    "w": 252,
+    "h": 239
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 252,
+    "h": 239
+   },
+   "sourceSize": {
+    "w": 252,
+    "h": 239
+   }
+  },
+  "sewer-gate": {
+   "frame": {
+    "x": 1122,
+    "y": 547,
+    "w": 274,
+    "h": 231
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 274,
+    "h": 231
+   },
+   "sourceSize": {
+    "w": 274,
+    "h": 231
+   }
+  },
+  "drain-pipe": {
+   "frame": {
+    "x": 44,
+    "y": 807,
+    "w": 288,
+    "h": 220
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 288,
+    "h": 220
+   },
+   "sourceSize": {
+    "w": 288,
+    "h": 220
+   }
+  },
+  "floor-grate": {
+   "frame": {
+    "x": 388,
+    "y": 862,
+    "w": 306,
+    "h": 183
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 306,
+    "h": 183
+   },
+   "sourceSize": {
+    "w": 306,
+    "h": 183
+   }
+  },
+  "rubble-wet": {
+   "frame": {
+    "x": 733,
+    "y": 842,
+    "w": 342,
+    "h": 197
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 342,
+    "h": 197
+   },
+   "sourceSize": {
+    "w": 342,
+    "h": 197
+   }
+  },
+  "sewer-mouth": {
+   "frame": {
+    "x": 1103,
+    "y": 816,
+    "w": 325,
+    "h": 218
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 325,
+    "h": 218
+   },
+   "sourceSize": {
+    "w": 325,
+    "h": 218
+   }
+  }
+ },
+ "meta": {
+  "image": "tileset_prisao_umida_e_drenos_16_tiles.png",
+  "size": {
+   "w": 1448,
+   "h": 1084
+  },
+  "scale": "1"
+ }
+}

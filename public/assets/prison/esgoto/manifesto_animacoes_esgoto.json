@@ -1,0 +1,48 @@
+{
+  "versao": 1,
+  "area": "esgoto_da_prisao",
+  "animacoes": [
+    {
+      "id": "cachoeira",
+      "arquivo": "animacoes/sprite_sheet_cachoeira_6_frames.png",
+      "quadros": 6,
+      "grade": { "colunas": 3, "linhas": 2, "larguraQuadro": 512, "alturaQuadro": 512 },
+      "fps": 8,
+      "repetir": true
+    },
+    {
+      "id": "agua_rasa",
+      "arquivo": "animacoes/sprite_sheet_agua_rasa_6_frames.png",
+      "quadros": 6,
+      "grade": { "colunas": 3, "linhas": 2, "larguraQuadro": 724, "alturaQuadro": 362 },
+      "fps": 6,
+      "repetir": true,
+      "tileavelHorizontalmente": true
+    },
+    {
+      "id": "espirro",
+      "arquivo": "animacoes/sprite_sheet_espirro_6_frames.png",
+      "quadros": 6,
+      "grade": { "colunas": 3, "linhas": 2, "larguraQuadro": 512, "alturaQuadro": 512 },
+      "fps": 12,
+      "repetir": false
+    }
+  ],
+  "cenografia": {
+    "vegetacao": {
+      "arquivo": "tileset_esgoto_vegetacao_16_tiles.png",
+      "quadros": 16,
+      "grade": { "colunas": 4, "linhas": 4, "larguraQuadro": 361, "alturaQuadro": 271 }
+    },
+    "portaoBoss": {
+      "arquivo": "portao_boss_esgoto_fechado_aberto.png",
+      "estados": ["fechado", "aberto"],
+      "grade": { "colunas": 2, "linhas": 1, "larguraQuadro": 887, "alturaQuadro": 887 }
+    },
+    "fundoDistante": {
+      "arquivo": "fundos/fundo_tunel_distante.png",
+      "largura": 1672,
+      "altura": 941
+    }
+  }
+}

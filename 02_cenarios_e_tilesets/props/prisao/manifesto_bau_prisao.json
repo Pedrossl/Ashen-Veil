@@ -1,5 +1,5 @@
 {
-  "versao": 1,
+  "versao": 2,
   "arquivo": "sprite_sheet_bau_prisao_fechado_aberto_2_frames.png",
   "grade": {
     "colunas": 2,
@@ -10,5 +10,23 @@
   "frames": {
     "0": "fechado",
     "1": "aberto"
+  },
+  "animacaoAbertura": {
+    "arquivo": "sprite_sheet_bau_prisao_abertura_6_frames.png",
+    "colunas": 3,
+    "linhas": 2,
+    "quadros": 6,
+    "larguraQuadro": 512,
+    "alturaQuadro": 512,
+    "fps": 10,
+    "repetir": 0,
+    "ordem": [
+      "fechado",
+      "destravando",
+      "abertura_baixa",
+      "abertura_media",
+      "abertura_alta",
+      "aberto"
+    ]
   }
 }

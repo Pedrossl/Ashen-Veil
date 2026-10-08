@@ -1,0 +1,332 @@
+{
+ "frames": {
+  "door-closed": {
+   "frame": {
+    "x": 90,
+    "y": 9,
+    "w": 224,
+    "h": 285
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 224,
+    "h": 285
+   },
+   "sourceSize": {
+    "w": 224,
+    "h": 285
+   }
+  },
+  "door-open": {
+   "frame": {
+    "x": 436,
+    "y": 9,
+    "w": 237,
+    "h": 285
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 237,
+    "h": 285
+   },
+   "sourceSize": {
+    "w": 237,
+    "h": 285
+   }
+  },
+  "window-barred": {
+   "frame": {
+    "x": 808,
+    "y": 22,
+    "w": 144,
+    "h": 259
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 259
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 259
+   }
+  },
+  "fence": {
+   "frame": {
+    "x": 1087,
+    "y": 45,
+    "w": 308,
+    "h": 233
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 308,
+    "h": 233
+   },
+   "sourceSize": {
+    "w": 308,
+    "h": 233
+   }
+  },
+  "column-a": {
+   "frame": {
+    "x": 153,
+    "y": 309,
+    "w": 105,
+    "h": 241
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 105,
+    "h": 241
+   },
+   "sourceSize": {
+    "w": 105,
+    "h": 241
+   }
+  },
+  "column-b": {
+   "frame": {
+    "x": 494,
+    "y": 309,
+    "w": 107,
+    "h": 238
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 107,
+    "h": 238
+   },
+   "sourceSize": {
+    "w": 107,
+    "h": 238
+   }
+  },
+  "fence-broken": {
+   "frame": {
+    "x": 739,
+    "y": 393,
+    "w": 280,
+    "h": 152
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 280,
+    "h": 152
+   },
+   "sourceSize": {
+    "w": 280,
+    "h": 152
+   }
+  },
+  "hanging-grate": {
+   "frame": {
+    "x": 1085,
+    "y": 324,
+    "w": 315,
+    "h": 214
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 315,
+    "h": 214
+   },
+   "sourceSize": {
+    "w": 315,
+    "h": 214
+   }
+  },
+  "chain": {
+   "frame": {
+    "x": 174,
+    "y": 563,
+    "w": 56,
+    "h": 232
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 56,
+    "h": 232
+   },
+   "sourceSize": {
+    "w": 56,
+    "h": 232
+   }
+  },
+  "chain-shackles": {
+   "frame": {
+    "x": 412,
+    "y": 566,
+    "w": 247,
+    "h": 230
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 247,
+    "h": 230
+   },
+   "sourceSize": {
+    "w": 247,
+    "h": 230
+   }
+  },
+  "wall-ring": {
+   "frame": {
+    "x": 798,
+    "y": 601,
+    "w": 121,
+    "h": 167
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 121,
+    "h": 167
+   },
+   "sourceSize": {
+    "w": 121,
+    "h": 167
+   }
+  },
+  "floor-shackles": {
+   "frame": {
+    "x": 1032,
+    "y": 656,
+    "w": 389,
+    "h": 118
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 389,
+    "h": 118
+   },
+   "sourceSize": {
+    "w": 389,
+    "h": 118
+   }
+  },
+  "gallows-beam": {
+   "frame": {
+    "x": 52,
+    "y": 811,
+    "w": 307,
+    "h": 239
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 307,
+    "h": 239
+   },
+   "sourceSize": {
+    "w": 307,
+    "h": 239
+   }
+  },
+  "bench": {
+   "frame": {
+    "x": 404,
+    "y": 907,
+    "w": 295,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 295,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 295,
+    "h": 136
+   }
+  },
+  "cage": {
+   "frame": {
+    "x": 810,
+    "y": 795,
+    "w": 135,
+    "h": 284
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 135,
+    "h": 284
+   },
+   "sourceSize": {
+    "w": 135,
+    "h": 284
+   }
+  },
+  "gate-barred": {
+   "frame": {
+    "x": 1049,
+    "y": 772,
+    "w": 356,
+    "h": 305
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 356,
+    "h": 305
+   },
+   "sourceSize": {
+    "w": 356,
+    "h": 305
+   }
+  }
+ },
+ "meta": {
+  "image": "tileset_prisao_celas_e_correntes_16_tiles.png",
+  "size": {
+   "w": 1448,
+   "h": 1084
+  },
+  "scale": "1"
+ }
+}

@@ -1,0 +1,38 @@
+{
+  "versao": 1,
+  "area": "esgoto_da_prisao",
+  "grade": {
+    "colunas": 4,
+    "linhas": 4,
+    "larguraQuadro": 361,
+    "alturaQuadro": 271
+  },
+  "tilesets": [
+    {
+      "arquivo": "tileset_esgoto_arquitetura_16_tiles.png",
+      "uso": "pisos, paredes, colunas, arcos, escadas e passagens"
+    },
+    {
+      "arquivo": "tileset_esgoto_canais_lodo_16_tiles.png",
+      "uso": "canais, curvas, poças, quedas, pontes e áreas inundadas"
+    },
+    {
+      "arquivo": "tileset_esgoto_tubulacoes_comportas_16_tiles.png",
+      "uso": "tubos conectáveis, válvulas, comportas, bombas e escotilhas"
+    },
+    {
+      "arquivo": "tileset_esgoto_props_perigos_16_tiles.png",
+      "uso": "barris, fungos, ossos, armadilhas, jaulas e barricadas"
+    },
+    {
+      "arquivo": "tileset_esgoto_vegetacao_16_tiles.png",
+      "uso": "trepadeiras, raízes, musgo, samambaias e fungos de parede"
+    }
+  ],
+  "paleta": {
+    "pedra": "carvão azul-arroxeado",
+    "metal": "ferro preto e bronze oxidado",
+    "liquido": "verde-musgo profundo",
+    "acentos": "violeta frio e laranja de tocha"
+  }
+}
