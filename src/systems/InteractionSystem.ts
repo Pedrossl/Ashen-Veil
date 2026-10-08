@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import type { Controls } from '../core/controls';
+import { keyLabel, type Controls } from '../core/controls';
 import type { Player } from '../entities/player/Player';
 
 export type Interactable = {
@@ -81,10 +81,11 @@ export class InteractionSystem {
       return;
     }
 
+    // Enquanto uma mensagem está na tela, o aviso some para não ficar por baixo dela.
     this.prompt
-      .setText(`[E] ${target.label()}`)
+      .setText(`[${keyLabel('interact')}] ${target.label()}`)
       .setPosition(target.x, target.promptY)
-      .setVisible(true);
+      .setVisible(this.message.alpha <= 0.05);
 
     if (this.controls.justPressed('interact')) {
       this.prompt.setVisible(false);

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { playSound } from './SoundEffects';
 
 import {
   COMBAT_DEBUG_REGISTRY_KEY,
@@ -120,6 +121,7 @@ export class CombatSystem {
         critical,
       });
       attacker.onAttackLanded?.(target, critical);
+      playSound(this.scene, critical ? 'critical' : 'impact', attacker);
 
       const shake = critical ? COMBAT_FEEDBACK.critical : COMBAT_FEEDBACK;
       this.scene.cameras.main.shake(shake.shakeDurationMs, shake.shakeIntensity);

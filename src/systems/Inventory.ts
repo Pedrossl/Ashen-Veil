@@ -18,4 +18,8 @@ export class Inventory {
   has(itemId: string): boolean {
     return this.items.has(itemId);
   }
+
+  list(): ItemDefinition[] {
+    return [...this.items.values()];
+  }
 }

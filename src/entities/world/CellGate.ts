@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { playSound } from '../../systems/SoundEffects';
 
 type CellGateConfig = {
   // Identificador usado para lembrar se o portão já foi aberto.
@@ -85,6 +86,7 @@ export class CellGate {
     }
 
     this.state = 'opening';
+    playSound(this.scene, 'gate');
     const baseY = this.bars.y;
     const height = this.bars.frame.height;
     const lift = { value: 0 };

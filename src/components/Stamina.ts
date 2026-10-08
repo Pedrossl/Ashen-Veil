@@ -15,6 +15,8 @@ export type StaminaConfig = {
 export class Stamina {
   private value: number;
   private regenCooldownMs = 0;
+  // Bônus de equipamento (ex.: anel) sobre as duas regenerações.
+  private regenFactor = 1;
   private readonly listeners: StaminaListener[] = [];
 
   constructor(private readonly config: StaminaConfig) {
@@ -59,7 +61,11 @@ export class Stamina {
     const rate = this.regenCooldownMs > 0
       ? this.config.trickleRegenPerSecond
       : this.config.regenPerSecond;
-    this.set(Math.min(this.config.max, this.value + (rate * deltaMs) / 1000));
+    this.set(Math.min(this.config.max, this.value + (rate * this.regenFactor * deltaMs) / 1000));
+  }
+
+  setRegenFactor(factor: number): void {
+    this.regenFactor = factor;
   }
 
   restore(): void {

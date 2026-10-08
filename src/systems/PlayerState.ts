@@ -8,7 +8,7 @@ import {
   type StatChange,
   type WeaponChange,
 } from '../core/gameEvents';
-import { AMPOULE, ITEM_ICONS } from '../data/items';
+import { AMPOULE, ITEM_ICONS, RING_EFFECTS, type RingEffect } from '../data/items';
 import { PLAYER_STATS } from '../data/player';
 import { WEAPONS, type WeaponDefinition, type WeaponId } from '../data/weapons';
 
@@ -21,6 +21,9 @@ export class PlayerState {
   readonly stamina = new Stamina(PLAYER_STATS.stamina);
   private weaponId: WeaponId = PLAYER_STATS.startingWeapon;
   private ampouleCharges: number = AMPOULE.maxCharges;
+  // Ampolas extras achadas pelo mapa aumentam o máximo de cargas.
+  private bonusAmpoules = 0;
+  private readonly rings = new Set<string>();
   // Atalho de teste: golpes não tiram vida. Começa ligado em desenvolvimento
   // e nunca existe no build de produção.
   infiniteHealth = import.meta.env.DEV;
@@ -44,6 +47,10 @@ export class PlayerState {
     const state = new PlayerState(game.events);
     game.registry.set(REGISTRY_KEY, state);
     return state;
+  }
+
+  get equippedWeaponId(): WeaponId {
+    return this.weaponId;
   }
 
   get weapon(): WeaponDefinition {
@@ -72,8 +79,29 @@ export class PlayerState {
 
   // Descanso e renascimento devolvem todas as cargas.
   refillAmpoules(): void {
-    this.ampouleCharges = AMPOULE.maxCharges;
+    this.ampouleCharges = this.maxAmpoules;
     this.emitConsumable();
+  }
+
+  // Uma ampola nova: +1 carga máxima, já cheia.
+  addAmpoule(): void {
+    this.bonusAmpoules += 1;
+    this.ampouleCharges += 1;
+    this.emitConsumable();
+  }
+
+  // Anéis passivos: o efeito vale enquanto o jogador tiver o anel.
+  addRing(itemId: string): void {
+    this.rings.add(itemId);
+    const effects: readonly RingEffect[] = [...this.rings]
+      .map((id) => (RING_EFFECTS as Record<string, RingEffect>)[id])
+      .filter((effect): effect is RingEffect => effect !== undefined);
+    const staminaFactor = effects.reduce((factor, effect) => factor * (effect.staminaRegenFactor ?? 1), 1);
+    this.stamina.setRegenFactor(staminaFactor);
+  }
+
+  private get maxAmpoules(): number {
+    return AMPOULE.maxCharges + this.bonusAmpoules;
   }
 
   // Reenvia os valores atuais (ex.: HUD recém-criado ou sala recarregada).
@@ -95,7 +123,7 @@ export class PlayerState {
       name: AMPOULE.name,
       icon: ITEM_ICONS[AMPOULE.itemId].key,
       charges: this.ampouleCharges,
-      maxCharges: AMPOULE.maxCharges,
+      maxCharges: this.maxAmpoules,
     };
     this.events.emit(GAME_EVENTS.playerConsumableChanged, change);
   }

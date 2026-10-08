@@ -1,4 +1,4 @@
-export type ItemCategory = 'key' | 'consumable' | 'weapon';
+export type ItemCategory = 'key' | 'consumable' | 'weapon' | 'ring';
 
 export type ItemDefinition = {
   id: string;
@@ -18,10 +18,21 @@ export const ITEMS = {
     name: 'Espada de Bambu Improvisada',
     category: 'weapon',
   },
+  darkSword: {
+    id: 'dark-sword',
+    name: 'Espada Medieval Sombria',
+    category: 'weapon',
+  },
   veiledEmberAmpoule: {
     id: 'veiled-ember-ampoule',
     name: 'Ampola da Brasa Velada',
     category: 'consumable',
+  },
+  // Recompensa da Raiz dos Condenados vencida no Fosso Afogado.
+  veiledBreathRing: {
+    id: 'veiled-breath-ring',
+    name: 'Anel do Fôlego Velado',
+    category: 'ring',
   },
 } as const satisfies Record<string, ItemDefinition>;
 
@@ -31,9 +42,18 @@ export const ITEM_IMAGES = {
     key: 'item-bamboo-sword',
     path: 'assets/weapons/arma_espada_bambu.png',
   },
+  'dark-sword': {
+    key: 'item-dark-sword',
+    path: 'assets/weapons/arma_espada_medieval_sombria.png',
+  },
   'veiled-ember-ampoule': {
     key: 'item-veiled-ember-ampoule',
     path: 'assets/items/consumiveis/ampola_brasa_velada.png',
+  },
+  // Originais em 03_itens_e_armas/itens/aneis/anel_folego_velado/.
+  'veiled-breath-ring': {
+    key: 'item-veiled-breath-ring',
+    path: 'assets/items/aneis/item_anel_folego_velado_grande_128.png',
   },
 } as const satisfies Partial<Record<string, { key: string; path: string }>>;
 
@@ -43,7 +63,25 @@ export const ITEM_ICONS = {
     key: 'icon-veiled-ember-ampoule',
     path: 'assets/items/consumiveis/icone_ampola_brasa_velada.png',
   },
+  'veiled-breath-ring': {
+    key: 'icon-veiled-breath-ring',
+    path: 'assets/items/aneis/item_anel_folego_velado_medio_64.png',
+  },
 } as const satisfies Partial<Record<string, { key: string; path: string }>>;
+
+// Anéis valem só por estarem no inventário (ainda não há slot de acessório).
+// `staminaRegenFactor` multiplica as duas regenerações da stamina.
+export type RingEffect = {
+  description: string;
+  staminaRegenFactor?: number;
+};
+
+export const RING_EFFECTS = {
+  'veiled-breath-ring': {
+    description: 'Stamina se recupera 40% mais rápido',
+    staminaRegenFactor: 1.4,
+  },
+} as const satisfies Record<string, RingEffect>;
 
 // Cura principal (05_documentacao/itens/AMPOLA_DA_BRASA_VELADA.md). O jogador
 // não para para beber: anda mais devagar, sem correr, atacar nem rolar, e a

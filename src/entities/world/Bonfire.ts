@@ -1,3 +1,4 @@
+import { addAmbientSource } from '../../systems/Soundscape';
 import Phaser from 'phaser';
 
 import { CHECKPOINT_LANTERN_SPRITE as LANTERN } from '../../data/checkpointSprites';
@@ -67,6 +68,7 @@ export class Bonfire {
     });
 
     this.lit = config.lit;
+    addAmbientSource(scene, 'fire', x, flameY, () => this.lit);
     this.applyLitLook();
     this.startEmbers();
   }

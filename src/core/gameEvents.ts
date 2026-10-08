@@ -8,6 +8,8 @@ export const GAME_EVENTS = {
   playerConsumableChanged: 'player:consumable-changed',
   // O jogador morreu; o HUD mostra a mensagem e a scene renasce na fogueira.
   playerDied: 'player:died',
+  // Evento local da scene: a queda terminou; pode começar a espera do renascimento.
+  playerDeathAnimationCompleted: 'player:death-animation-completed',
   playerRested: 'player:rested',
   // Barra do boss: aparece ao despertar, acompanha a vida e some na morte.
   bossEngaged: 'boss:engaged',
@@ -15,7 +17,23 @@ export const GAME_EVENTS = {
   bossDefeated: 'boss:defeated',
   // A sala mudou: qualquer barra de boss na tela deve sumir.
   bossDismissed: 'boss:dismissed',
+  // Barra verde de raízes no jogador (payload StatChange; 0 esconde a barra).
+  playerRootBuildupChanged: 'player:root-buildup-changed',
+  // Recompensa recebida (ex.: boss derrotado); payload RewardReceived.
+  rewardReceived: 'player:reward-received',
+  // Mensagem no chão sendo lida (payload GroundMessageShown) e fim da leitura.
+  groundMessageShown: 'ground-message:shown',
+  groundMessageHidden: 'ground-message:hidden',
 } as const;
+
+export type GroundMessageShown = {
+  text: string;
+};
+
+export type RewardReceived = {
+  // Uma linha por item, já com o texto e o ícone (textura) para mostrar.
+  lines: Array<{ text: string; icon?: string }>;
+};
 
 export type BossEngaged = {
   name: string;

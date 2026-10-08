@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
+import { playSound } from '../../systems/SoundEffects';
 
 import type { ItemDefinition } from '../../data/items';
+import { PRISON_CHEST_SPRITE as CHEST } from '../../data/prisonSprites';
 
 type ChestConfig = {
   // Identificador usado para lembrar se o baú já foi aberto.
   id: string;
-  atlasKey: string;
   x: number;
   floorY: number;
   scale: number;
@@ -17,48 +18,35 @@ type ChestConfig = {
   startsOpen?: boolean;
 };
 
-// O baú é visto de frente e um pouco de cima: a dobradiça é a borda de cima
-// da tampa. Ao abrir, a tampa vira para cima por ela (escala vertical invertida).
-const OPEN_LID_SCALE_Y = -0.75;
+const OPEN_ANIMATION = 'prison-chest-open';
 
 export class Chest {
-  private readonly lid: Phaser.GameObjects.Image;
-  private readonly interior: Phaser.GameObjects.Rectangle;
+  private readonly sprite: Phaser.GameObjects.Sprite;
   private opened: boolean;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly config: ChestConfig,
   ) {
-    const { atlasKey, x, floorY, scale, tint, depth } = config;
-    const base = scene.textures.getFrame(atlasKey, 'chest-base');
-    const lid = scene.textures.getFrame(atlasKey, 'chest-lid');
-    const baseTop = floorY - base.height * scale;
-    const lidTop = baseTop - lid.height * scale + 2;
+    const { x, floorY, scale, tint, depth } = config;
 
     scene.add
-      .ellipse(x, floorY + 1, base.width * scale * 1.05, 10, 0x000000, 0.55)
+      .ellipse(x, floorY + 1, CHEST.frameWidth * scale * 0.95, 10, 0x000000, 0.55)
       .setDepth(depth - 0.2);
 
-    scene.add
-      .image(x, floorY, atlasKey, 'chest-base')
-      .setOrigin(0.5, 1)
+    if (!scene.anims.exists(OPEN_ANIMATION)) {
+      scene.anims.create({
+        key: OPEN_ANIMATION,
+        frames: scene.anims.generateFrameNumbers(CHEST.key, { start: 0, end: CHEST.openFrame }),
+        frameRate: CHEST.frameRate,
+      });
+    }
+
+    this.sprite = scene.add
+      .sprite(x, floorY + 2, CHEST.key, 0)
+      .setOrigin(0.5, CHEST.footY / CHEST.frameHeight)
       .setScale(scale)
       .setDepth(depth)
-      .setTint(tint);
-
-    // Interior escuro que aparece no lugar da tampa.
-    this.interior = scene.add
-      .rectangle(x, baseTop + 1, base.width * scale * 0.86, lid.height * scale * 0.9, 0x0b0608)
-      .setOrigin(0.5, 1)
-      .setDepth(depth + 0.05)
-      .setVisible(false);
-
-    this.lid = scene.add
-      .image(x, lidTop, atlasKey, 'chest-lid')
-      .setOrigin(0.5, 0)
-      .setScale(scale)
-      .setDepth(depth + 0.1)
       .setTint(tint);
 
     this.opened = config.startsOpen ?? false;
@@ -94,28 +82,21 @@ export class Chest {
     }
 
     this.opened = true;
+    playSound(this.scene, 'chest');
     this.showOpen(true);
     this.revealItem();
   }
 
+  // Destrava e ergue a tampa (animação da sheet); sem animação, já aberto.
   private showOpen(animated: boolean): void {
-    const scaleY = this.config.scale * OPEN_LID_SCALE_Y;
-    this.interior.setVisible(true);
-
-    if (!animated) {
-      this.lid.setScale(this.config.scale, scaleY);
+    if (animated) {
+      this.sprite.play(OPEN_ANIMATION);
       return;
     }
 
-    this.scene.tweens.add({
-      targets: this.lid,
-      scaleY,
-      duration: 360,
-      ease: 'Back.Out',
-    });
+    this.sprite.setFrame(CHEST.openFrame);
   }
 
-  // Brilho dourado e o item subindo antes de ir para o inventário.
   private revealItem(): void {
     const { x, floorY, depth, itemTextureKey } = this.config;
     const glow = this.scene.add

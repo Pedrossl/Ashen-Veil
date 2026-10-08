@@ -36,6 +36,10 @@ export type WeaponDefinition = {
   critMultiplier: number;
   // Sprite da arma no encaixe da mão; desarmado não tem.
   sprite?: string;
+  // Tamanho da lâmina na mão em relação ao padrão (WEAPON_BLADE_LENGTH).
+  bladeScale?: number;
+  // Velocidade do golpe: > 1 mais rápido, < 1 mais lento (mesma animação da categoria).
+  attackSpeed?: number;
   moveset: {
     light: AttackDefinition;
   };
@@ -55,7 +59,7 @@ export const WEAPONS = {
         damageMultiplier: 1,
         staminaCost: 18,
         // Alcance do punho no quadro de impacto (braço esticado).
-        hitbox: { forward: 28, up: 132, width: 70, height: 58 },
+        hitbox: { forward: 28, up: 132, width: 70, height: 112 },
         activeFrames: { from: 2, to: 2 },
       },
     },
@@ -65,17 +69,42 @@ export const WEAPONS = {
     id: 'bamboo-sword',
     name: 'Espada de Bambu Improvisada',
     category: 'sword',
-    baseDamage: 12,
+    // Leve: golpeia mais rápido, mas bate menos.
+    baseDamage: 10,
     critChance: 0.15,
     critMultiplier: 1.8,
     sprite: 'item-bamboo-sword',
+    attackSpeed: 1.2,
     moveset: {
       light: {
         animation: 'sword-light',
         damageMultiplier: 1,
         staminaCost: 22,
         // Estocada: a ponta chega a ~130px à frente dos pés, na altura do peito.
-        hitbox: { forward: 30, up: 135, width: 105, height: 70 },
+        hitbox: { forward: 30, up: 135, width: 105, height: 125 },
+        activeFrames: { from: 2, to: 2 },
+      },
+    },
+  },
+  // Achada escondida nos Esgotos: lâmina de aço gasta, bem mais forte que o
+  // bambu, mas mais pesada (custa mais stamina).
+  darkSword: {
+    id: 'dark-sword',
+    name: 'Espada Medieval Sombria',
+    category: 'sword',
+    // Pesada e longa: golpe lento, compensado por dano alto e alcance maior.
+    baseDamage: 28,
+    critChance: 0.12,
+    critMultiplier: 1.7,
+    sprite: 'item-dark-sword',
+    bladeScale: 1.35,
+    attackSpeed: 0.75,
+    moveset: {
+      light: {
+        animation: 'sword-light',
+        damageMultiplier: 1,
+        staminaCost: 30,
+        hitbox: { forward: 30, up: 145, width: 140, height: 135 },
         activeFrames: { from: 2, to: 2 },
       },
     },

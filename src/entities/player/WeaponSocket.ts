@@ -28,7 +28,7 @@ export class WeaponSocket {
   }
 
   // `undefined` deixa a mão vazia (desarmado).
-  equip(textureKey: string | undefined): void {
+  equip(textureKey: string | undefined, bladeScale = 1): void {
     this.textureKey = textureKey;
 
     if (!textureKey) {
@@ -40,7 +40,7 @@ export class WeaponSocket {
     const bladeLength = frame.height * (WEAPON_GRIP_ORIGIN_Y - 0.05);
     this.image
       .setTexture(textureKey)
-      .setScale((WEAPON_BLADE_LENGTH / bladeLength) * PLAYER_SPRITE.scale);
+      .setScale(((WEAPON_BLADE_LENGTH * bladeScale) / bladeLength) * PLAYER_SPRITE.scale);
   }
 
   private follow(): void {
