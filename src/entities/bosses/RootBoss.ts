@@ -362,7 +362,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
     });
   }
 
-  // Estacas dos dois lados durante os quadros ativos; o centro fica seguro.
+  // Estacas preenchem toda a volta do corpo durante os quadros ativos.
   private updateCage(): void {
     const [from, to] = SPRITE.animations.cage.active;
     const active = this.frameIndex >= from && this.frameIndex <= to;

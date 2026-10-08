@@ -140,6 +140,18 @@ export class MeleeEnemy
     this.direction = config.facing === 'left' ? -1 : 1;
     this.setFacing(this.direction);
     this.createAnimations();
+    this.on(
+      Phaser.Animations.Events.ANIMATION_UPDATE,
+      (animation: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {
+        if (animation.key !== `${this.sprite.key}-death`) {
+          return;
+        }
+
+        // `AnimationFrame.index` é local à animação, não à sheet inteira.
+        const localFrame = frame.index - 1;
+        this.setDeathVisualGroundOffset(this.sprite.deathFrameGroundOffsets?.[localFrame] ?? 0);
+      },
+    );
     this.trail = new MotionTrail(scene, this, ATTACK_FEEL.trail);
     this.enterIdle();
   }
@@ -536,7 +548,18 @@ export class MeleeEnemy
     this.behavior = 'dead';
     playSound(this.scene, ENEMY_AUDIO[this.config.kind].death, this);
     this.setVelocityX(0);
+    this.setDeathVisualGroundOffset(0);
     this.playAnimation('death');
+  }
+
+  // Mantém o colisor onde estava; cadáveres não participam mais do combate.
+  // Só desloca a arte dos quadros de queda para o peso do corpo chegar ao chão.
+  private setDeathVisualGroundOffset(offset: number): void {
+    const feetX = this.flipX ? this.sprite.frameWidth - this.sprite.feetX : this.sprite.feetX;
+    this.setOrigin(
+      feetX / this.sprite.frameWidth,
+      (this.sprite.feetY - offset) / this.sprite.frameHeight,
+    );
   }
 
   // Arremesso: a bola sai da mão e segue em arco na direção do alvo.

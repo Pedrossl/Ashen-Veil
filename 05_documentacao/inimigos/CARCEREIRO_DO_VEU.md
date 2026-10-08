@@ -54,6 +54,10 @@ Um segundo golpe vertical com o lado do martelo pode ser acrescentado depois que
 | `sprite_sheet_carcereiro_do_veu_dano_4_frames.png` | 2×2 | 768×512 | 4 | 10 FPS |
 | `sprite_sheet_carcereiro_do_veu_morte_8_frames.png` | 4×2 | 443×443 | 8 | 8 FPS |
 
+## Alinhamento da morte
+
+Nos últimos quadros, o gancho termina mais baixo que a massa do corpo. Para o cadáver parecer apoiado no piso, `VEIL_JAILER_SPRITE.deathFrameGroundOffsets` desloca apenas a apresentação dos oito quadros de morte. A hitbox física não muda e os outros estados permanecem alinhados pelos pés.
+
 No ataque de 12 quadros, usar inicialmente os quadros 0–3 para preparação, 4–6 para a janela ativa e 7–11 para recuperação. Esses intervalos devem ser revistos depois do primeiro teste de combate.
 
 As células têm tamanhos diferentes porque ataques, recuos e quedas precisam de larguras distintas. Ao trocar de animação, o código deve manter o ponto dos pés como origem e aplicar a escala visual definida para cada folha.

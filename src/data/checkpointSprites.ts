@@ -3,7 +3,7 @@
 // 01_sprites/objetos/checkpoints/sprite_sheet_lanterna_checkpoint_10_frames.png.
 export const CHECKPOINT_LANTERN_SPRITE = {
   key: 'checkpoint-lantern',
-  path: 'assets/checkpoints/sprite_sheet_lanterna_checkpoint.png',
+  path: 'assets/checkpoints/sprite_sheet_lanterna_checkpoint.webp',
   frameWidth: 320,
   frameHeight: 400,
   // Linha do pé da lanterna dentro do quadro.

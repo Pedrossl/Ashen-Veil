@@ -7,6 +7,9 @@ export type EnemySpriteDefinition = {
   frameHeight: number;
   feetX: number;
   feetY: number;
+  // Alguns corpos terminam deitados, mas a arma chega mais perto da base do
+  // quadro. Ajusta só a apresentação da morte, sem alterar a hitbox.
+  deathFrameGroundOffsets?: readonly number[];
   scale: number;
   animations: Record<EnemyAnimation, { start: number; end: number; frameRate: number }>;
   // Golpes: quadros de cada fase (aviso, acerto e recuperação). As durações
@@ -19,7 +22,7 @@ export type EnemyAnimation = 'idle' | 'walk' | 'hit' | 'death';
 // Prisioneiro acorrentado: quadros de 560x360 numa grade de 6 colunas.
 export const CHAINED_PRISONER_SPRITE = {
   key: 'enemy-chained-prisoner',
-  path: 'assets/enemies/sprite_sheet_morto_vivo_acorrentado.png',
+  path: 'assets/enemies/sprite_sheet_morto_vivo_acorrentado.webp',
   frameWidth: 560,
   frameHeight: 360,
   feetX: 250,
@@ -45,7 +48,7 @@ export const CHAINED_PRISONER_SPRITE = {
 // pelas patas. Quadros de 206x99, grade de 8 colunas.
 export const SHACKLE_RAT_SPRITE = {
   key: 'enemy-shackle-rat',
-  path: 'assets/enemies/sprite_sheet_rato_do_grilhao.png',
+  path: 'assets/enemies/sprite_sheet_rato_do_grilhao.webp',
   frameWidth: 206,
   frameHeight: 99,
   feetX: 103,
@@ -69,7 +72,7 @@ export const SHACKLE_RAT_SPRITE = {
 // grade de 8 colunas.
 export const SLUDGE_SUPPLICANT_SPRITE = {
   key: 'enemy-sludge-supplicant',
-  path: 'assets/enemies/sprite_sheet_suplicante_do_lodo.png',
+  path: 'assets/enemies/sprite_sheet_suplicante_do_lodo.webp',
   frameWidth: 267,
   frameHeight: 241,
   feetX: 133,
@@ -92,11 +95,14 @@ export const SLUDGE_SUPPLICANT_SPRITE = {
 // desenhada maior). Quadros de 297x220, grade de 6 colunas.
 export const VEIL_JAILER_SPRITE = {
   key: 'enemy-veil-jailer',
-  path: 'assets/enemies/sprite_sheet_carcereiro_do_veu.png',
+  path: 'assets/enemies/sprite_sheet_carcereiro_do_veu.webp',
   frameWidth: 297,
   frameHeight: 220,
   feetX: 142,
   feetY: 216,
+  // O gancho permanece baixo nos últimos quadros enquanto o corpo cai para o
+  // lado. Sem este ajuste, a massa do cadáver parece suspensa sobre o piso.
+  deathFrameGroundOffsets: [0, 0, 0, 6, 14, 23, 30, 34],
   // ~10% mais alto que o jogador.
   scale: 0.78,
   animations: {
@@ -114,7 +120,7 @@ export const VEIL_JAILER_SPRITE = {
 // Detrito de lodo (pedra, osso e lodo) girando: 6 quadros de 80x76.
 export const SLUDGE_BALL_SPRITE = {
   key: 'projectile-sludge-debris',
-  path: 'assets/enemies/sprite_sheet_projetil_detrito_lodo.png',
+  path: 'assets/enemies/sprite_sheet_projetil_detrito_lodo.webp',
   frameWidth: 80,
   frameHeight: 76,
   frameCount: 6,

@@ -39,8 +39,9 @@ export const REAPER_KING = {
     windupMs: 440,
     activeMs: 170,
     recoveryMs: 440,
-    // Varredura larga da foice, do alto da cabeça até o chão à frente.
-    hitbox: { forward: 10, up: 230, width: 290, height: 230 },
+    // Estocada horizontal: a lâmina avança à frente do tronco, na altura do
+    // peito. É comprida, mas não acerta atrás nem cobre o chão inteiro.
+    hitbox: { forward: 20, up: 180, width: 330, height: 120 },
   },
   throwScythe: {
     damage: 26,
@@ -100,7 +101,7 @@ export const ROOT_OF_CONDEMNED = {
   // Alcances horizontais (centro a centro).
   biteRange: 290,
   sweepRange: 380,
-  cageRange: 300,
+  cageRange: 420,
   spitMinRange: 460,
   // Pausa entre decisões; a fase 3 encurta só esta pausa, nunca os avisos.
   cooldownMs: 700,
@@ -113,12 +114,13 @@ export const ROOT_OF_CONDEMNED = {
   phaseThreeRatio: 0.3,
   phaseThreeCooldownFactor: 0.7,
   burrowChance: 0.3,
-  cageChance: 0.35,
+  cageChance: 0.6,
   // Mordida à frente; varredura atrás (pega quem fica nas costas).
   bite: { damage: 30, hitbox: { forward: 50, up: 220, width: 240, height: 200 } },
   sweep: { damage: 24, hitbox: { forward: -410, up: 190, width: 460, height: 170 } },
-  // Cárcere: estacas dos dois lados, com zona segura colada ao corpo.
-  cage: { damage: 26, safeHalfWidth: 90, reach: 420, height: 280 },
+  // Cárcere: raízes irrompem por toda a área ao redor do corpo. Ficar
+  // encostado nela também é perigoso; a saída segura é deixar o alcance.
+  cage: { damage: 26, safeHalfWidth: 0, reach: 420, height: 280 },
   spit: {
     damage: 22,
     mouth: { forward: 190, up: 150 },

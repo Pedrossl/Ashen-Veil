@@ -2,7 +2,7 @@
 // os pés na linha `feetY` e alinhados horizontalmente em `feetX`.
 export const REAPER_KING_SPRITE = {
   key: 'boss-reaper-king',
-  path: 'assets/bosses/sprite_sheet_rei_ceifador.png',
+  path: 'assets/bosses/sprite_sheet_rei_ceifador.webp',
   frameWidth: 820,
   frameHeight: 340,
   feetX: 300,
@@ -21,7 +21,7 @@ export const REAPER_KING_SPRITE = {
 // Foice espectral girando no arremesso da segunda fase.
 export const SPECTRAL_SCYTHE_IMAGE = {
   key: 'boss-spectral-scythe',
-  path: 'assets/bosses/foice_espectral.png',
+  path: 'assets/bosses/foice_espectral.webp',
 } as const;
 
 export type ReaperKingAnimation = keyof typeof REAPER_KING_SPRITE.animations;
@@ -33,7 +33,7 @@ export type ReaperKingAnimation = keyof typeof REAPER_KING_SPRITE.animations;
 // início de cada animação, como no manifesto.
 export const ROOT_BOSS_SPRITE = {
   key: 'boss-root-of-condemned',
-  path: 'assets/bosses/sprite_sheet_raiz_dos_condenados.png',
+  path: 'assets/bosses/sprite_sheet_raiz_dos_condenados.webp',
   frameWidth: 478,
   frameHeight: 412,
   feetY: 408,
@@ -55,7 +55,7 @@ export const ROOT_BOSS_SPRITE = {
 // Monte de terra e raízes que segue o boss por baixo do chão (6 quadros).
 export const ROOT_TRAIL_SPRITE = {
   key: 'boss-root-trail',
-  path: 'assets/bosses/sprite_sheet_raiz_rastro.png',
+  path: 'assets/bosses/sprite_sheet_raiz_rastro.webp',
   frameWidth: 425,
   frameHeight: 361,
   frames: 6,
@@ -66,7 +66,7 @@ export const ROOT_TRAIL_SPRITE = {
 // Globo de lodo, ossos e pedras do cuspe (6 quadros girando).
 export const ROOT_SPIT_SPRITE = {
   key: 'boss-root-spit',
-  path: 'assets/bosses/sprite_sheet_raiz_cuspe.png',
+  path: 'assets/bosses/sprite_sheet_raiz_cuspe.webp',
   frameWidth: 151,
   frameHeight: 130,
   frameCount: 6,
