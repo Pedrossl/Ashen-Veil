@@ -1,5 +1,7 @@
+import { addAmbientSource } from '../../systems/Soundscape';
 import Phaser from 'phaser';
 
+import { GroundMessage } from '../../entities/world/GroundMessage';
 import { MeleeEnemy } from '../../entities/enemies/MeleeEnemy';
 import type { WorldState } from '../../systems/WorldState';
 import type { Room } from '../types';
@@ -97,6 +99,12 @@ export function createCellBlockCorridor(scene: Phaser.Scene, _world: WorldState)
 
   return {
     title: 'Corredor do Bloco de Celas',
+    groundMessages: [
+      new GroundMessage(scene, { x: 420, floorY: FLOOR_Y, text: 'Golpeie com {attack}. Cada golpe gasta stamina, a barra de baixo.' }),
+      new GroundMessage(scene, { x: 800, floorY: FLOOR_Y, text: 'Role com {dodge}. No meio do rolamento, os golpes atravessam o corpo.' }),
+      new GroundMessage(scene, { x: 1700, floorY: FLOOR_Y, text: 'Ferido? Beba a ampola com {useItem}. Dá para andar enquanto bebe.' }),
+      new GroundMessage(scene, { x: 2030, floorY: FLOOR_Y, text: 'Golpes fortes avisam antes. Espere, role e só então castigue.' }),
+    ],
     subtitle: 'Bloco de Celas · Subnível I',
     floorY: FLOOR_Y,
     bounds: { x: 0, y: 183, width: WIDTH, height: 534 },
@@ -117,7 +125,12 @@ export function createCellBlockCorridor(scene: Phaser.Scene, _world: WorldState)
     ],
     gates: [],
     pickups: [],
-    enemies: [prisoner],
+    enemies: [
+      prisoner,
+      // Ratos roendo restos no meio do corredor, antes do prisioneiro.
+      new MeleeEnemy(scene, { kind: 'shackleRat', x: 1150, floorY: FLOOR_Y, patrolMinX: 1050, patrolMaxX: 1300, facing: 'left' }),
+      new MeleeEnemy(scene, { kind: 'shackleRat', x: 1260, floorY: FLOOR_Y, patrolMinX: 1120, patrolMaxX: 1400, facing: 'right' }),
+    ],
     stairs: [],
   };
 }
@@ -185,6 +198,7 @@ function addDarkPassage(
 }
 
 function addHangingCage(scene: Phaser.Scene, frame: string, x: number, scale: number): void {
+  addAmbientSource(scene, 'chains', x, CEILING_Y + 100);
   const cage = scene.add
     .image(x, CEILING_Y + 4, PRISON_ATLAS_KEY, frame)
     .setOrigin(0.5, 0)

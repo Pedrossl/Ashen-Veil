@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 
+import { GroundMessage } from '../../entities/world/GroundMessage';
 import { ITEMS } from '../../data/items';
 import { CellGate } from '../../entities/world/CellGate';
 import { ItemPickup } from '../../entities/world/ItemPickup';
@@ -92,6 +93,10 @@ export function createCellRoom(scene: Phaser.Scene, world: WorldState): Room {
 
   return {
     title: 'Cela Esquecida',
+    groundMessages: [
+      new GroundMessage(scene, { x: 760, floorY: FLOOR_Y, text: 'Ande com {left} e {right}. Segure {run} para correr.' }),
+      new GroundMessage(scene, { x: 590, floorY: FLOOR_Y, text: 'Algo brilha atrás da cama. Chegue perto e use {interact}.' }),
+    ],
     subtitle: 'Bloco de Celas · Subnível I',
     floorY: FLOOR_Y,
     // Limites justos: a câmera fica praticamente parada enquadrando a cela.

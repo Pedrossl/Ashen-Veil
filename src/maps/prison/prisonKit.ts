@@ -1,4 +1,7 @@
+import { addAmbientSource } from '../../systems/Soundscape';
 import Phaser from 'phaser';
+
+import { EXPANSION_ATLASES, type ExpansionAtlas } from '../../data/prisonSprites';
 
 // Peças da prisão recortadas do tileset medieval com fundo transparente.
 export const PRISON_ATLAS_KEY = 'prison-cell-atlas';
@@ -6,6 +9,13 @@ export const PRISON_ATLAS_IMAGE_PATH = 'assets/prison/atlas_cela_prisao.png';
 export const PRISON_ATLAS_DATA_PATH = 'assets/prison/atlas_cela_prisao.json';
 export const CELL_BED_KEY = 'cell-bed';
 export const CELL_BED_PATH = 'assets/prison/cama_cela_original.png';
+
+// Atlas da expansão e baú ficam em data/ (entidades também usam as chaves).
+export {
+  EXPANSION_ATLASES,
+  PRISON_CHEST_SPRITE,
+  type ExpansionAtlas,
+} from '../../data/prisonSprites';
 
 // Toda a prisão usa a mesma altura de piso e teto baixo.
 export const FLOOR_Y = 562;
@@ -34,11 +44,27 @@ export type PropPlacement = {
   flipX?: boolean;
   // Primeiro plano com parallax (> 1 passa mais rápido que o cenário).
   scrollFactor?: number;
+  // Peça de um tileset da expansão; sem valor, vem do atlas da cela.
+  atlas?: ExpansionAtlas;
 };
+
+// Atalho para peças da expansão com a tinta padrão de cada sala:
+// `const piece = expansionPiece(TINTA)` e depois `piece('damp', 'drain-pipe', x, base, escala, profundidade)`.
+export function expansionPiece(defaultTint: number) {
+  return (
+    atlas: ExpansionAtlas,
+    frame: string,
+    x: number,
+    bottomY: number,
+    scale: number,
+    depth: number,
+    extra: Partial<PropPlacement> = {},
+  ): PropPlacement => ({ atlas, frame, x, bottomY, scale, depth, tint: defaultTint, ...extra });
+}
 
 export function addProp(scene: Phaser.Scene, prop: PropPlacement): Phaser.GameObjects.Image {
   return scene.add
-    .image(prop.x, prop.bottomY, PRISON_ATLAS_KEY, prop.frame)
+    .image(prop.x, prop.bottomY, prop.atlas ? EXPANSION_ATLASES[prop.atlas].key : PRISON_ATLAS_KEY, prop.frame)
     .setOrigin(0.5, 1)
     .setScale(prop.scale)
     .setDepth(prop.depth)
@@ -113,6 +139,7 @@ export function addPillar(
 }
 
 export function addTorchGlow(scene: Phaser.Scene, x: number, y: number): void {
+  addAmbientSource(scene, 'fire', x, y);
   const glow = scene.add.container(x, y).setDepth(4);
 
   glow.add([
@@ -153,6 +180,22 @@ export function addDust(
       repeat: -1,
     });
   }
+}
+
+// Plataforma de mão única: dá para passar por baixo e pousar por cima.
+export function createOneWayPlatform(
+  scene: Phaser.Scene,
+  fromX: number,
+  topY: number,
+  width: number,
+): Phaser.GameObjects.Rectangle {
+  const platform = createStaticCollider(scene, fromX + width / 2, topY + 10, width, 20);
+  const body = platform.body as Phaser.Physics.Arcade.StaticBody;
+
+  body.checkCollision.down = false;
+  body.checkCollision.left = false;
+  body.checkCollision.right = false;
+  return platform;
 }
 
 export function createStaticCollider(

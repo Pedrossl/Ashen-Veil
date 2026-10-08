@@ -1,5 +1,7 @@
+import { addAmbientSource } from '../../systems/Soundscape';
 import Phaser from 'phaser';
 
+import { GroundMessage } from '../../entities/world/GroundMessage';
 import { ITEM_IMAGES, ITEMS } from '../../data/items';
 import { MeleeEnemy } from '../../entities/enemies/MeleeEnemy';
 import { Bonfire } from '../../entities/world/Bonfire';
@@ -15,6 +17,7 @@ import {
   addProp,
   addStoneLedges,
   addTorchGlow,
+  createOneWayPlatform,
   createStaticCollider,
   FLOOR_Y,
   PRISON_ATLAS_KEY,
@@ -89,11 +92,10 @@ export function createChainWell(scene: Phaser.Scene, world: WorldState): Room {
   // O baú no fim da galeria guarda a primeira arma.
   const chest = new Chest(scene, {
     id: CHEST_ID,
-    atlasKey: PRISON_ATLAS_KEY,
     x: 1880,
     floorY: GALLERY_Y + 2,
-    scale: 1.5,
-    tint: 0xe6dcef,
+    scale: 0.55,
+    tint: 0xd8cede,
     depth: 8,
     item: ITEMS.bambooSword,
     itemTextureKey: ITEM_IMAGES['bamboo-sword'].key,
@@ -132,6 +134,12 @@ export function createChainWell(scene: Phaser.Scene, world: WorldState): Room {
 
   return {
     title: 'Poço das Correntes',
+    groundMessages: [
+      new GroundMessage(scene, { x: 300, floorY: FLOOR_Y, text: 'Carcereiro adiante. Ele mal sente os golpes: castigue depois do gancho.' }),
+      new GroundMessage(scene, { x: 1630, floorY: GALLERY_Y, text: '{up} e {down} sobem e descem escadas.' }),
+      new GroundMessage(scene, { x: 1790, floorY: GALLERY_Y, text: 'Armas achadas ficam no inventário: {inventory}. {switchWeapon} troca de arma.' }),
+      new GroundMessage(scene, { x: 1690, floorY: LEDGE_Y, text: 'Descanse na lanterna com {interact}: vida, stamina e ampolas voltam, mas os mortos se levantam.' }),
+    ],
     subtitle: 'Bloco de Celas · Subnível II',
     floorY: FLOOR_Y,
     bounds: { x: 0, y: CEILING_Y - 60, width: WIDTH, height: FLOOR_Y + 155 - CEILING_Y + 60 },
@@ -144,8 +152,8 @@ export function createChainWell(scene: Phaser.Scene, world: WorldState): Room {
     },
     exits: [
       { side: 'left', x: 60, toRoom: 'prison-cell-block', toEntry: 'deep' },
-      // A porta de ferro da plataforma alta desce ao covil do boss.
-      { side: 'right', x: 1935, toRoom: 'prison-boss-lair', toEntry: 'well', maxFeetY: 0 },
+      // A porta de ferro da plataforma alta leva às Galerias Alagadas.
+      { side: 'right', x: 1935, toRoom: 'prison-drowned-galleries', toEntry: 'well', maxFeetY: 0 },
     ],
     colliders: [
       createStaticCollider(scene, WIDTH / 2, FLOOR_Y + 24, WIDTH, 48),
@@ -156,7 +164,11 @@ export function createChainWell(scene: Phaser.Scene, world: WorldState): Room {
     ],
     gates: [],
     pickups: [],
-    enemies: [jailer],
+    enemies: [
+      jailer,
+      new MeleeEnemy(scene, { kind: 'shackleRat', x: 1450, floorY: GALLERY_Y, patrolMinX: 1300, patrolMaxX: 1650, facing: 'left' }),
+      new MeleeEnemy(scene, { kind: 'shackleRat', x: 1000, floorY: FLOOR_Y, patrolMinX: 880, patrolMaxX: 1300, facing: 'left' }),
+    ],
     stairs: [stairs],
     ladders: [ladder],
     chests: [chest],
@@ -200,6 +212,7 @@ function addLedge(scene: Phaser.Scene): void {
 
 // Gaiola pendurada por uma corrente longa, balançando a partir do teto.
 function addCageOnChain(scene: Phaser.Scene, frame: string, x: number, cageTopY: number): void {
+  addAmbientSource(scene, 'chains', x, cageTopY);
   const anchorY = CEILING_Y + 10;
   const length = cageTopY - anchorY;
   const swing = scene.add
@@ -299,17 +312,3 @@ function addDepthShading(scene: Phaser.Scene): void {
 }
 
 // Plataforma que só segura por cima: dá para passar embaixo e subir pela escada.
-function createOneWayPlatform(
-  scene: Phaser.Scene,
-  fromX: number,
-  topY: number,
-  width: number,
-): Phaser.GameObjects.Rectangle {
-  const platform = createStaticCollider(scene, fromX + width / 2, topY + 10, width, 20);
-  const body = platform.body as Phaser.Physics.Arcade.StaticBody;
-
-  body.checkCollision.down = false;
-  body.checkCollision.left = false;
-  body.checkCollision.right = false;
-  return platform;
-}

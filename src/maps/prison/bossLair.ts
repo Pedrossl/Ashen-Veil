@@ -1,5 +1,7 @@
+import { addAmbientSource } from '../../systems/Soundscape';
 import Phaser from 'phaser';
 
+import { REAPER_KING } from '../../data/bosses';
 import { ReaperKing } from '../../entities/bosses/ReaperKing';
 import type { WorldState } from '../../systems/WorldState';
 import type { Room } from '../types';
@@ -20,7 +22,6 @@ const THRONE_X = 2080;
 const WALL_TINT = 0x564c63;
 const ARCH_TINT = 0x483f55;
 const BONE_TINT = 0xb7aa9a;
-const BOSS_DEFEATED_FLAG = 'boss-defeated:reaper-king';
 
 // Colunata de arcos gigantes ao fundo; cada nicho guarda ossos.
 const ARCHES_X = [470, 950, 1430] as const;
@@ -87,7 +88,7 @@ export function createBossLair(scene: Phaser.Scene, world: WorldState): Room {
   addShading(scene);
 
   // O boss espera diante do trono e desperta quando o jogador avança.
-  const bosses = world.hasFlag(BOSS_DEFEATED_FLAG)
+  const bosses = world.hasFlag(REAPER_KING.defeatedFlag)
     ? []
     : [
         new ReaperKing(scene, {
@@ -95,7 +96,7 @@ export function createBossLair(scene: Phaser.Scene, world: WorldState): Room {
           floorY: FLOOR_Y,
           minX: 320,
           maxX: WIDTH - 120,
-          onDefeated: () => world.setFlag(BOSS_DEFEATED_FLAG),
+          onDefeated: () => world.setFlag(REAPER_KING.defeatedFlag),
         }),
       ];
 
@@ -108,7 +109,7 @@ export function createBossLair(scene: Phaser.Scene, world: WorldState): Room {
     entries: {
       well: { x: 220, facing: 'right' },
     },
-    exits: [{ side: 'left', x: 60, toRoom: 'prison-chain-well', toEntry: 'ledge' }],
+    exits: [{ side: 'left', x: 60, toRoom: 'prison-drowned-galleries', toEntry: 'boss' }],
     colliders: [
       createStaticCollider(scene, WIDTH / 2, FLOOR_Y + 24, WIDTH, 48),
       createStaticCollider(scene, 20, 200, 30, 900),
@@ -239,6 +240,7 @@ function addStandingTorch(scene: Phaser.Scene, frame: string, x: number): void {
 
 // Luz quente que tremula em volta de uma chama.
 function addFlicker(scene: Phaser.Scene, x: number, y: number, size: number): void {
+  addAmbientSource(scene, 'fire', x, y);
   const glow = scene.add.container(x, y).setDepth(6);
 
   glow.add([
