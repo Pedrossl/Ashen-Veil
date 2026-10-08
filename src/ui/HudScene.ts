@@ -4,6 +4,8 @@ import {
   GAME_EVENTS,
   type BossEngaged,
   type ConsumableChange,
+  type GroundMessageShown,
+  type RewardReceived,
   type StatChange,
   type WeaponChange,
 } from '../core/gameEvents';
@@ -28,7 +30,6 @@ export class HudScene extends Phaser.Scene {
   private equipment?: Phaser.GameObjects.Image;
   private weaponIcon?: Phaser.GameObjects.Image;
   private consumable?: { icon: Phaser.GameObjects.Image; count: Phaser.GameObjects.Text };
-  private bossBar?: { root: Phaser.GameObjects.Container; name: Phaser.GameObjects.Text; bar: StatBar };
   private health?: StatBar;
   private stamina?: StatBar;
 
@@ -71,7 +72,10 @@ export class HudScene extends Phaser.Scene {
     this.createWeaponIcon();
     this.createConsumableSlot();
     this.createBossBar();
+    this.createRootBar();
     this.listenForDeath();
+    this.listenForRewards();
+    this.createGroundMessageBox();
   }
 
   public update(): void {
@@ -126,7 +130,6 @@ export class HudScene extends Phaser.Scene {
       .setVisible(false);
 
     const bar: StatBar = { fill, trail, shown: { ratio: 1 }, trailShown: { ratio: 1 } };
-    this.bossBar = { root, name, bar };
 
     const onEngaged = (boss: BossEngaged): void => {
       name.setText(boss.name);
@@ -156,6 +159,170 @@ export class HudScene extends Phaser.Scene {
     handlers.forEach(([event, handler]) => this.game.events.on(event, handler));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       handlers.forEach(([event, handler]) => this.game.events.off(event, handler));
+    });
+  }
+
+  // Barra verde de raízes: só aparece enquanto tem algo acumulado; perto de
+  // encher, pulsa para avisar que a Raiz vai arrastar o jogador.
+  private createRootBar(): void {
+    const { margin, rootBar } = HUD_LAYOUT;
+    const frameHeight = this.textures.getFrame(HUD_ATLAS.key, 'frame').height;
+    const x = margin.x + rootBar.x;
+    const y = margin.y + frameHeight + rootBar.gap;
+
+    const back = this.add
+      .rectangle(x - 2, y - 2, rootBar.width + 4, rootBar.height + 4, 0x070b08, 0.85)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x4f6b48);
+    const fill = this.add.rectangle(x, y, rootBar.width, rootBar.height, 0x6adf6a).setOrigin(0);
+    const label = this.add
+      .text(x - 6, y + rootBar.height / 2, 'RAÍZES', {
+        color: '#a8e09a',
+        fontFamily: 'Georgia, serif',
+        fontSize: '11px',
+        letterSpacing: 2,
+        stroke: '#050805',
+        strokeThickness: 3,
+      })
+      .setOrigin(1, 0.5);
+    const root = this.add.container(0, 0, [back, fill, label]).setVisible(false);
+    const shown = { ratio: 0 };
+    fill.setScale(0, 1);
+
+    const handler = (change: StatChange): void => {
+      const ratio = change.max > 0 ? Phaser.Math.Clamp(change.current / change.max, 0, 1) : 0;
+      const visible = ratio > 0;
+
+      if (visible && !root.visible) {
+        root.setVisible(true).setAlpha(1);
+      }
+
+      this.tweens.killTweensOf(shown);
+      this.tweens.add({
+        targets: shown,
+        ratio,
+        duration: 160,
+        ease: 'Quad.Out',
+        onUpdate: () => fill.setScale(shown.ratio, 1),
+        onComplete: () => {
+          fill.setScale(shown.ratio, 1);
+          root.setVisible(shown.ratio > 0);
+        },
+      });
+
+      // Cada acúmulo pisca a barra; quase cheia, ela fica pulsando.
+      if (ratio > shown.ratio) {
+        this.tweens.add({ targets: fill, alpha: { from: 0.4, to: 1 }, duration: 220 });
+      }
+      fill.setFillStyle(ratio >= 0.65 ? 0xb4ff7a : 0x6adf6a);
+    };
+
+    const dismiss = (): void => {
+      this.tweens.killTweensOf(shown);
+      shown.ratio = 0;
+      fill.setScale(0, 1);
+      root.setVisible(false);
+    };
+
+    this.game.events.on(GAME_EVENTS.playerRootBuildupChanged, handler);
+    this.game.events.on(GAME_EVENTS.bossDismissed, dismiss);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(GAME_EVENTS.playerRootBuildupChanged, handler);
+      this.game.events.off(GAME_EVENTS.bossDismissed, dismiss);
+    });
+  }
+
+  // Mensagem do chão: caixa escura com o texto, como nos soulslike. Aparece
+  // enquanto o jogador está sobre ela.
+  private createGroundMessageBox(): void {
+    const { bottom, width, padding } = HUD_LAYOUT.groundMessage;
+    const text = this.add
+      .text(0, 0, '', {
+        color: '#d9cbb0',
+        fontFamily: 'Georgia, serif',
+        fontSize: '14px',
+        fontStyle: 'italic',
+        align: 'center',
+        lineSpacing: 4,
+        wordWrap: { width: width - padding * 2 },
+        stroke: '#0b0810',
+        strokeThickness: 2,
+      })
+      .setOrigin(0.5);
+    const box = this.add.rectangle(0, 0, width, 40, 0x07050a, 0.45);
+    const root = this.add.container(this.scale.width / 2, this.scale.height - bottom, [box, text]).setAlpha(0);
+
+    const onShown = (message: GroundMessageShown): void => {
+      text.setText(message.text);
+      box.setSize(Math.min(width, text.width + padding * 4), text.height + padding * 2);
+      this.tweens.killTweensOf(root);
+      this.tweens.add({ targets: root, alpha: 0.9, duration: 400, ease: 'Sine.Out' });
+    };
+    const onHidden = (): void => {
+      this.tweens.killTweensOf(root);
+      this.tweens.add({ targets: root, alpha: 0, duration: 320, ease: 'Sine.In' });
+    };
+
+    this.game.events.on(GAME_EVENTS.groundMessageShown, onShown);
+    this.game.events.on(GAME_EVENTS.groundMessageHidden, onHidden);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(GAME_EVENTS.groundMessageShown, onShown);
+      this.game.events.off(GAME_EVENTS.groundMessageHidden, onHidden);
+    });
+  }
+
+  private listenForRewards(): void {
+    const handler = (reward: RewardReceived): void => this.showReward(reward);
+    this.game.events.on(GAME_EVENTS.rewardReceived, handler);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(GAME_EVENTS.rewardReceived, handler);
+    });
+  }
+
+  // Lista do que foi recebido, depois do "GRANDE INIMIGO ABATIDO".
+  private showReward(reward: RewardReceived): void {
+    if (reward.lines.length === 0) {
+      return;
+    }
+
+    const { width, height } = this.scale;
+    const title = this.add
+      .text(width / 2, height * 0.36, 'RECOMPENSA', {
+        color: '#b9a7e0',
+        fontFamily: 'Georgia, serif',
+        fontSize: '18px',
+        letterSpacing: 6,
+        stroke: '#07050b',
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5);
+    const objects: Array<Phaser.GameObjects.Text | Phaser.GameObjects.Image> = [title];
+    reward.lines.forEach((line, index) => {
+      const y = height * 0.36 + 44 + index * 40;
+      const text = this.add
+        .text(width / 2 + 20, y, line.text, {
+          color: '#f0e2c4',
+          fontFamily: 'Georgia, serif',
+          fontSize: '20px',
+          stroke: '#0b0810',
+          strokeThickness: 4,
+        })
+        .setOrigin(0.5);
+      objects.push(text);
+
+      if (line.icon && this.textures.exists(line.icon)) {
+        objects.push(this.add.image(text.x - text.width / 2 - 22, y, line.icon).setDisplaySize(34, 34));
+      }
+    });
+    objects.forEach((object) => object.setAlpha(0));
+
+    this.tweens.chain({
+      targets: objects,
+      tweens: [
+        { alpha: 1, duration: 700, delay: HUD_ANIMATION.rewardDelay, ease: 'Sine.Out' },
+        { alpha: 0, duration: 900, delay: HUD_ANIMATION.rewardHold, ease: 'Sine.In' },
+      ],
+      onComplete: () => objects.forEach((object) => object.destroy()),
     });
   }
 
@@ -255,10 +422,10 @@ export class HudScene extends Phaser.Scene {
       .text(x + consumableSlot.countOffset.x * slots.scale, y + consumableSlot.countOffset.y * slots.scale, '', {
         color: '#f0e2c4',
         fontFamily: 'Georgia, serif',
-        fontSize: '13px',
+        fontSize: '18px',
         fontStyle: 'bold',
         stroke: '#0b0810',
-        strokeThickness: 3,
+        strokeThickness: 4,
       })
       .setOrigin(1, 1)
       .setVisible(false);
