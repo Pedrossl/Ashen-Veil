@@ -8,7 +8,7 @@ import {
   type HitboxDefinition,
 } from '../data/combat';
 import { COOP_MODIFIERS, getDifficulty } from '../data/difficulty';
-import { isCoopSession } from './Session';
+import { isCoopActive } from './Session';
 import { showCriticalHit } from '../ui/CriticalHit';
 
 // Golpe em andamento. `swingId` muda a cada golpe para que um mesmo golpe
@@ -31,6 +31,9 @@ export type Hit = {
   critical?: boolean;
   // Quem deu o golpe (o jogador ou o parceiro): alimenta a ameaça dos inimigos.
   source?: object;
+  // Parte do boss atingida (ex.: bolha de sangue); no cooperativo, viaja com
+  // o golpe repassado para o jogo que comanda o boss.
+  part?: number;
 };
 
 // Cooperativo: inimigo ou boss comandado pelo jogo do parceiro. Os golpes
@@ -150,7 +153,7 @@ export class CombatSystem {
   // (dano recebido pela metade) e golpes mais fortes.
   private damageMultiplier(attacker: Faction, target: Faction): number {
     const difficulty = getDifficulty(this.scene.game);
-    const coop = isCoopSession(this.scene.game);
+    const coop = isCoopActive(this.scene.game);
 
     if (attacker === 'player' && target === 'enemy') {
       return difficulty.playerDamageMultiplier / (coop ? COOP_MODIFIERS.enemyHealthMultiplier : 1);

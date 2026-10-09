@@ -14,6 +14,9 @@ export const GAME_EVENTS = {
   // Barra do boss: aparece ao despertar, acompanha a vida e some na morte.
   bossEngaged: 'boss:engaged',
   bossHealthChanged: 'boss:health-changed',
+  // Segunda barra do boss, embaixo da vida (ex.: sangue do Cirurgião Rubro);
+  // payload BossGaugeChanged. Some com o boss.
+  bossGaugeChanged: 'boss:gauge-changed',
   bossDefeated: 'boss:defeated',
   // A sala mudou: qualquer barra de boss na tela deve sumir.
   bossDismissed: 'boss:dismissed',
@@ -26,6 +29,10 @@ export const GAME_EVENTS = {
   // Mensagem no chão sendo lida (payload GroundMessageShown) e fim da leitura.
   groundMessageShown: 'ground-message:shown',
   groundMessageHidden: 'ground-message:hidden',
+  // Cooperativo: aviso curto na tela (payload string), ex.: o parceiro saiu.
+  coopNotice: 'coop:notice',
+  // Cooperativo: a partida acabou (o anfitrião saiu ou a conexão caiu).
+  coopEnded: 'coop:ended',
 } as const;
 
 export type GroundMessageShown = {
@@ -39,6 +46,12 @@ export type WorldFlagSet = {
 export type RewardReceived = {
   // Uma linha por item, já com o texto e o ícone (textura) para mostrar.
   lines: Array<{ text: string; icon?: string }>;
+};
+
+export type BossGaugeChanged = {
+  label: string;
+  current: number;
+  max: number;
 };
 
 export type BossEngaged = {

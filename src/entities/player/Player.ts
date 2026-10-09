@@ -547,7 +547,7 @@ export class Player
 
     return {
       swingId: this.swingId,
-      damage: attackDamage(this.stats.weapon, this.currentAttack, this.isCriticalSwing),
+      damage: attackDamage(this.stats.weapon, this.currentAttack, this.isCriticalSwing) * this.stats.damageFactor,
       hitbox: this.currentAttack.hitbox,
       isActive: frame >= from && frame <= to,
       critical: this.isCriticalSwing,
@@ -579,6 +579,14 @@ export class Player
     (this.body as Phaser.Physics.Arcade.Body).setVelocityX(HIT_KNOCKBACK_SPEED * hit.direction);
     this.setTint(HIT_FLASH_TINT);
     this.scene.time.delayedCall(HIT_FLASH_MS, () => this.applySkinTint());
+  }
+
+  // Dano contínuo do terreno (ex.: sangue alagando a arena): tira vida aos
+  // poucos, sem empurrar nem interromper.
+  takeHazardDamage(amount: number): void {
+    if (!this.isDead && !this.stats.infiniteHealth) {
+      this.stats.health.damage(amount);
+    }
   }
 
   // O golpe vem da arma equipada: trocar de arma troca dano, custo e alcance.

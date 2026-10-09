@@ -21,9 +21,11 @@ export const CONTROL_BINDINGS = {
   inventory: [KeyCodes.TAB],
   // Bebe a ampola de cura.
   useItem: [KeyCodes.R],
-  // Só em desenvolvimento: liga/desliga a vida infinita.
-  devInfiniteHealth: [KeyCodes.I],
 } as const;
+
+// Código secreto: segurar todas estas teclas juntas liga/desliga o modo VIDA
+// (vida infinita e dano x10, ver CHEAT_MODE em data/player.ts).
+export const CHEAT_CODE = [KeyCodes.V, KeyCodes.I, KeyCodes.D, KeyCodes.A] as const;
 
 export type ControlAction = keyof typeof CONTROL_BINDINGS;
 
@@ -57,6 +59,9 @@ export function withKeyLabels(text: string): string {
 
 export class Controls {
   private readonly keys: Record<ControlAction, Phaser.Input.Keyboard.Key[]>;
+  private readonly cheatKeys: Phaser.Input.Keyboard.Key[];
+  private cheatHeld = false;
+  private enabled = true;
 
   constructor(keyboard: Phaser.Input.Keyboard.KeyboardPlugin) {
     this.keys = {
@@ -73,18 +78,37 @@ export class Controls {
       dodge: CONTROL_BINDINGS.dodge.map((code) => keyboard.addKey(code)),
       run: CONTROL_BINDINGS.run.map((code) => keyboard.addKey(code)),
       interact: CONTROL_BINDINGS.interact.map((code) => keyboard.addKey(code)),
-      devInfiniteHealth: CONTROL_BINDINGS.devInfiniteHealth.map((code) => keyboard.addKey(code)),
     };
+    this.cheatKeys = CHEAT_CODE.map((code) => keyboard.addKey(code));
+  }
+
+  // Verdadeiro só no quadro em que a última tecla do código é apertada;
+  // continuar segurando não liga e desliga de novo.
+  cheatCodeEntered(): boolean {
+    const held = this.cheatKeys.every((key) => key.isDown);
+    const entered = held && !this.cheatHeld;
+    this.cheatHeld = held;
+    return entered;
+  }
+
+  // Desligado (ex.: inventário aberto por cima do jogo, que não pausa), o
+  // personagem não recebe comandos. Ao religar, apertos feitos enquanto
+  // estava desligado são esquecidos (o Tab que fechou o inventário não o
+  // reabre, o Enter que equipou não interage).
+  setEnabled(enabled: boolean): void {
+    if (enabled && !this.enabled) {
+      Object.values(this.keys).flat().forEach((key) => Phaser.Input.Keyboard.JustDown(key));
+    }
+    this.enabled = enabled;
   }
 
   isDown(action: ControlAction): boolean {
-    return this.keys[action].some((key) => key.isDown);
+    return this.enabled && this.keys[action].some((key) => key.isDown);
   }
 
   justPressed(action: ControlAction): boolean {
-    return this.keys[action].some((key) =>
-      Phaser.Input.Keyboard.JustDown(key),
-    );
+    const pressed = this.keys[action].map((key) => Phaser.Input.Keyboard.JustDown(key)).some(Boolean);
+    return this.enabled && pressed;
   }
 
   verticalAxis(): -1 | 0 | 1 {
