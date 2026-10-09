@@ -23,7 +23,8 @@ export const HUD_LAYOUT = {
   // Caixa da mensagem do chão sendo lida, centralizada acima da barra do boss.
   groundMessage: { bottom: 140, width: 440, padding: 10 },
   // Barra do boss, centralizada na parte de baixo da tela.
-  bossBar: { width: 620, height: 11, bottom: 54 },
+  // `gauge`: segunda barra fina embaixo da vida (ex.: sangue do Cirurgião).
+  bossBar: { width: 620, height: 11, bottom: 54, gauge: { height: 6, gap: 9 } },
 } as const;
 
 export const HUD_ANIMATION = {

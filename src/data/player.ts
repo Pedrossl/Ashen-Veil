@@ -53,6 +53,12 @@ export const PLAYER_DODGE = {
   invulnerableFrames: { from: 1, to: 3 },
 } as const;
 
+// Modo VIDA, ligado pelo código secreto (CHEAT_CODE em core/controls.ts):
+// vida infinita e golpes muito mais fortes, para testar e mostrar o jogo.
+export const CHEAT_MODE = {
+  damageMultiplier: 10,
+} as const;
+
 // Atributos iniciais; números provisórios do planejamento.
 export const PLAYER_STATS = {
   maxHealth: 100,

@@ -30,8 +30,12 @@ const EQUIPPED_MARK = '  (equipada)';
 
 // Inventário simples sobre o jogo pausado: armas (escolher e equipar),
 // ampolas e itens-chave. Tab ou Esc fecha.
+// Logo depois de abrir, Tab/Esc não fecham (é o mesmo aperto que abriu).
+const OPEN_GRACE_MS = 150;
+
 export class InventoryScene extends Phaser.Scene {
   private controls?: Controls;
+  private openedAt = 0;
   private weaponRows: { id: WeaponId; text: Phaser.GameObjects.Text }[] = [];
   private selected = 0;
 
@@ -105,8 +109,10 @@ export class InventoryScene extends Phaser.Scene {
 
     this.selected = Math.max(0, owned.indexOf(state.equippedWeaponId));
     this.highlight(this.selected);
-    // Ignora o Tab que abriu a janela.
-    this.controls.justPressed('inventory');
+    // O Tab que abriu a janela ainda chega aqui no primeiro quadro (o jogo
+    // não pausa): ignora o fechar por um instante. Relógio do jogo, porque o
+    // desta scene guarda o tempo de quando ela foi fechada da última vez.
+    this.openedAt = this.game.loop.time;
   }
 
   update(): void {
@@ -116,8 +122,12 @@ export class InventoryScene extends Phaser.Scene {
       return;
     }
 
-    if (controls.justPressed('inventory') || controls.justPressed('cancel')) {
+    const closing = controls.justPressed('inventory') || controls.justPressed('cancel');
+
+    if (closing && this.game.loop.time - this.openedAt >= OPEN_GRACE_MS) {
       this.close();
+    } else if (closing) {
+      return;
     } else if (controls.justPressed('up')) {
       this.highlight((this.selected + this.weaponRows.length - 1) % this.weaponRows.length);
     } else if (controls.justPressed('down') || controls.justPressed('switchWeapon')) {
@@ -148,8 +158,9 @@ export class InventoryScene extends Phaser.Scene {
   }
 
   private close(): void {
+    // O jogo não pausa com o inventário aberto: a PrisonScene percebe o
+    // fechamento (SHUTDOWN desta scene) e devolve o controle ao jogador.
     this.scene.stop();
-    this.scene.resume('PrisonScene');
     // O fechamento continua tocando na scene retomada.
     playSound(this.scene.get('PrisonScene'), 'inventoryClose');
   }

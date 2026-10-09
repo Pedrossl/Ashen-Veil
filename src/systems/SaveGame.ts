@@ -2,7 +2,7 @@ import type Phaser from 'phaser';
 
 import { getDifficulty, setDifficulty, type DifficultyId } from '../data/difficulty';
 import { ITEMS, type ItemDefinition } from '../data/items';
-import { getSkin, setSkin, type SkinId } from '../data/skins';
+import { DEFAULT_SKIN, setSkin } from '../data/skins';
 import type { WeaponId } from '../data/weapons';
 import { PlayerState } from './PlayerState';
 import { getCoopRole, setCoopSession } from './Session';
@@ -25,7 +25,6 @@ export type WorldSnapshot = {
 
 type SaveData = WorldSnapshot & {
   difficulty: DifficultyId;
-  skinId: SkinId;
 };
 
 const ALL_ITEMS: readonly ItemDefinition[] = Object.values(ITEMS);
@@ -70,7 +69,6 @@ export function saveGame(game: Phaser.Game): void {
   const data: SaveData = {
     ...captureWorld(game),
     difficulty: getDifficulty(game).id,
-    skinId: getSkin(game).id as SkinId,
   };
 
   try {
@@ -104,7 +102,9 @@ export function loadGame(game: Phaser.Game): Checkpoint | undefined {
   applyWorld(game, data);
   setCoopSession(game, undefined);
   setDifficulty(game, data.difficulty);
-  if (data.skinId) setSkin(game, data.skinId);
+  // No solo o personagem usa a aparência original; o cooperativo escolhe a
+  // sua no lobby, depois de carregar.
+  setSkin(game, DEFAULT_SKIN);
   return data.checkpoint;
 }
 
@@ -119,6 +119,13 @@ export function startNewGame(game: Phaser.Game): void {
   WorldState.reset(game);
   PlayerState.reset(game);
   setCoopSession(game, undefined);
+  setSkin(game, DEFAULT_SKIN);
+}
+
+// Cooperativo, anfitrião: o mundo como está agora (para o convidado que volta
+// a uma partida em andamento).
+export function currentWorld(game: Phaser.Game): WorldSnapshot {
+  return captureWorld(game);
 }
 
 // Cooperativo, anfitrião: joga o próprio mundo (o save dele ou, sem save, um

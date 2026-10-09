@@ -34,6 +34,12 @@ export const ITEMS = {
     name: 'Anel do Fôlego Velado',
     category: 'ring',
   },
+  // Recompensa do Cirurgião Rubro.
+  crimsonScalpelRing: {
+    id: 'crimson-scalpel-ring',
+    name: 'Anel do Bisturi Rubro',
+    category: 'ring',
+  },
 } as const satisfies Record<string, ItemDefinition>;
 
 // Imagens dos itens para quando aparecem no mundo (ex.: saindo de um baú).
@@ -55,6 +61,11 @@ export const ITEM_IMAGES = {
     key: 'item-veiled-breath-ring',
     path: 'assets/items/aneis/item_anel_folego_velado_grande_128.webp',
   },
+  // Provisório, recolorido do Fôlego Velado (scripts/prepare_crimson_ring.py).
+  'crimson-scalpel-ring': {
+    key: 'item-crimson-scalpel-ring',
+    path: 'assets/items/aneis/item_anel_bisturi_rubro_grande_128.webp',
+  },
 } as const satisfies Partial<Record<string, { key: string; path: string }>>;
 
 // Ícones simplificados para o HUD.
@@ -67,19 +78,29 @@ export const ITEM_ICONS = {
     key: 'icon-veiled-breath-ring',
     path: 'assets/items/aneis/item_anel_folego_velado_medio_64.webp',
   },
+  'crimson-scalpel-ring': {
+    key: 'icon-crimson-scalpel-ring',
+    path: 'assets/items/aneis/item_anel_bisturi_rubro_medio_64.webp',
+  },
 } as const satisfies Partial<Record<string, { key: string; path: string }>>;
 
 // Anéis valem só por estarem no inventário (ainda não há slot de acessório).
-// `staminaRegenFactor` multiplica as duas regenerações da stamina.
+// `staminaRegenFactor` multiplica as duas regenerações da stamina;
+// `damageFactor`, o dano dos golpes do jogador.
 export type RingEffect = {
   description: string;
   staminaRegenFactor?: number;
+  damageFactor?: number;
 };
 
 export const RING_EFFECTS = {
   'veiled-breath-ring': {
     description: 'Stamina se recupera 40% mais rápido',
     staminaRegenFactor: 1.4,
+  },
+  'crimson-scalpel-ring': {
+    description: 'Seus golpes causam 15% mais dano',
+    damageFactor: 1.15,
   },
 } as const satisfies Record<string, RingEffect>;
 

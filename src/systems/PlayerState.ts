@@ -9,7 +9,7 @@ import {
   type WeaponChange,
 } from '../core/gameEvents';
 import { AMPOULE, ITEM_ICONS, RING_EFFECTS, type RingEffect } from '../data/items';
-import { PLAYER_STATS } from '../data/player';
+import { CHEAT_MODE, PLAYER_STATS } from '../data/player';
 import { WEAPONS, type WeaponDefinition, type WeaponId } from '../data/weapons';
 
 const REGISTRY_KEY = 'player-state';
@@ -24,9 +24,9 @@ export class PlayerState {
   // Ampolas extras achadas pelo mapa aumentam o máximo de cargas.
   private bonusAmpoules = 0;
   private readonly rings = new Set<string>();
-  // Atalho de teste: golpes não tiram vida. Começa ligado em desenvolvimento
-  // e nunca existe no build de produção.
-  infiniteHealth = import.meta.env.DEV;
+  private ringDamageFactor = 1;
+  // Modo VIDA (código secreto, ver CHEAT_CODE): vida infinita e dano x10.
+  cheatMode = false;
 
   private constructor(private readonly events: Phaser.Events.EventEmitter) {
     this.health.onChange((current, max) =>
@@ -103,10 +103,21 @@ export class PlayerState {
       .filter((effect): effect is RingEffect => effect !== undefined);
     const staminaFactor = effects.reduce((factor, effect) => factor * (effect.staminaRegenFactor ?? 1), 1);
     this.stamina.setRegenFactor(staminaFactor);
+    this.ringDamageFactor = effects.reduce((factor, effect) => factor * (effect.damageFactor ?? 1), 1);
   }
 
   get bonusAmpouleCount(): number {
     return this.bonusAmpoules;
+  }
+
+  // Multiplicador de dano dos golpes: anéis e o modo VIDA.
+  get damageFactor(): number {
+    return this.ringDamageFactor * (this.cheatMode ? CHEAT_MODE.damageMultiplier : 1);
+  }
+
+  // No modo VIDA os golpes ainda empurram e piscam, mas não tiram vida.
+  get infiniteHealth(): boolean {
+    return this.cheatMode;
   }
 
   get ringIds(): string[] {

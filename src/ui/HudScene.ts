@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import {
   GAME_EVENTS,
   type BossEngaged,
+  type BossGaugeChanged,
   type ConsumableChange,
   type GroundMessageShown,
   type RewardReceived,
@@ -96,7 +97,7 @@ export class HudScene extends Phaser.Scene {
 
   // Barra do boss: nome em cima e a barra longa de vida, no centro de baixo.
   private createBossBar(): void {
-    const { width, height, bottom } = HUD_LAYOUT.bossBar;
+    const { width, height, bottom, gauge } = HUD_LAYOUT.bossBar;
     const left = -width / 2;
     const fillFrame = this.textures.getFrame(HUD_ATLAS.key, 'health-fill');
     const scaleX = width / fillFrame.width;
@@ -120,12 +121,34 @@ export class HudScene extends Phaser.Scene {
       })
       .setOrigin(0, 1);
 
+    // Segunda barra (só para bosses que a usam), com o nome à direita.
+    const gaugeY = height / 2 + gauge.gap + gauge.height / 2;
+    const gaugeFill = this.add.rectangle(left, gaugeY, width, gauge.height, 0xc8202e).setOrigin(0, 0.5).setScale(0, 1);
+    const gaugeLabel = this.add
+      .text(-left, gaugeY + gauge.height / 2 + 2, '', {
+        color: '#f0a0a8',
+        fontFamily: 'Georgia, serif',
+        fontSize: '11px',
+        letterSpacing: 2,
+        stroke: '#07050b',
+        strokeThickness: 3,
+      })
+      .setOrigin(1, 0);
+    const gaugeRoot = this.add
+      .container(0, 0, [
+        this.add.rectangle(0, gaugeY, width + 4, gauge.height + 4, 0x0b070e, 0.85).setStrokeStyle(1, 0x5a2a30),
+        gaugeFill,
+        gaugeLabel,
+      ])
+      .setVisible(false);
+
     const root = this.add
       .container(this.scale.width / 2, this.scale.height - bottom, [
         this.add.rectangle(0, 0, width + 6, height + 6, 0x0b070e, 0.9).setStrokeStyle(1, 0x6a5a48),
         trail,
         fill,
         name,
+        gaugeRoot,
       ])
       .setVisible(false);
 
@@ -141,6 +164,13 @@ export class HudScene extends Phaser.Scene {
       this.tweens.add({ targets: root, alpha: 1, duration: 600 });
     };
     const onHealth = (change: StatChange): void => this.setRatio(bar, change);
+    // Cheia, a barra pulsa: está para acontecer (ex.: o sangue vai alagar).
+    const onGauge = (change: BossGaugeChanged): void => {
+      const ratio = change.max > 0 ? Phaser.Math.Clamp(change.current / change.max, 0, 1) : 0;
+      gaugeRoot.setVisible(true);
+      gaugeLabel.setText(change.label);
+      gaugeFill.setScale(ratio, 1).setFillStyle(ratio >= 0.8 ? 0xff4a58 : 0xc8202e);
+    };
     const onDefeated = (): void => {
       this.tweens.add({ targets: root, alpha: 0, delay: 900, duration: 800, onComplete: () => root.setVisible(false) });
       this.showVictory();
@@ -148,11 +178,13 @@ export class HudScene extends Phaser.Scene {
     const onDismissed = (): void => {
       this.tweens.killTweensOf(root);
       root.setVisible(false);
+      gaugeRoot.setVisible(false);
     };
 
     const handlers: Array<[string, (...args: never[]) => void]> = [
       [GAME_EVENTS.bossEngaged, onEngaged],
       [GAME_EVENTS.bossHealthChanged, onHealth],
+      [GAME_EVENTS.bossGaugeChanged, onGauge],
       [GAME_EVENTS.bossDefeated, onDefeated],
       [GAME_EVENTS.bossDismissed, onDismissed],
     ];
