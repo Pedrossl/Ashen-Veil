@@ -1,0 +1,30 @@
+{
+  "id": "crimson-surgeon",
+  "nome": "Cirurgião Rubro",
+  "tipo": "boss",
+  "estado": "conceito_visual_sem_integracao",
+  "direcao": "direita",
+  "tela": { "largura": 1536, "altura": 1024 },
+  "grade": { "colunas": 3, "linhas": 2, "quadros": 6 },
+  "celula": { "largura": 512, "altura": 512 },
+  "armas": {
+    "mao_direita": "bisturi cirurgico grande",
+    "mao_esquerda": "suporte portatil de soro com base em gancho",
+    "conexao": "tubo vermelho do frasco ao antebraco"
+  },
+  "arquivos": {
+    "referencia": "referencia_cirurgiao_rubro.png",
+    "idle": "sprite_sheet_cirurgiao_rubro_idle_6_frames.png",
+    "corrida": "sprite_sheet_cirurgiao_rubro_corrida_6_frames.png",
+    "estocada": "sprite_sheet_cirurgiao_rubro_estocada_6_frames.png",
+    "giro_arco": "sprite_sheet_cirurgiao_rubro_giro_arco_6_frames.png",
+    "golpe_vertical_soro": "sprite_sheet_cirurgiao_rubro_golpe_vertical_soro_6_frames.png",
+    "ativar_soro": "sprite_sheet_cirurgiao_rubro_ativar_soro_6_frames.png"
+  },
+  "observacoes": [
+    "Assets originais com fundo transparente; ainda nao preparados para public/assets.",
+    "O vermelho da ativacao fica contido no frasco, tubo, lentes e fissuras do corpo.",
+    "A cura futura deve acontecer por codigo durante a ativacao; esta entrega contem somente arte.",
+    "Antes da integracao, recortar componentes, alinhar os pes e separar efeitos se necessario."
+  ]
+}
