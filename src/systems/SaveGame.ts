@@ -5,19 +5,25 @@ import { ITEMS, type ItemDefinition } from '../data/items';
 import { getSkin, setSkin, type SkinId } from '../data/skins';
 import type { WeaponId } from '../data/weapons';
 import { PlayerState } from './PlayerState';
+import { getCoopRole, setCoopSession } from './Session';
 import { WorldState, type Checkpoint } from './WorldState';
 
 // No itch.io todos os jogos HTML dividem o mesmo localStorage: a chave tem o
 // nome do jogo. Mudou o formato, troque o `v1`; o save antigo é ignorado.
 const SAVE_KEY = 'ashen-veil:save:v1';
 
-type SaveData = {
+// Mundo e progresso do personagem: o que o save guarda e o que o anfitrião
+// manda ao convidado no início da partida cooperativa.
+export type WorldSnapshot = {
   flags: string[];
   items: string[];
   checkpoint: Checkpoint;
   weaponId: WeaponId;
   bonusAmpoules: number;
   rings: string[];
+};
+
+type SaveData = WorldSnapshot & {
   difficulty: DifficultyId;
   skinId: SkinId;
 };
@@ -29,22 +35,40 @@ function isDisabled(): boolean {
   return import.meta.env.DEV && new URLSearchParams(window.location.search).has('sala');
 }
 
-// Salva o progresso: mundo (flags, itens, checkpoint) e equipamento. Vida e
-// ampolas gastas não entram; ao continuar, ele volta inteiro na lanterna.
-export function saveGame(game: Phaser.Game): void {
-  if (isDisabled()) {
-    return;
-  }
-
+function captureWorld(game: Phaser.Game): WorldSnapshot {
   const world = WorldState.of(game);
   const player = PlayerState.of(game);
-  const data: SaveData = {
+  return {
     flags: world.flagList,
     items: world.inventory.list().map((item) => item.id),
     checkpoint: world.checkpoint,
     weaponId: player.equippedWeaponId,
     bonusAmpoules: player.bonusAmpouleCount,
     rings: player.ringIds,
+  };
+}
+
+// Troca o mundo e o personagem atuais pelos do snapshot (vida e ampolas cheias).
+function applyWorld(game: Phaser.Game, snapshot: WorldSnapshot): void {
+  WorldState.reset(game);
+  PlayerState.reset(game);
+  const world = WorldState.of(game);
+  world.restore(snapshot.flags, snapshot.checkpoint);
+  world.inventory.restore(ALL_ITEMS.filter((item) => snapshot.items.includes(item.id)));
+  PlayerState.of(game).restore(snapshot.weaponId, snapshot.bonusAmpoules, snapshot.rings);
+}
+
+// Salva o progresso: mundo (flags, itens, checkpoint) e equipamento. Vida e
+// ampolas gastas não entram; ao continuar, ele volta inteiro na lanterna. No
+// cooperativo o mundo é do anfitrião: só ele grava (o save do convidado fica
+// como estava).
+export function saveGame(game: Phaser.Game): void {
+  if (isDisabled() || getCoopRole(game) === 'guest') {
+    return;
+  }
+
+  const data: SaveData = {
+    ...captureWorld(game),
     difficulty: getDifficulty(game).id,
     skinId: getSkin(game).id as SkinId,
   };
@@ -77,12 +101,8 @@ export function loadGame(game: Phaser.Game): Checkpoint | undefined {
     return undefined;
   }
 
-  WorldState.reset(game);
-  PlayerState.reset(game);
-  const world = WorldState.of(game);
-  world.restore(data.flags, data.checkpoint);
-  world.inventory.restore(ALL_ITEMS.filter((item) => data.items.includes(item.id)));
-  PlayerState.of(game).restore(data.weaponId, data.bonusAmpoules, data.rings);
+  applyWorld(game, data);
+  setCoopSession(game, undefined);
   setDifficulty(game, data.difficulty);
   if (data.skinId) setSkin(game, data.skinId);
   return data.checkpoint;
@@ -98,4 +118,27 @@ export function startNewGame(game: Phaser.Game): void {
 
   WorldState.reset(game);
   PlayerState.reset(game);
+  setCoopSession(game, undefined);
+}
+
+// Cooperativo, anfitrião: joga o próprio mundo (o save dele ou, sem save, um
+// novo). Devolve o mundo para mandar ao convidado.
+export function startCoopAsHost(game: Phaser.Game): WorldSnapshot {
+  const data = isDisabled() ? undefined : readSave();
+
+  if (data) {
+    applyWorld(game, data);
+  } else {
+    WorldState.reset(game);
+    PlayerState.reset(game);
+  }
+
+  setCoopSession(game, 'host');
+  return captureWorld(game);
+}
+
+// Cooperativo, convidado: entra no mundo do anfitrião (sem tocar no próprio save).
+export function startCoopAsGuest(game: Phaser.Game, world: WorldSnapshot): void {
+  applyWorld(game, world);
+  setCoopSession(game, 'guest');
 }

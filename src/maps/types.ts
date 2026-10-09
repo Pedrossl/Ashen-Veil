@@ -1,7 +1,9 @@
 import type Phaser from 'phaser';
 
 import type { EnemyTarget } from '../entities/enemies/MeleeEnemy';
-import type { Attacker, CombatSystem, Damageable } from '../systems/CombatSystem';
+import type { Attacker, CombatSystem, Damageable, RemoteControl } from '../systems/CombatSystem';
+import type { BossSnapshot } from '../entities/bosses/BossSnapshot';
+import type { FoeDecision, FoeDecisionListener } from '../components/FoeControl';
 import type { MeleeEnemy } from '../entities/enemies/MeleeEnemy';
 import type { Bonfire } from '../entities/world/Bonfire';
 import type { CellGate } from '../entities/world/CellGate';
@@ -55,11 +57,21 @@ export type RoomPassage = {
 };
 
 // O que a scene precisa de um boss: alvo, combate e atualização por quadro.
+// No cooperativo ele mira nos dois (`addTarget`) e é um só para os dois: quem
+// comanda a sala anuncia as decisões e o estado, e o outro jogo os segue (ver
+// components/FoeControl.ts).
 export type RoomBoss = Attacker &
   Damageable & {
     setTarget(target: EnemyTarget): void;
+    addTarget(target: EnemyTarget): void;
+    removeTarget(target: EnemyTarget): void;
     attachCombat(combat: CombatSystem): void;
     update(delta: number): void;
+    setRemoteControl(control?: RemoteControl): void;
+    onDecision(listener?: FoeDecisionListener): void;
+    applyDecision(decision: FoeDecision): void;
+    snapshot(): BossSnapshot;
+    applySnapshot(snapshot: BossSnapshot): void;
   };
 
 // Trecho que atrasa quem anda nele (água rasa, lama), no piso `floorY`.

@@ -7,7 +7,8 @@ import {
   type Faction,
   type HitboxDefinition,
 } from '../data/combat';
-import { getDifficulty } from '../data/difficulty';
+import { COOP_MODIFIERS, getDifficulty } from '../data/difficulty';
+import { isCoopSession } from './Session';
 import { showCriticalHit } from '../ui/CriticalHit';
 
 // Golpe em andamento. `swingId` muda a cada golpe para que um mesmo golpe
@@ -28,6 +29,14 @@ export type Hit = {
   direction: 1 | -1;
   attackerFaction: Faction;
   critical?: boolean;
+  // Quem deu o golpe (o jogador ou o parceiro): alimenta a ameaça dos inimigos.
+  source?: object;
+};
+
+// Cooperativo: inimigo ou boss comandado pelo jogo do parceiro. Os golpes
+// que ele leva aqui vão para lá, onde o dano vale.
+export type RemoteControl = {
+  forwardHit: (hit: Hit) => void;
 };
 
 // Quem golpeia: jogador, inimigos, bosses.
@@ -115,19 +124,14 @@ export class CombatSystem {
 
       record.hit.add(target);
       const critical = attack.critical ?? false;
-      const difficulty = getDifficulty(this.scene.game);
-      const multiplier =
-        attacker.faction === 'player' && target.faction === 'enemy'
-          ? difficulty.playerDamageMultiplier
-          : attacker.faction === 'enemy' && target.faction === 'player'
-            ? difficulty.enemyDamageMultiplier
-            : 1;
+      const multiplier = this.damageMultiplier(attacker.faction, target.faction);
       const damage = attack.damage * multiplier;
       target.receiveHit({
         damage,
         direction: attacker.facing,
         attackerFaction: attacker.faction,
         critical,
+        source: attacker,
       });
       attacker.onAttackLanded?.(target, critical);
       playSound(this.scene, critical ? 'critical' : 'impact', attacker);
@@ -140,6 +144,23 @@ export class CombatSystem {
         showCriticalHit(this.scene, hurtbox.centerX, hurtbox.top, damage);
       }
     }
+  }
+
+  // Dificuldade escolhida e, em cooperativo, inimigos com o dobro de vida
+  // (dano recebido pela metade) e golpes mais fortes.
+  private damageMultiplier(attacker: Faction, target: Faction): number {
+    const difficulty = getDifficulty(this.scene.game);
+    const coop = isCoopSession(this.scene.game);
+
+    if (attacker === 'player' && target === 'enemy') {
+      return difficulty.playerDamageMultiplier / (coop ? COOP_MODIFIERS.enemyHealthMultiplier : 1);
+    }
+
+    if (attacker === 'enemy' && target === 'player') {
+      return difficulty.enemyDamageMultiplier * (coop ? COOP_MODIFIERS.enemyDamageMultiplier : 1);
+    }
+
+    return 1;
   }
 
   private recordFor(attacker: Attacker, swingId: number): { swingId: number; hit: Set<Damageable> } {

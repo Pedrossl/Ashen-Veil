@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { playSound } from '../../systems/SoundEffects';
 
+import { FoeControl, type FoeDecision, type FoeDecisionListener } from '../../components/FoeControl';
 import { Health } from '../../components/Health';
 import { MotionTrail, spawnDust } from '../../components/MotionTrail';
 import { GAME_EVENTS, type BossEngaged, type StatChange } from '../../core/gameEvents';
@@ -15,8 +16,10 @@ import type {
   CombatSystem,
   Damageable,
   Hit,
+  RemoteControl,
 } from '../../systems/CombatSystem';
 import type { EnemyTarget } from '../enemies/MeleeEnemy';
+import type { BossSnapshot } from './BossSnapshot';
 import { SpectralScythe } from './SpectralScythe';
 
 const PHASE_TWO = BOSS.phaseTwo;
@@ -70,7 +73,9 @@ export class ReaperKing
   private currentAttack?: BossAttackDefinition;
   private swingId = 0;
   private direction: -1 | 1 = -1;
-  private target?: EnemyTarget;
+  // Alvos possíveis (o jogador; no cooperativo, os dois) e em quem ele mira.
+  // Cooperativo: comandado pelo outro jogo ou anunciando as decisões.
+  private readonly control = new FoeControl<EnemyTarget>();
   private readonly aura: Phaser.GameObjects.Ellipse;
   private readonly baseY: number;
   private isPhaseTwo = false;
@@ -134,8 +139,124 @@ export class ReaperKing
     return this.behavior === 'hidden' || this.behavior === 'dormant';
   }
 
+  get isEngaged(): boolean {
+    return this.behavior !== 'dormant' && this.isAlive;
+  }
+
+  private get target(): EnemyTarget | undefined {
+    return this.control.target;
+  }
+
   setTarget(target: EnemyTarget): void {
-    this.target = target;
+    this.control.setTarget(target);
+  }
+
+  addTarget(target: EnemyTarget): void {
+    this.control.addTarget(target);
+  }
+
+  removeTarget(target: EnemyTarget): void {
+    this.control.removeTarget(target);
+  }
+
+  // ---- cooperativo -------------------------------------------------------
+
+  setRemoteControl(control?: RemoteControl): void {
+    this.control.setRemoteControl(control);
+  }
+
+  onDecision(listener?: FoeDecisionListener): void {
+    this.control.onDecision(listener);
+  }
+
+  snapshot(): BossSnapshot {
+    return {
+      x: Math.round(this.x),
+      y: Math.round(this.y),
+      facing: this.direction,
+      health: this.health.current,
+      engaged: this.isEngaged,
+      detail: { phaseTwo: this.isPhaseTwo ? 1 : 0 },
+    };
+  }
+
+  // Estado do jogo que comanda. Chegando no meio da luta, alcança-a.
+  applySnapshot(snapshot: BossSnapshot): void {
+    if (!this.control.isRemote || this.behavior === 'dead') {
+      return;
+    }
+
+    this.control.setPosition(this, snapshot.x, snapshot.y);
+    this.setFacing(snapshot.facing);
+    this.health.syncTo(snapshot.health);
+
+    if (snapshot.engaged && this.behavior === 'dormant') {
+      this.announceEngaged();
+      this.enterIdle();
+    }
+
+    if (snapshot.detail.phaseTwo && !this.isPhaseTwo) {
+      this.enterPhaseTwo();
+    }
+  }
+
+  // Executa a decisão de quem comanda, com as mesmas animações e efeitos.
+  applyDecision(action: FoeDecision): void {
+    if (!this.control.isRemote || this.behavior === 'dead') {
+      return;
+    }
+
+    this.setFacing(action.facing);
+
+    switch (action.kind) {
+      case 'awaken':
+        if (this.behavior === 'dormant') this.awaken();
+        return;
+      case 'idle':
+        this.endTeleport();
+        this.enterIdle();
+        return;
+      case 'run':
+        this.endTeleport();
+        this.startRun();
+        return;
+      case 'attack':
+        // O reaparecimento daqui já pode ter começado o mesmo golpe.
+        if ((action.name === 'slash' || action.name === 'throw') && !(this.behavior === action.name && this.phase === 'windup')) {
+          this.endTeleport();
+          this.startAttack(action.name);
+        }
+        return;
+      case 'teleport':
+        this.startTeleport();
+        return;
+      case 'appear':
+        this.scene.tweens.killTweensOf(this);
+        this.appearAt(action.x ?? this.x);
+        return;
+      case 'enrage':
+        if (!this.isPhaseTwo) this.enterPhaseTwo();
+        return;
+      case 'fling':
+        this.startFling();
+        return;
+      case 'die':
+        this.health.syncTo(0);
+        this.die();
+        return;
+    }
+  }
+
+  private announce(kind: string, extra: Omit<FoeDecision, 'kind' | 'facing'> = {}): void {
+    this.control.announce({ kind, facing: this.direction, ...extra });
+  }
+
+  // Uma decisão nova chegou no meio do teleporte daqui: termina de aparecer.
+  private endTeleport(): void {
+    if (this.behavior === 'vanish' || this.behavior === 'hidden' || this.behavior === 'appear') {
+      this.scene.tweens.killTweensOf(this);
+      this.setAlpha(1);
+    }
   }
 
   // Necessário para registrar a foice arremessada como atacante própria.
@@ -148,8 +269,9 @@ export class ReaperKing
     return new Phaser.Geom.Rectangle(this.x - width / 2, this.y - height, width, height);
   }
 
+  // Comandado pelo outro jogo, os golpes acertam lá.
   getActiveAttack(): ActiveAttack | undefined {
-    if (!this.currentAttack || (this.behavior !== 'slash' && this.behavior !== 'throw')) {
+    if (this.control.isRemote || !this.currentAttack || (this.behavior !== 'slash' && this.behavior !== 'throw')) {
       return undefined;
     }
 
@@ -167,9 +289,16 @@ export class ReaperKing
       return;
     }
 
-    this.health.damage(hit.damage);
     this.setTint(HIT_FLASH.tint);
     this.scene.time.delayedCall(HIT_FLASH.ms, () => this.clearTint());
+
+    if (this.control.isRemote) {
+      this.control.forwardHit(hit);
+      return;
+    }
+
+    this.control.addThreat(hit.source, hit.damage);
+    this.health.damage(hit.damage);
 
     if (!this.isAlive) {
       this.die();
@@ -188,26 +317,34 @@ export class ReaperKing
     this.scythe?.update(delta);
     this.updateMotionEffects(delta);
 
-    if (this.behavior === 'dead' || !this.target) {
+    if (this.behavior === 'dead') {
+      return;
+    }
+
+    const remote = !this.control.update(this, delta);
+
+    if (!remote && !this.control.retarget(this)) {
       return;
     }
 
     this.stateTimeLeft -= delta;
 
+    // Comandado pelo outro jogo: decisões e deslocamentos chegam de lá; os
+    // tempos dos golpes, da fumaça e do arremesso correm aqui também.
     switch (this.behavior) {
       case 'dormant':
-        if (this.target.x >= BOSS.awakenX) {
+        if (!remote && this.target && this.target.x >= BOSS.awakenX) {
           this.awaken();
         }
         break;
       case 'intro':
       case 'idle':
-        if (this.stateTimeLeft <= 0) {
+        if (!remote && this.stateTimeLeft <= 0) {
           this.decide();
         }
         break;
       case 'run':
-        this.updateRun(delta);
+        if (!remote) this.updateRun(delta);
         break;
       case 'slash':
       case 'throw':
@@ -227,7 +364,7 @@ export class ReaperKing
         this.updateFling();
         break;
       case 'glide':
-        this.updateGlide(delta);
+        if (!remote) this.updateGlide(delta);
         break;
     }
   }
@@ -268,6 +405,7 @@ export class ReaperKing
 
   // Metade da vida: urra, explode em fumaça e passa a brilhar mais forte.
   private enterPhaseTwo(): void {
+    this.announce('enrage');
     playSound(this.scene, 'reaperPhase', this);
     this.isPhaseTwo = true;
 
@@ -333,6 +471,8 @@ export class ReaperKing
 
   // Arremesso giratório (só na segunda fase): carrega, solta e flutua sem a foice.
   private startFling(): void {
+    this.announce('fling');
+    this.endTeleport();
     this.behavior = 'fling';
     this.flingReleased = false;
     this.stateTimeLeft = FLING.windupMs / this.speed;
@@ -370,7 +510,11 @@ export class ReaperKing
       returnTo: () => this.handPosition(),
       onCaught: () => this.catchScythe(),
     });
-    this.combat?.addAttacker(this.scythe);
+
+    // Comandado pelo outro jogo, a foice daqui é só visual.
+    if (!this.control.isRemote) {
+      this.combat?.addAttacker(this.scythe);
+    }
 
     // De mão vazia (último quadro do arremesso), flutua pela arena.
     this.behavior = 'glide';
@@ -411,6 +555,7 @@ export class ReaperKing
 
   // Ergue a foice com a aura (quadro de invocação) e mostra a barra de vida.
   private awaken(): void {
+    this.announce('awaken');
     playSound(this.scene, 'reaperWake', this);
     this.behavior = 'intro';
     this.stateTimeLeft = BOSS.introMs;
@@ -418,7 +563,10 @@ export class ReaperKing
     this.stop();
     this.setFrame(SPRITE.animations.summon.start);
     this.scene.cameras.main.shake(500, 0.004);
+    this.announceEngaged();
+  }
 
+  private announceEngaged(): void {
     const engaged: BossEngaged = {
       name: BOSS.name,
       current: this.health.current,
@@ -452,6 +600,7 @@ export class ReaperKing
   }
 
   private enterIdle(): void {
+    this.announce('idle');
     this.behavior = 'idle';
     this.stateTimeLeft = (BOSS.cooldownMs + Math.random() * BOSS.cooldownJitterMs) / this.speed;
     this.currentAttack = undefined;
@@ -460,6 +609,7 @@ export class ReaperKing
   }
 
   private startRun(): void {
+    this.announce('run');
     this.behavior = 'run';
     this.stateTimeLeft = BOSS.maxRunMs;
     this.faceTarget();
@@ -479,6 +629,7 @@ export class ReaperKing
   }
 
   private startAttack(kind: 'slash' | 'throw'): void {
+    this.announce('attack', { name: kind });
     this.behavior = kind;
     this.currentAttack = kind === 'slash' ? BOSS.slash : BOSS.throwScythe;
     this.swingId += 1;
@@ -534,6 +685,7 @@ export class ReaperKing
 
   // Some numa nuvem roxa e reaparece perto do jogador, às vezes às costas.
   private startTeleport(): void {
+    this.announce('teleport');
     playSound(this.scene, 'reaperTeleport', this);
     this.behavior = 'vanish';
     this.stop();
@@ -552,16 +704,21 @@ export class ReaperKing
   }
 
   private updateTeleport(): void {
-    if (this.behavior !== 'hidden' || this.stateTimeLeft > 0) {
+    // Comandado pelo outro jogo, espera o lugar onde ele reaparece lá.
+    if (this.control.isRemote || this.behavior !== 'hidden' || this.stateTimeLeft > 0) {
       return;
     }
 
     const side = Math.random() < 0.5 ? -1 : 1;
-    this.x = Phaser.Math.Clamp(
-      this.targetX() + side * BOSS.teleportDistance,
-      this.config.minX,
-      this.config.maxX,
+    this.appearAt(
+      Phaser.Math.Clamp(this.targetX() + side * BOSS.teleportDistance, this.config.minX, this.config.maxX),
     );
+  }
+
+  private appearAt(x: number): void {
+    this.x = x;
+    this.control.setPosition(this, x, this.baseY, true);
+    this.announce('appear', { x: Math.round(x) });
     this.behavior = 'appear';
     playSound(this.scene, 'reaperTeleport', this);
     this.faceTarget();
@@ -577,6 +734,7 @@ export class ReaperKing
   }
 
   private die(): void {
+    this.announce('die');
     playSound(this.scene, 'reaperDeath', this);
     this.behavior = 'dead';
     this.currentAttack = undefined;
@@ -661,7 +819,12 @@ export class ReaperKing
     return this.target?.x ?? this.x;
   }
 
+  // Comandado pelo outro jogo, o lado vem de lá.
   private faceTarget(): void {
+    if (this.control.isRemote) {
+      return;
+    }
+
     this.setFacing(this.targetX() < this.x ? -1 : 1);
   }
 

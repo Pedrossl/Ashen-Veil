@@ -3,6 +3,8 @@ import { ENEMY_AUDIO } from '../../data/enemyAudio';
 import { playSound } from '../../systems/SoundEffects';
 
 import { spawnGroundImpact, spawnSwingArc } from '../../components/AttackEffects';
+import type { AggroTarget } from '../../components/Aggro';
+import { FoeControl } from '../../components/FoeControl';
 import { Health } from '../../components/Health';
 import { MotionTrail, spawnDust } from '../../components/MotionTrail';
 import {
@@ -17,8 +19,9 @@ import type {
   CombatSystem,
   Damageable,
   Hit,
+  RemoteControl,
 } from '../../systems/CombatSystem';
-import { SludgeBall } from './SludgeBall';
+import { SludgeBall, type SludgeBallLaunch } from './SludgeBall';
 
 // Comportamento fora de combate: arrasta-se devagar entre dois pontos.
 const PATROL = {
@@ -51,12 +54,20 @@ type EnemyState = 'idle' | 'walk' | 'alert' | 'chase' | 'attack' | 'hit' | 'dead
 // Fases do golpe, cronometradas pela definição do ataque.
 type AttackPhase = 'windup' | 'active' | 'recovery';
 
-// O que o inimigo precisa saber do alvo (o jogador).
-export type EnemyTarget = {
-  readonly x: number;
-  readonly y: number;
-  readonly isAlive: boolean;
+// O que o inimigo precisa saber de um alvo (um jogador).
+export type EnemyTarget = AggroTarget;
+
+// Estado do inimigo que o jogo que o comanda manda ao outro no cooperativo.
+export type EnemySnapshot = {
+  x: number;
+  y: number;
+  facing: 1 | -1;
+  frame: number;
+  health: number;
 };
+
+// Evento da scene emitido a cada arremesso (payload SludgeBallLaunch).
+export const ENEMY_PROJECTILE_THROWN = 'enemy:projectile-thrown';
 
 type AttackDefinition = EnemyAttackDefinition;
 
@@ -96,7 +107,9 @@ export class MeleeEnemy
   private behavior: EnemyState = 'idle';
   private stateTimeLeft = 0;
   private direction: -1 | 1;
-  private target?: EnemyTarget;
+  // Alvos possíveis (o jogador; no cooperativo, os dois) e quem ele persegue.
+  // No cooperativo, pode ser comandado pelo outro jogo.
+  private readonly control = new FoeControl<EnemyTarget>();
   private attackPhase: AttackPhase = 'windup';
   private currentAttack: AttackDefinition;
   private attackElapsedMs = 0;
@@ -180,8 +193,84 @@ export class MeleeEnemy
   }
 
   setTarget(target: EnemyTarget): void {
-    this.target = target;
+    this.control.setTarget(target);
   }
+
+  // Cooperativo: o parceiro também pode ser alvo enquanto estiver na sala.
+  addTarget(target: EnemyTarget): void {
+    this.control.addTarget(target);
+  }
+
+  removeTarget(target: EnemyTarget): void {
+    this.control.removeTarget(target);
+  }
+
+  private get target(): EnemyTarget | undefined {
+    return this.control.target;
+  }
+
+  get isRemoteControlled(): boolean {
+    return this.control.isRemote;
+  }
+
+  // Cooperativo: com `control`, o inimigo passa a ser comandado pelo outro
+  // jogo (só segue os estados recebidos, sem IA nem física, e repassa os
+  // golpes que leva); sem, volta à própria IA a partir de onde está.
+  setRemoteControl(control?: RemoteControl): void {
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    this.control.setRemoteControl(control);
+    body.moves = !control;
+    body.setVelocity(0, 0);
+
+    if (control) {
+      this.stop();
+      this.trail.setEnabled(false);
+      return;
+    }
+
+    if (this.isAlive) {
+      this.enterChase();
+    }
+  }
+
+  snapshot(): EnemySnapshot {
+    return {
+      x: Math.round(this.x),
+      y: Math.round(this.y),
+      facing: this.direction,
+      frame: Number(this.frame.name),
+      health: this.health.current,
+    };
+  }
+
+  // Estado recebido do jogo que comanda: quadro, lado e vida na hora; a
+  // posição desliza até a recebida (`instant` pula direto, ex.: ao chegar na sala).
+  applySnapshot(snapshot: EnemySnapshot, instant = false): void {
+    const wasAlive = this.isAlive;
+    this.control.setPosition(this, snapshot.x, snapshot.y, instant);
+
+    if (snapshot.facing !== this.direction) {
+      this.direction = snapshot.facing;
+      this.setFacing(this.direction);
+    }
+
+    this.setFrame(snapshot.frame);
+    const death = this.sprite.animations.death;
+    const deathFrame = snapshot.frame - death.start;
+    this.setDeathVisualGroundOffset(
+      snapshot.frame >= death.start && snapshot.frame <= death.end
+        ? (this.sprite.deathFrameGroundOffsets?.[deathFrame] ?? 0)
+        : 0,
+    );
+
+    this.health.syncTo(snapshot.health);
+
+    if (wasAlive && !this.isAlive) {
+      this.behavior = 'dead';
+      if (!instant) playSound(this.scene, ENEMY_AUDIO[this.config.kind].death, this);
+    }
+  }
+
 
   // Inimigos que arremessam precisam registrar os projéteis no combate.
   attachCombat(combat: CombatSystem): void {
@@ -189,7 +278,8 @@ export class MeleeEnemy
   }
 
   getActiveAttack(): ActiveAttack | undefined {
-    if (this.behavior !== 'attack' || this.currentAttack.projectile) {
+    // Comandado por outro jogo: lá é que os golpes acertam.
+    if (this.control.isRemote || this.behavior !== 'attack' || this.currentAttack.projectile) {
       return undefined;
     }
 
@@ -211,9 +301,17 @@ export class MeleeEnemy
       return;
     }
 
-    this.health.damage(hit.damage);
     this.setTint(HIT_REACTION.flashTint);
     this.scene.time.delayedCall(HIT_REACTION.flashMs, () => this.clearTint());
+
+    // Comandado por outro jogo: o dano vale lá e volta no próximo estado.
+    if (this.control.isRemote) {
+      this.control.forwardHit(hit);
+      return;
+    }
+
+    this.health.damage(hit.damage);
+    this.control.addThreat(hit.source, hit.damage);
 
     if (!this.isAlive) {
       this.enterDeath();
@@ -239,6 +337,10 @@ export class MeleeEnemy
   }
 
   update(delta: number): void {
+    if (!this.control.update(this, delta)) {
+      return;
+    }
+
     this.stateTimeLeft -= delta;
     this.attackCooldownMs = Math.max(0, this.attackCooldownMs - delta);
     this.trail.setEnabled(this.behavior === 'attack' && this.attackPhase === 'active');
@@ -322,6 +424,9 @@ export class MeleeEnemy
   }
 
   private updateChase(): void {
+    // Com dois jogadores, reavalia quem perseguir (proximidade e ameaça).
+    this.control.retarget(this, (target) => this.canEngage(target));
+
     if (!this.hasLiveTarget() || this.distanceToTarget() > this.definition.loseInterestRange) {
       this.enterIdle();
       return;
@@ -486,22 +591,36 @@ export class MeleeEnemy
     this.play(attackAnimationKey(this.sprite, attack));
   }
 
-  // Só nota o jogador à frente, no mesmo andar; muito perto, nota mesmo de costas.
+  // Nota quem estiver à frente, no mesmo andar; muito perto, nota mesmo de
+  // costas. Entre os que vê, escolhe pelo Aggro (o mais perto, de início).
   private canSeeTarget(): boolean {
-    if (!this.hasLiveTarget() || !this.target) {
-      return false;
-    }
+    return this.control.retarget(this, (target) => this.canSee(target), true) !== undefined;
+  }
 
-    const dx = this.target.x - this.x;
-    const sameFloor = Math.abs(this.target.y - this.y) < SAME_FLOOR_TOLERANCE;
-    const inFront = Math.sign(dx) === this.direction;
+  private canSee(target: EnemyTarget): boolean {
+    const dx = target.x - this.x;
     const distance = Math.abs(dx);
+    const inFront = Math.sign(dx) === this.direction;
 
     return (
-      sameFloor &&
+      target.isAlive &&
+      this.isOnSameFloor(target) &&
       distance <= this.definition.detectionRange &&
       (inFront || distance <= this.maxAttackRange)
     );
+  }
+
+  // Já em combate: segue quem estiver vivo, no mesmo andar e no alcance.
+  private canEngage(target: EnemyTarget): boolean {
+    return (
+      target.isAlive &&
+      this.isOnSameFloor(target) &&
+      Math.abs(target.x - this.x) <= this.definition.loseInterestRange
+    );
+  }
+
+  private isOnSameFloor(target: EnemyTarget): boolean {
+    return Math.abs(target.y - this.y) < SAME_FLOOR_TOLERANCE;
   }
 
   private hasLiveTarget(): boolean {
@@ -576,7 +695,7 @@ export class MeleeEnemy
     const flightTime = (2 * lift) / gravity;
     const velocityX = Math.min(speed, distance / flightTime) * this.direction;
 
-    new SludgeBall(this.scene, {
+    const launch: SludgeBallLaunch = {
       x: this.x + this.direction * hand.forward,
       y: this.y - hand.up,
       velocityX,
@@ -585,8 +704,9 @@ export class MeleeEnemy
       damage: this.currentAttack.damage,
       // Piso onde ele está agora (não o de nascimento): a bola cai até ali.
       floorY: Math.max(this.y, this.target?.y ?? this.y),
-      combat: this.combat,
-    });
+    };
+    new SludgeBall(this.scene, { ...launch, combat: this.combat });
+    this.scene.events.emit(ENEMY_PROJECTILE_THROWN, this, launch);
   }
 
   private enterIdle(): void {

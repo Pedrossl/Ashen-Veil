@@ -1,15 +1,24 @@
 import Phaser from 'phaser';
 import { playSound } from '../../systems/SoundEffects';
 
+import { FoeControl, type FoeDecision, type FoeDecisionListener } from '../../components/FoeControl';
 import { Buildup } from '../../components/Buildup';
 import { Health } from '../../components/Health';
 import { spawnDust } from '../../components/MotionTrail';
 import { GAME_EVENTS, type BossEngaged, type StatChange } from '../../core/gameEvents';
 import { ROOT_BOSS_SPRITE as SPRITE, ROOT_SPIT_SPRITE, ROOT_TRAIL_SPRITE as TRAIL } from '../../data/bossSprites';
 import { ROOT_OF_CONDEMNED as BOSS } from '../../data/bosses';
-import type { ActiveAttack, Attacker, CombatSystem, Damageable, Hit } from '../../systems/CombatSystem';
+import type {
+  ActiveAttack,
+  Attacker,
+  CombatSystem,
+  Damageable,
+  Hit,
+  RemoteControl,
+} from '../../systems/CombatSystem';
 import type { EnemyTarget } from '../enemies/MeleeEnemy';
 import { SludgeBall } from '../enemies/SludgeBall';
+import type { BossSnapshot } from './BossSnapshot';
 import { HitZone } from './HitZone';
 
 type AnimationName = keyof typeof SPRITE.animations;
@@ -35,6 +44,9 @@ type RootState =
 
 const ATTACK_STATES = ['bite', 'sweep', 'spit', 'cage'] as const;
 type AttackState = (typeof ATTACK_STATES)[number];
+
+const isAttackState = (name: string | undefined): name is AttackState =>
+  (ATTACK_STATES as readonly string[]).includes(name ?? '');
 
 const HIT_FLASH = { tint: 0xffc0a0, ms: 110 } as const;
 // Corpo esverdeado no fosso; o brilho é uma cópia aditiva por trás.
@@ -66,7 +78,11 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   readonly health = new Health(BOSS.maxHealth);
   private behavior: RootState = 'dormant';
   private direction: 1 | -1 = -1;
-  private target?: EnemyTarget;
+  // Alvos possíveis (o jogador; no cooperativo, os dois) e em quem ela mira.
+  // Cooperativo: comandada pelo outro jogo ou anunciando as decisões.
+  private readonly control = new FoeControl<EnemyTarget>();
+  private remoteTrailX?: number;
+  private spitTargetX?: number;
   private combat?: CombatSystem;
   private swingId = 0;
   private cooldownMs = 0;
@@ -79,7 +95,8 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   private cageZones: HitZone[] = [];
   private eruption?: HitZone;
   private ground: RootGround;
-  // Raízes no corpo do jogador (barra verde); o afogamento acontece uma vez.
+  // Raízes no corpo dos jogadores (barra verde, uma só no cooperativo: as
+  // estacas em qualquer um dos dois enchem); o afogamento acontece uma vez.
   private readonly roots = new Buildup(BOSS.drowning);
   private hasDrowned = false;
   private isDrowned = false;
@@ -135,8 +152,116 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
     return this.behavior === 'emerge' && this.frameIndex < SPRITE.animations.emerge.active[0];
   }
 
+  private get target(): EnemyTarget | undefined {
+    return this.control.target;
+  }
+
   setTarget(target: EnemyTarget): void {
-    this.target = target;
+    this.control.setTarget(target);
+  }
+
+  addTarget(target: EnemyTarget): void {
+    this.control.addTarget(target);
+  }
+
+  removeTarget(target: EnemyTarget): void {
+    this.control.removeTarget(target);
+  }
+
+  // ---- cooperativo -------------------------------------------------------
+
+  setRemoteControl(control?: RemoteControl): void {
+    this.control.setRemoteControl(control);
+
+    if (control) {
+      this.cageZones.forEach((zone) => zone.deactivate());
+      this.eruption?.deactivate();
+    }
+  }
+
+  onDecision(listener?: FoeDecisionListener): void {
+    this.control.onDecision(listener);
+  }
+
+  snapshot(): BossSnapshot {
+    return {
+      x: Math.round(this.x),
+      y: Math.round(this.y),
+      facing: this.direction,
+      health: this.health.current,
+      engaged: this.isEngaged,
+      detail: {
+        roots: this.roots.current,
+        trailX: Math.round(this.trail?.x ?? this.x),
+        drowned: this.hasDrowned ? 1 : 0,
+      },
+    };
+  }
+
+  // Estado do jogo que comanda. Chegando no meio da luta, alcança-a: acorda,
+  // e se a Raiz já arrastou os dois para o fosso, este jogador desce também.
+  applySnapshot(snapshot: BossSnapshot): void {
+    if (!this.control.isRemote || this.behavior === 'dead') {
+      return;
+    }
+
+    this.control.setPosition(this, snapshot.x, snapshot.y);
+    this.setFacing(snapshot.facing);
+    this.health.syncTo(snapshot.health);
+    this.roots.syncTo(snapshot.detail.roots ?? 0);
+    this.remoteTrailX = snapshot.detail.trailX;
+
+    if (snapshot.engaged && this.behavior === 'dormant') {
+      this.announceEngaged();
+      this.setVisible(true);
+      this.enterIdle();
+    }
+
+    if (snapshot.detail.drowned && !this.hasDrowned && this.isAlive) {
+      this.beginDrowning();
+    }
+  }
+
+  // Executa a decisão de quem comanda, com as mesmas animações e efeitos.
+  applyDecision(action: FoeDecision): void {
+    if (!this.control.isRemote || this.behavior === 'dead') {
+      return;
+    }
+
+    this.setFacing(action.facing);
+
+    switch (action.kind) {
+      case 'awaken':
+        if (this.behavior === 'dormant') this.awaken();
+        return;
+      case 'drown':
+        if (!this.hasDrowned) this.beginDrowning();
+        return;
+      case 'die':
+        this.health.syncTo(0);
+        this.die();
+        return;
+    }
+
+    // Fins de animação pendentes daqui não valem mais: manda quem comanda.
+    this.clearPendingAnimations();
+
+    if (action.kind === 'idle') {
+      this.enterIdle();
+    } else if (action.kind === 'crawl') {
+      this.enterCrawl();
+    } else if (action.kind === 'attack' && isAttackState(action.name)) {
+      this.spitTargetX = action.x;
+      this.startAttack(action.name);
+    } else if (action.kind === 'burrow') {
+      this.enterBurrow();
+    } else if (action.kind === 'lock') {
+      this.lockExit(action.x);
+    }
+  }
+
+  private announce(kind: string, extra: Omit<FoeDecision, 'kind' | 'facing'> = {}): void {
+    this.control.announce({ kind, facing: this.direction, ...extra });
   }
 
   attachCombat(combat: CombatSystem): void {
@@ -161,9 +286,10 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
     return new Phaser.Geom.Rectangle(this.x - width / 2, this.y - height, width, height);
   }
 
-  // Mordida e varredura saem do corpo; o resto usa zonas próprias.
+  // Mordida e varredura saem do corpo; o resto usa zonas próprias. Comandada
+  // pelo outro jogo, os golpes acertam lá.
   getActiveAttack(): ActiveAttack | undefined {
-    if (this.behavior !== 'bite' && this.behavior !== 'sweep') {
+    if (this.control.isRemote || (this.behavior !== 'bite' && this.behavior !== 'sweep')) {
       return undefined;
     }
 
@@ -182,9 +308,16 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
       return;
     }
 
-    this.health.damage(hit.damage * (this.isDrowned ? BOSS.drowning.damageTakenFactor : 1));
     this.setTint(HIT_FLASH.tint);
     this.scene.time.delayedCall(HIT_FLASH.ms, () => this.restoreTint());
+
+    if (this.control.isRemote) {
+      this.control.forwardHit(hit);
+      return;
+    }
+
+    this.control.addThreat(hit.source, hit.damage);
+    this.health.damage(hit.damage * (this.isDrowned ? BOSS.drowning.damageTakenFactor : 1));
 
     if (!this.isAlive) {
       this.die();
@@ -192,7 +325,13 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   }
 
   update(delta: number): void {
-    if (!this.target || this.behavior === 'dead') {
+    if (this.behavior === 'dead') {
+      return;
+    }
+
+    const remote = !this.control.update(this, delta);
+
+    if (!remote && !this.control.retarget(this)) {
       return;
     }
 
@@ -208,21 +347,22 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
       playSound(this.scene, attack === 'bite' ? 'rootBite' : attack === 'sweep' ? 'rootSweep' : 'rootCage', this);
     }
 
-    if (this.isEngaged && !this.hasDrowned) {
+    if (!remote && this.isEngaged && !this.hasDrowned) {
       this.roots.update(delta);
     }
 
+    // Comandada pelo outro jogo: decisões e deslocamentos chegam de lá.
     switch (this.behavior) {
       case 'dormant':
-        if (this.target.x >= BOSS.awakenX) {
+        if (!remote && this.target && this.target.x >= BOSS.awakenX) {
           this.awaken();
         }
         return;
       case 'idle':
-        this.updateIdle(delta);
+        if (!remote) this.updateIdle(delta);
         return;
       case 'crawl':
-        this.updateCrawl(delta);
+        if (!remote) this.updateCrawl(delta);
         return;
       case 'tunnel':
         this.updateTunnel(delta);
@@ -315,6 +455,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   // ---- golpes ------------------------------------------------------------
 
   private startAttack(name: AttackState): void {
+    this.announce('attack', { name, x: this.target?.x });
     this.behavior = name;
     this.swingId += 1;
     this.hasSpat = false;
@@ -338,8 +479,11 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   }
 
   // O globo sai da garganta no quadro de disparo e cai perto do jogador.
+  // Comandada pelo outro jogo, o globo é só visual e cai onde caiu lá.
   private updateSpit(): void {
-    if (this.hasSpat || this.frameIndex < SPRITE.animations.spit.fire || !this.combat || !this.target) {
+    const targetX = this.control.isRemote ? this.spitTargetX : this.target?.x;
+
+    if (this.hasSpat || this.frameIndex < SPRITE.animations.spit.fire || !this.combat || targetX === undefined) {
       return;
     }
 
@@ -347,7 +491,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
     playSound(this.scene, 'rootSpit', this);
     const { mouth, speed, lift, gravity, damage } = BOSS.spit;
     const flightTime = (2 * lift) / gravity;
-    const distance = Math.abs(this.target.x - this.x) - mouth.forward;
+    const distance = Math.abs(targetX - this.x) - mouth.forward;
 
     new SludgeBall(this.scene, {
       x: this.x + this.direction * mouth.forward,
@@ -357,7 +501,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
       gravity,
       damage,
       floorY: this.ground.floorY,
-      combat: this.combat,
+      combat: this.control.isRemote ? undefined : this.combat,
       sprite: ROOT_SPIT_SPRITE,
     });
   }
@@ -378,6 +522,10 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
       this.scene.cameras.main.shake(160, 0.004);
     }
 
+    if (this.control.isRemote) {
+      return;
+    }
+
     this.cageZones[0].activate(this.x - offset);
     this.cageZones[1].activate(this.x + offset);
   }
@@ -385,6 +533,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   // ---- travessia subterrânea --------------------------------------------
 
   private enterBurrow(): void {
+    this.announce('burrow');
     playSound(this.scene, 'rootBurrow', this);
     this.behavior = 'burrow';
     this.playOnce('burrow', () => this.enterTunnel());
@@ -404,12 +553,14 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   }
 
   private updateTunnel(delta: number): void {
-    if (!this.trail || !this.target) {
+    const chasedX = this.control.isRemote ? this.remoteTrailX : this.target?.x;
+
+    if (!this.trail || chasedX === undefined) {
       return;
     }
 
     this.stateMs += delta;
-    const dx = this.target.x - this.trail.x;
+    const dx = chasedX - this.trail.x;
     const step = Math.sign(dx) * Math.min(Math.abs(dx), BOSS.burrow.trailSpeed * (delta / 1000));
     this.trail.x = Phaser.Math.Clamp(this.trail.x + step, this.ground.minX, this.ground.maxX);
 
@@ -417,16 +568,19 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
       spawnDust(this.scene, this.trail.x, this.ground.floorY, step >= 0 ? 1 : -1, 2);
     }
 
-    if (this.stateMs >= BOSS.burrow.chaseMs) {
+    if (!this.control.isRemote && this.stateMs >= BOSS.burrow.chaseMs) {
       this.lockExit();
     }
   }
 
   // O rastro para e o chão racha: dá tempo de sair do lugar antes da erupção.
-  private lockExit(): void {
+  private lockExit(x = this.trail?.x ?? this.x): void {
+    this.announce('lock', { x: Math.round(x) });
     this.behavior = 'lock';
     this.stateMs = 0;
-    this.lockedX = this.trail?.x ?? this.x;
+    this.lockedX = x;
+    this.setVisible(false);
+    this.trail?.setX(x);
     this.trail?.anims.pause();
     this.spawnCrackWarning(this.lockedX);
   }
@@ -453,7 +607,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
       const distance = this.target ? Math.abs(this.target.x - this.x) : 0;
 
       // Fase 3: pode cuspir logo ao sair da terra.
-      if (this.phase === 3 && distance >= BOSS.spitMinRange) {
+      if (!this.control.isRemote && this.phase === 3 && distance >= BOSS.spitMinRange) {
         this.startAttack('spit');
       } else {
         this.enterIdle();
@@ -463,6 +617,10 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
 
   private updateEmerge(): void {
     const [from, to] = SPRITE.animations.emerge.active;
+
+    if (this.control.isRemote) {
+      return;
+    }
 
     if (this.frameIndex >= from && this.frameIndex <= to) {
       this.eruption?.activate(this.x);
@@ -474,7 +632,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   // ---- afogamento --------------------------------------------------------
 
   private addRoots(): void {
-    if (this.hasDrowned || !this.config.onDrowning || this.behavior === 'dead') {
+    if (this.control.isRemote || this.hasDrowned || !this.config.onDrowning || this.behavior === 'dead') {
       return;
     }
 
@@ -485,8 +643,10 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
     }
   }
 
-  // As raízes agarram o jogador: ela para tudo e a arena faz a transição.
+  // As raízes agarram o jogador (no cooperativo, os dois descem juntos): ela
+  // para tudo e a arena faz a transição.
   private beginDrowning(): void {
+    this.announce('drown');
     playSound(this.scene, 'rootBurrow', this);
     this.hasDrowned = true;
     this.behavior = 'drown';
@@ -509,6 +669,8 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
 
     this.ground = ground;
     this.isDrowned = true;
+    this.cageZones.forEach((zone) => zone.deactivate());
+    this.eruption?.deactivate();
     this.createGroundZones(this.combat);
     this.roots.reset();
     this.health.restore();
@@ -558,13 +720,19 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
 
   // Sai do ninho no centro da arena: abre a luta (barra no HUD, portão fecha).
   private awaken(): void {
-    const engaged: BossEngaged = { name: BOSS.name, current: this.health.current, max: this.health.max };
-    this.scene.game.events.emit(GAME_EVENTS.bossEngaged, engaged);
-    this.config.onEngaged?.();
+    this.announce('awaken');
+    this.announceEngaged();
     this.emerge();
   }
 
+  private announceEngaged(): void {
+    const engaged: BossEngaged = { name: BOSS.name, current: this.health.current, max: this.health.max };
+    this.scene.game.events.emit(GAME_EVENTS.bossEngaged, engaged);
+    this.config.onEngaged?.();
+  }
+
   private die(): void {
+    this.announce('die');
     playSound(this.scene, 'rootDeath', this);
     this.behavior = 'dead';
     this.cageZones.forEach((zone) => zone.deactivate());
@@ -586,6 +754,7 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   // ---- utilidades -------------------------------------------------------
 
   private enterIdle(cooldown?: number): void {
+    this.announce('idle');
     this.behavior = 'idle';
     const factor =
       (this.phase === 3 ? BOSS.phaseThreeCooldownFactor : 1) * (this.isDrowned ? BOSS.drowning.cooldownFactor : 1);
@@ -594,13 +763,15 @@ export class RootBoss extends Phaser.GameObjects.Sprite implements Attacker, Dam
   }
 
   private enterCrawl(): void {
+    this.announce('crawl');
     this.behavior = 'crawl';
     this.stateMs = 0;
     this.play(this.animationKey('crawl'), true);
   }
 
+  // Comandada pelo outro jogo, o lado vem de lá.
   private faceTarget(): void {
-    if (this.target && Math.abs(this.target.x - this.x) > 20) {
+    if (!this.control.isRemote && this.target && Math.abs(this.target.x - this.x) > 20) {
       this.setFacing(this.target.x < this.x ? -1 : 1);
     }
   }

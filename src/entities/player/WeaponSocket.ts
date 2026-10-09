@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import { PLAYER_SPRITE } from '../../data/player';
+import { getSkin } from '../../data/skins';
 import {
   PLAYER_WEAPON_SOCKETS,
   WEAPON_BLADE_LENGTH,
@@ -13,9 +14,12 @@ export class WeaponSocket {
   private readonly image: Phaser.GameObjects.Image;
   private textureKey?: string;
 
+  // `skinTint`: cor da aparência de quem segura (o parceiro no cooperativo
+  // tem a dele); a arma não a herda.
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly owner: Phaser.GameObjects.Sprite,
+    private readonly skinTint: () => number = () => getSkin(scene.game).tint,
   ) {
     this.image = scene.add
       .image(owner.x, owner.y, '__DEFAULT')
@@ -66,7 +70,19 @@ export class WeaponSocket {
       .setAngle(socket.angle * flip)
       .setFlipX(this.owner.flipX)
       .setDepth(this.owner.depth + (socket.front ? 0.1 : -0.1))
-      .setTint(this.owner.isTinted ? this.owner.tintTopLeft : 0xffffff);
+      .setTint(this.flashTint());
+  }
+
+  // A arma acompanha o piscar de dano do corpo, mas não a cor da skin.
+  private flashTint(): number {
+    const tint = this.owner.isTinted ? this.owner.tintTopLeft : 0xffffff;
+    return tint === this.skinTint() ? 0xffffff : tint;
+  }
+
+  // Para donos que somem antes da scene (ex.: o parceiro trocou de sala).
+  dispose(): void {
+    this.scene.events.off(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this);
+    this.destroy();
   }
 
   private destroy(): void {

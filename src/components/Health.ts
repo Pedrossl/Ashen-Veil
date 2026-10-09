@@ -36,6 +36,11 @@ export class Health {
     this.set(this.max);
   }
 
+  // Valor vindo de outra fonte (ex.: o jogo que comanda o inimigo no cooperativo).
+  syncTo(value: number): void {
+    this.set(Math.max(0, Math.min(this.max, value)));
+  }
+
   private set(value: number): void {
     if (value === this.value) {
       return;

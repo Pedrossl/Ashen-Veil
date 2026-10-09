@@ -15,6 +15,14 @@ export const DIFFICULTIES = {
   },
 } as const;
 
+// Partida cooperativa (dois jogadores): inimigos e bosses aguentam o dobro e
+// batem um pouco mais forte, por cima da dificuldade escolhida. A vida maior
+// é aplicada como dano recebido dividido (mesmo efeito, barras iguais).
+export const COOP_MODIFIERS = {
+  enemyHealthMultiplier: 2,
+  enemyDamageMultiplier: 1.2,
+} as const;
+
 export type DifficultyId = keyof typeof DIFFICULTIES;
 export type Difficulty = (typeof DIFFICULTIES)[DifficultyId];
 

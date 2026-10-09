@@ -55,3 +55,137 @@ canvas {
     opacity: 1;
   }
 }
+
+/* ── Modais Dark Fantasy de Sala / Multiplayer ── */
+.av-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 2, 7, 0.78);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  animation: av-fade-in 0.25s ease-out;
+}
+
+.av-modal-closing {
+  animation: av-fade-out 0.2s ease-in forwards;
+}
+
+.av-modal-card {
+  width: 90%;
+  max-width: 440px;
+  background: linear-gradient(180deg, #120d1c 0%, #08060e 100%);
+  border: 1px solid #5a4870;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85), 0 0 24px rgba(122, 90, 180, 0.15);
+  border-radius: 4px;
+  padding: 32px 28px;
+  color: #e9e1f5;
+  font-family: Georgia, serif;
+  box-sizing: border-box;
+}
+
+.av-modal-title {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: normal;
+  color: #d9c8f2;
+  text-align: center;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 4px #000;
+}
+
+.av-modal-subtitle {
+  margin: 0 0 24px 0;
+  font-size: 13px;
+  font-style: italic;
+  color: #7f7495;
+  text-align: center;
+}
+
+.av-modal-group {
+  margin-bottom: 18px;
+}
+
+.av-modal-group label {
+  display: block;
+  font-size: 13px;
+  color: #a496bc;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.av-modal-group input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #06040a;
+  border: 1px solid #3d3050;
+  border-radius: 2px;
+  color: #f0e2c4;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.av-modal-group input:focus {
+  border-color: #9a78d0;
+  box-shadow: 0 0 10px rgba(154, 120, 208, 0.3);
+}
+
+.av-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.av-btn {
+  padding: 10px 20px;
+  font-family: Georgia, serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.av-btn-secondary {
+  background: transparent;
+  color: #8f84a0;
+  border-color: #3d3050;
+}
+
+.av-btn-secondary:hover {
+  color: #d9c8f2;
+  border-color: #5a4870;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.av-btn-primary {
+  background: #2b1f3c;
+  color: #f0e2c4;
+  border-color: #7a58a8;
+}
+
+.av-btn-primary:hover {
+  background: #3d2b56;
+  border-color: #9a78d0;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(154, 120, 208, 0.35);
+}
+
+@keyframes av-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes av-fade-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.97); }
+}
+

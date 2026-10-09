@@ -13,7 +13,8 @@ game.events.once(Phaser.Core.Events.READY, () => document.getElementById('boot-l
 // scenes sem tecla capturada (o Esc de sair da tela cheia o navegador não deixa
 // bloquear).
 window.addEventListener('keydown', (event) => {
-  if (event.key === 'Tab') {
+  // Nos campos dos modais de sala, o Tab continua pulando de campo.
+  if (event.key === 'Tab' && !(event.target instanceof HTMLInputElement)) {
     event.preventDefault();
   }
 });

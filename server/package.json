@@ -1,0 +1,24 @@
+{
+  "name": "ashen-veil-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ashen Veil — Servidor multiplayer com Colyseus",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "colyseus": "^0.18.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0",
+    "tsx": "^4.19.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

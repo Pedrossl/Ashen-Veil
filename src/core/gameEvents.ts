@@ -21,6 +21,8 @@ export const GAME_EVENTS = {
   playerRootBuildupChanged: 'player:root-buildup-changed',
   // Recompensa recebida (ex.: boss derrotado); payload RewardReceived.
   rewardReceived: 'player:reward-received',
+  // Marcação nova no mundo (portão aberto, baú aberto...); payload WorldFlagSet.
+  worldFlagSet: 'world:flag-set',
   // Mensagem no chão sendo lida (payload GroundMessageShown) e fim da leitura.
   groundMessageShown: 'ground-message:shown',
   groundMessageHidden: 'ground-message:hidden',
@@ -28,6 +30,10 @@ export const GAME_EVENTS = {
 
 export type GroundMessageShown = {
   text: string;
+};
+
+export type WorldFlagSet = {
+  flag: string;
 };
 
 export type RewardReceived = {

@@ -45,6 +45,11 @@ export class Buildup {
     }
   }
 
+  // Valor vindo de outro jogo (cooperativo), sem contar como acúmulo novo.
+  syncTo(value: number): void {
+    this.set(Math.max(0, Math.min(this.config.max, value)));
+  }
+
   reset(): void {
     this.sinceLastAddMs = 0;
     this.set(0);

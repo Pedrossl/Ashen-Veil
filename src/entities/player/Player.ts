@@ -131,10 +131,7 @@ export class Player
     this.setCollideWorldBounds(true);
 
     // Aplicar skin (tint) escolhida na tela de seleção de personagem.
-    const skin = getSkin(scene.game);
-    if (skin.tint !== 0xffffff) {
-      this.setTint(skin.tint);
-    }
+    this.applySkinTint();
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     const { width, height, offsetX, offsetY } = PLAYER_SPRITE.body;
@@ -211,6 +208,18 @@ export class Player
 
     if (this.isFree) {
       this.showIdlePose();
+    }
+  }
+
+  // Cor da skin escolhida; o manto original (branco) fica sem tint. Usado
+  // também para voltar à cor certa depois do piscar de dano.
+  private applySkinTint(): void {
+    const { tint } = getSkin(this.scene.game);
+
+    if (tint === 0xffffff) {
+      this.clearTint();
+    } else {
+      this.setTint(tint);
     }
   }
 
@@ -369,6 +378,11 @@ export class Player
     }
   }
 
+  // Sentado e acomodado junto à lanterna (ainda não se levantou).
+  get isSeated(): boolean {
+    return this.action === 'rest' && this.isSeatedAtFire;
+  }
+
   // Agacha junto à fogueira; onSeated roda quando ele já está acomodado.
   rest(fireX: number, onSeated: () => void): void {
     if (!this.isFree) {
@@ -502,7 +516,7 @@ export class Player
     this.currentAttack = undefined;
     this.trail.setEnabled(false);
     this.weaponSocket.equip(undefined);
-    this.clearTint();
+    this.applySkinTint();
     this.setScale(PLAYER_SPRITE.scale);
     body.setAcceleration(0, 0);
     body.setVelocityX(0);
@@ -564,7 +578,7 @@ export class Player
 
     (this.body as Phaser.Physics.Arcade.Body).setVelocityX(HIT_KNOCKBACK_SPEED * hit.direction);
     this.setTint(HIT_FLASH_TINT);
-    this.scene.time.delayedCall(HIT_FLASH_MS, () => this.clearTint());
+    this.scene.time.delayedCall(HIT_FLASH_MS, () => this.applySkinTint());
   }
 
   // O golpe vem da arma equipada: trocar de arma troca dano, custo e alcance.

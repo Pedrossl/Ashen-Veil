@@ -18,7 +18,8 @@ export type ProjectileSprite = {
 // Some se não acertar nada nesse tempo (ex.: caiu num vão).
 const MAX_LIFETIME_MS = 4000;
 
-type SludgeBallConfig = {
+// Lançamento da bola: dá para repetir o mesmo arremesso em outro jogo.
+export type SludgeBallLaunch = {
   x: number;
   y: number;
   velocityX: number;
@@ -27,7 +28,12 @@ type SludgeBallConfig = {
   damage: number;
   // Piso onde a bola se espatifa se não acertar ninguém.
   floorY: number;
-  combat: CombatSystem;
+};
+
+type SludgeBallConfig = SludgeBallLaunch & {
+  // Sem combate, a bola é só visual: a cópia, no cooperativo, do arremesso
+  // feito pelo jogo que comanda o inimigo (lá é que ela acerta).
+  combat?: CombatSystem;
   // Sem valor, usa o detrito do Suplicante.
   sprite?: ProjectileSprite;
 };
@@ -63,7 +69,7 @@ export class SludgeBall extends Phaser.GameObjects.Sprite implements Attacker {
     this.setFlipX(config.velocityX < 0);
     this.velocityX = config.velocityX;
     this.velocityY = config.velocityY;
-    config.combat.addAttacker(this);
+    config.combat?.addAttacker(this);
     scene.events.on(Phaser.Scenes.Events.UPDATE, this.step, this);
   }
 
@@ -133,7 +139,7 @@ export class SludgeBall extends Phaser.GameObjects.Sprite implements Attacker {
       });
     }
 
-    this.config.combat.remove(this);
+    this.config.combat?.remove(this);
     scene.events.off(Phaser.Scenes.Events.UPDATE, this.step, this);
     this.destroy();
   }

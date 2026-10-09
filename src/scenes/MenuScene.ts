@@ -5,6 +5,9 @@ import { Controls } from '../core/controls';
 import { DEMO } from '../data/demo';
 import { setDifficulty, type DifficultyId } from '../data/difficulty';
 import { hasSave, loadGame, startNewGame } from '../systems/SaveGame';
+import { network } from '../net/network';
+import { showCreateRoomModal, showJoinRoomModal } from '../ui/RoomDialog';
+import type { Room } from '@colyseus/sdk';
 
 type MenuOption = {
   label: string;
@@ -65,18 +68,23 @@ export class MenuScene extends Phaser.Scene {
   private selected = 0;
   private leaving = false;
 
-  // Estado da tela: 'main' ou 'difficulty'.
-  private phase: 'main' | 'difficulty' = 'main';
+  // Estado da tela: 'main', 'difficulty' ou 'multiplayer'.
+  private phase: 'main' | 'difficulty' | 'multiplayer' = 'main';
 
-  // Container para facilitar transições entre as duas telas.
+  // Containers para transições entre telas.
   private mainContainer?: Phaser.GameObjects.Container;
   private difficultyContainer?: Phaser.GameObjects.Container;
+  private multiplayerContainer?: Phaser.GameObjects.Container;
 
   // Texto da frase de dificuldade.
   private phraseText?: Phaser.GameObjects.Text;
+  // Mensagem de status/erro do multiplayer.
+  private statusText?: Phaser.GameObjects.Text;
 
   // Referências às entradas do menu para poder chamar select().
   private currentEntries: MenuOption[] = [];
+  // Modal aberto ou conectando ao servidor: ignora o teclado do menu.
+  private busy = false;
 
   constructor() {
     super('MenuScene');
@@ -91,7 +99,10 @@ export class MenuScene extends Phaser.Scene {
     }
 
     this.controls = new Controls(keyboard);
+    // Voltou ao menu (fim da demo, sala desfeita): sai da sala cooperativa.
+    network.leaveRoom();
     this.leaving = false;
+    this.busy = false;
     this.selected = 0;
     this.phase = 'main';
     this.cameras.main.setBackgroundColor('#050308');
@@ -112,6 +123,15 @@ export class MenuScene extends Phaser.Scene {
     this.difficultyContainer = this.add.container(width, 0).setAlpha(0);
     this.buildDifficultyMenu(width, height);
 
+    // ── Tela de multiplayer (começa fora da tela) ──
+    this.multiplayerContainer = this.add.container(width, 0).setAlpha(0);
+    this.buildMultiplayerMenu(width, height);
+
+    // ── Mensagem de status / erro no rodapé ──
+    this.statusText = this.add
+      .text(width / 2, height * 0.88, '', { ...PHRASE_STYLE, color: '#e8b860', fontSize: '15px' })
+      .setOrigin(0.5);
+
     // ── Rodapé ──
     this.add
       .text(width - 24, height - 20, `${DEMO.version} · ${DEMO.label}`, { ...OPTION_STYLE, fontSize: '14px', color: '#5f5670' })
@@ -127,8 +147,10 @@ export class MenuScene extends Phaser.Scene {
 
       if (this.phase === 'main') {
         this.handleMainInput();
-      } else {
+      } else if (this.phase === 'difficulty') {
         this.handleDifficultyInput();
+      } else if (this.phase === 'multiplayer') {
+        this.handleMultiplayerInput();
       }
     });
   }
@@ -140,6 +162,7 @@ export class MenuScene extends Phaser.Scene {
     const entries: MenuOption[] = [
       ...(saved ? [{ label: 'Continuar', select: () => this.continueGame() }] : []),
       { label: saved ? 'Novo jogo' : 'Iniciar', select: () => this.showDifficulty() },
+      { label: 'Multiplayer', select: () => this.showMultiplayer() },
       { label: 'Sair', select: () => this.quitGame() },
     ];
 
@@ -207,6 +230,118 @@ export class MenuScene extends Phaser.Scene {
     container.setData('entries', entries);
   }
 
+  // ── Tela de multiplayer: criar ou entrar numa sala cooperativa ──
+
+  private buildMultiplayerMenu(width: number, height: number): void {
+    const container = this.multiplayerContainer!;
+    container.add(
+      this.add
+        .text(width / 2, height * 0.52, 'Jornada cooperativa · 2 viajantes', { ...OPTION_STYLE, fontSize: '20px', color: '#c9b8ef' })
+        .setOrigin(0.5),
+    );
+
+    const entries: MenuOption[] = [
+      { label: 'Criar sala', select: () => void this.createRoom() },
+      { label: 'Entrar em sala', select: () => void this.joinRoom() },
+      { label: 'Voltar', select: () => this.showMain() },
+    ];
+    const optionTexts = entries.map((entry, index) => {
+      const text = this.add
+        .text(width / 2, height * 0.62 + index * 48, entry.label, OPTION_STYLE)
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      text.on('pointerover', () => this.highlight(index));
+      text.on('pointerdown', () => entry.select());
+      container.add(text);
+      return text;
+    });
+
+    container.setData('optionTexts', optionTexts);
+    container.setData('labels', entries.map((entry) => entry.label));
+    container.setData('entries', entries);
+  }
+
+  private handleMultiplayerInput(): void {
+    if (!this.controls || this.busy) return;
+
+    if (this.controls.justPressed('up')) {
+      this.highlight((this.selected + this.options.length - 1) % this.options.length);
+    } else if (this.controls.justPressed('down')) {
+      this.highlight((this.selected + 1) % this.options.length);
+    } else if (this.controls.justPressed('confirm') || this.controls.justPressed('interact')) {
+      this.currentEntries[this.selected].select();
+    } else if (this.controls.justPressed('cancel')) {
+      this.showMain();
+    }
+  }
+
+  private async createRoom(): Promise<void> {
+    const data = await this.askInModal(showCreateRoomModal);
+
+    if (!data) return;
+
+    await this.connect('Abrindo a sala...', () => network.createRoom(data.password ?? '', data.playerName));
+  }
+
+  private async joinRoom(): Promise<void> {
+    const data = await this.askInModal(showJoinRoomModal);
+
+    if (!data) return;
+
+    await this.connect('Procurando a sala...', () => network.joinRoom(data.roomId, data.password ?? '', data.playerName));
+  }
+
+  // Os campos do modal são HTML: enquanto ele está aberto, o Phaser solta o
+  // teclado (senão W/A/S/D/E/Espaço não chegariam aos campos e moveriam o menu).
+  private async askInModal<T>(open: () => Promise<T | null>): Promise<T | null> {
+    if (this.busy || this.leaving) return null;
+
+    this.busy = true;
+    playSound(this, 'uiConfirm');
+    this.setKeyboardActive(false);
+    const result = await open();
+    this.setKeyboardActive(true);
+    this.busy = false;
+    return result;
+  }
+
+  private setKeyboardActive(active: boolean): void {
+    const keyboard = this.input.keyboard;
+
+    if (!keyboard) return;
+
+    keyboard.enabled = active;
+    if (active) {
+      keyboard.enableGlobalCapture();
+    } else {
+      keyboard.disableGlobalCapture();
+      keyboard.resetKeys();
+    }
+  }
+
+  private async connect(message: string, open: () => Promise<Room>): Promise<void> {
+    this.busy = true;
+    this.statusText?.setText(message).setColor('#c9b8ef');
+
+    try {
+      const room = await open();
+      this.leaveToLobby(room);
+    } catch (error) {
+      this.busy = false;
+      playSound(this, 'uiMove');
+      this.statusText?.setText(describeRoomError(error)).setColor('#d46b6b');
+    }
+  }
+
+  private leaveToLobby(room: Room): void {
+    playSound(this, 'uiConfirm');
+    this.leaving = true;
+    this.cameras.main.fadeOut(FADE_MS, 4, 3, 8);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.scene.start('MultiplayerLobbyScene', { room });
+    });
+  }
+
   private handleDifficultyInput(): void {
     if (!this.controls) return;
 
@@ -244,38 +379,51 @@ export class MenuScene extends Phaser.Scene {
   private showDifficulty(): void {
     if (this.leaving) return;
     playSound(this, 'uiConfirm');
-    this.phase = 'difficulty';
-
-    // Trocar referências de opções para as da tela de dificuldade.
-    const container = this.difficultyContainer!;
-    this.options = container.getData('optionTexts') as Phaser.GameObjects.Text[];
-    this.labels = container.getData('labels') as string[];
-    this.currentEntries = container.getData('entries') as MenuOption[];
-    this.selected = 0;
+    this.showPanel('difficulty');
     this.highlightDifficulty(0);
+  }
 
-    // Slide: menu principal sai para a esquerda, dificuldade entra da direita.
-    const { width } = this.scale;
-    this.tweens.add({ targets: this.mainContainer, x: -width, alpha: 0, duration: SLIDE_MS, ease: 'Power2' });
-    this.tweens.add({ targets: this.difficultyContainer, x: 0, alpha: 1, duration: SLIDE_MS, ease: 'Power2' });
+  private showMultiplayer(): void {
+    if (this.leaving) return;
+    playSound(this, 'uiConfirm');
+    this.statusText?.setText('');
+    this.showPanel('multiplayer');
+    this.highlight(0);
   }
 
   private showMain(): void {
-    if (this.leaving) return;
+    if (this.leaving || this.busy) return;
     playSound(this, 'uiMove');
-    this.phase = 'main';
+    this.statusText?.setText('');
+    this.showPanel('main');
+    this.highlight(0);
+  }
 
-    // Reconstruir referências do menu principal.
-    const container = this.mainContainer!;
+  // Troca a tela ativa: a nova entra da direita e as outras saem.
+  private showPanel(phase: 'main' | 'difficulty' | 'multiplayer'): void {
+    const panels = {
+      main: this.mainContainer!,
+      difficulty: this.difficultyContainer!,
+      multiplayer: this.multiplayerContainer!,
+    };
+    const container = panels[phase];
+    this.phase = phase;
     this.options = container.getData('optionTexts') as Phaser.GameObjects.Text[];
     this.labels = container.getData('labels') as string[];
     this.currentEntries = container.getData('entries') as MenuOption[];
     this.selected = 0;
-    this.highlight(0);
 
     const { width } = this.scale;
-    this.tweens.add({ targets: this.mainContainer, x: 0, alpha: 1, duration: SLIDE_MS, ease: 'Power2' });
-    this.tweens.add({ targets: this.difficultyContainer, x: width, alpha: 0, duration: SLIDE_MS, ease: 'Power2' });
+    for (const [key, panel] of Object.entries(panels)) {
+      const active = key === phase;
+      this.tweens.add({
+        targets: panel,
+        x: active ? 0 : key === 'main' ? -width : width,
+        alpha: active ? 1 : 0,
+        duration: SLIDE_MS,
+        ease: 'Power2',
+      });
+    }
   }
 
   // ── Helpers comuns ──
@@ -423,4 +571,13 @@ export class MenuScene extends Phaser.Scene {
       },
     });
   }
+}
+
+// Mensagem curta para quem não conseguiu criar ou entrar numa sala.
+function describeRoomError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+
+  if (/senha/i.test(message)) return 'Senha incorreta.';
+  if (/not found|não encontrad|locked|full/i.test(message)) return 'Sala não encontrada ou já cheia.';
+  return 'Não foi possível falar com o servidor. Ele está ligado?';
 }

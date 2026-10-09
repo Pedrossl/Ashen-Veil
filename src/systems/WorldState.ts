@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import type { RoomId } from '../maps/types';
+import { GAME_EVENTS, type WorldFlagSet } from '../core/gameEvents';
 import { Inventory } from './Inventory';
 
 export type Checkpoint = { roomId: RoomId; entryId: string };
@@ -17,7 +18,7 @@ export class WorldState {
   private readonly flags = new Set<string>();
   private lastCheckpoint: Checkpoint = FIRST_CHECKPOINT;
 
-  private constructor(events: Phaser.Events.EventEmitter) {
+  private constructor(private readonly events: Phaser.Events.EventEmitter) {
     this.inventory = new Inventory(events);
   }
 
@@ -43,7 +44,24 @@ export class WorldState {
   }
 
   setFlag(flag: string): void {
+    if (this.flags.has(flag)) {
+      return;
+    }
+
     this.flags.add(flag);
+    const change: WorldFlagSet = { flag };
+    this.events.emit(GAME_EVENTS.worldFlagSet, change);
+  }
+
+  // Marcação vinda do parceiro no cooperativo: entra sem avisar ninguém
+  // (senão voltaria para ele).
+  applySharedFlag(flag: string): boolean {
+    if (this.flags.has(flag)) {
+      return false;
+    }
+
+    this.flags.add(flag);
+    return true;
   }
 
   // Última fogueira em que o jogador descansou: é onde ele renasce.

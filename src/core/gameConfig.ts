@@ -5,6 +5,7 @@ import { PreloadScene } from '../scenes/PreloadScene';
 import { PrisonScene } from '../scenes/PrisonScene';
 import { MenuScene } from '../scenes/MenuScene';
 import { CharacterScene } from '../scenes/CharacterScene';
+import { MultiplayerLobbyScene } from '../scenes/MultiplayerLobbyScene';
 import { HudScene } from '../ui/HudScene';
 import { InventoryScene } from '../ui/InventoryScene';
 import { DemoEndScene } from '../ui/DemoEndScene';
@@ -18,7 +19,7 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   width: GAME_WIDTH,
   height: GAME_HEIGHT,
   backgroundColor: '#08070d',
-  scene: [BootScene, PreloadScene, MenuScene, CharacterScene, PrisonScene, HudScene, InventoryScene, DemoEndScene],
+  scene: [BootScene, PreloadScene, MenuScene, CharacterScene, MultiplayerLobbyScene, PrisonScene, HudScene, InventoryScene, DemoEndScene],
   physics: {
     default: 'arcade',
     arcade: {
