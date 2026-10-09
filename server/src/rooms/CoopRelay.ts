@@ -11,6 +11,7 @@ export const RELAYED_MESSAGES = [
   "enemy_projectile",
   "rest_ready",
   "rest_cancel",
+  "rest_revive",
   "arena_summon",
 ] as const;
 

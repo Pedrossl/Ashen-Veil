@@ -11,6 +11,8 @@ export type FoeDecision = {
   // Golpe escolhido, posição de saída etc., conforme o tipo.
   name?: string;
   x?: number;
+  // Várias posições (ex.: onde caem as bolhas de sangue).
+  points?: number[];
 };
 
 export type FoeDecisionListener = (decision: FoeDecision) => void;

@@ -51,10 +51,16 @@ class NetworkManager {
     return this.currentRoom;
   }
 
+  // Saída pedida por este jogo: a sala deixa de ser a atual antes de fechar,
+  // então quem vigia a conexão não trata como queda.
   leaveRoom(): void {
-    if (this.currentRoom) {
-      this.currentRoom.leave();
-      this.currentRoom = undefined;
+    const room = this.currentRoom;
+    this.currentRoom = undefined;
+
+    try {
+      room?.leave();
+    } catch {
+      // A conexão já tinha caído.
     }
   }
 }

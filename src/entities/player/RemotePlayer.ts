@@ -20,6 +20,8 @@ export type PlayerSnapshot = {
   alive: boolean;
   // Rolando (ou agarrado): golpes passam por ele.
   invulnerable: boolean;
+  // Caiu numa luta de boss e está assistindo o parceiro (cooperativo).
+  spectating: boolean;
 };
 
 // Quanto da distância até a última posição recebida ele anda por quadro de 60 FPS.
@@ -46,6 +48,7 @@ export class RemotePlayer extends Phaser.GameObjects.Sprite implements Damageabl
 
   constructor(scene: Phaser.Scene, snapshot: PlayerSnapshot, name: string) {
     super(scene, snapshot.x, snapshot.y, snapshot.texture, snapshot.frame);
+    this.setName(name);
     scene.add.existing(this);
     this.setOrigin(0.5, 1).setScale(PLAYER_SPRITE.scale).setDepth(9.9);
     this.targetX = snapshot.x;

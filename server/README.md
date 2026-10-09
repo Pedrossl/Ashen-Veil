@@ -59,6 +59,12 @@ jogar em `http://localhost:5173` ou pelo mesmo endereço do ngrok.
 5. O anfitrião inicia mandando o **mundo dele** (o save: portões, baús, lanternas,
    bosses, itens, última lanterna). Todos recebem `game_started` com a dificuldade e
    esse mundo; o convidado entra nele, e os dois começam na lanterna do anfitrião.
+6. **Saídas:** se o anfitrião sai (ou cai), a sala acaba para os dois (`room_disbanded`)
+   e cada jogo volta ao menu com o aviso. Se o convidado sai, o anfitrião recebe
+   `partner_left`, segue como no solo e a sala volta a aceitar entrada: o convidado
+   entra de novo com o mesmo código, recebe a mesma aparência, manda `rejoin`, o
+   servidor pede o mundo atual ao anfitrião (`world_request`/`world_snapshot`) e o
+   entrega ao convidado com `game_started`; o anfitrião recebe `partner_joined`.
 
 ## Mensagens (cliente → servidor)
 
@@ -71,6 +77,9 @@ jogar em `http://localhost:5173` ou pelo mesmo endereço do ngrok.
 | `boss_decision` | `{ roomId, index, decision }` decisão do boss (golpe, teleporte, mergulho...) que o outro jogo executa | repassada ao outro |
 | `player_hit`, `enemy_projectile` | golpe de inimigo ou boss no parceiro, arremesso | repassadas ao outro |
 | `rest_ready`, `rest_cancel` | `{ roomId, bonfireId }` / — (sentou ou levantou da lanterna) | repassadas ao outro |
+| `rest_revive` | `{ roomId, entryId }` (descansou com o parceiro de espectador: ele volta nessa lanterna) | repassada ao outro |
+| `rejoin` | — (convidado voltando a uma partida em andamento) | convidado |
+| `world_snapshot` | `{ world }` (mundo atual, em resposta a `world_request`) | anfitrião |
 | `arena_summon` | `{ roomId, entryId }` (entrou numa arena de boss vivo) | repassada; o outro é levado para a mesma entrada |
 | `select_skin`    | `{ skinId }`              | qualquer  |
 | `toggle_ready`   | —                         | qualquer  |
@@ -83,7 +92,9 @@ jogar em `http://localhost:5173` ou pelo mesmo endereço do ngrok.
 | ---------------- | ------------------------- |
 | `error`          | `{ message }`             |
 | `game_started`   | `{ difficulty, world }`   |
-| `room_disbanded` | `{ message }` (anfitrião saiu) |
+| `room_disbanded` | `{ message }` (anfitrião saiu: a partida acaba) |
+| `partner_left`, `partner_joined` | `{ name }` (convidado saiu / voltou) |
+| `world_request` | — (ao anfitrião: o convidado está voltando) |
 | `player_state`   | estado do parceiro + `id` |
 | `world_event`    | item ou marcação do parceiro + `id` |
 | `room_owner`     | `{ roomId, ownerId }` — quem comanda os inimigos e bosses da sala |
@@ -94,7 +105,7 @@ Cooperativo no estilo do Lords of the Fallen: o mundo é do anfitrião e cada um
 anda livre por ele. Compartilhados: os personagens, os itens, o mundo (portões,
 baús, lanternas), os inimigos comuns (numa sala com os dois, o primeiro a chegar
 comanda; ver `CoopRelay.ts`) e o descanso (só com os dois sentados na mesma
-lanterna). Bosses ainda rodam separados em cada jogo.
+lanterna). Bosses também: um só para os dois (`foe_states`/`boss_decision`).
 
 ## Deploy na VPS
 

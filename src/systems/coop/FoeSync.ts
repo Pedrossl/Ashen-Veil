@@ -102,12 +102,12 @@ export class FoeSync<S> {
   }
 
   // Golpe que o parceiro deu num inimigo ou boss que este jogo comanda.
-  private onHit({ roomId, group, index, damage, direction, critical }: FoeHitMessage): void {
+  private onHit({ roomId, group, index, damage, direction, critical, part }: FoeHitMessage): void {
     if (!this.control.isOwner || roomId !== this.roomId || group !== this.group) {
       return;
     }
 
-    this.foes[index]?.receiveHit({ damage, direction, critical, attackerFaction: 'player', source: this.control.partner });
+    this.foes[index]?.receiveHit({ damage, direction, critical, part, attackerFaction: 'player', source: this.control.partner });
   }
 
   private forwardHit(index: number, hit: Hit): void {
@@ -118,6 +118,7 @@ export class FoeSync<S> {
       damage: hit.damage,
       direction: hit.direction,
       critical: hit.critical ?? false,
+      part: hit.part,
     };
     this.room.send(COOP_MESSAGES.foeHit, message);
   }

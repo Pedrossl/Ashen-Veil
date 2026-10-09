@@ -11,6 +11,10 @@ export class GameRoom extends Room<GameRoomOptions> {
   maxClients = 2; // Máximo de 2 jogadores (Host + Convidado)
   private roomPassword?: string;
   private readonly ownership = new RoomOwnership();
+  // Aparência do convidado que saiu no meio da partida: volta com ela.
+  private lastGuestSkin = "";
+  // Convidados voltando à partida, esperando o mundo atual do anfitrião.
+  private readonly rejoining = new Set<string>();
 
   onCreate(options: any) {
     this.setState(new GameState());
@@ -85,6 +89,26 @@ export class GameRoom extends Room<GameRoomOptions> {
       this.announceOwners(this.ownership.enter(client.sessionId, payload.roomId));
     });
 
+    // Convidado voltando a uma partida em andamento: pede o mundo atual ao
+    // anfitrião (ele está jogando; o save pode estar atrasado).
+    this.onMessage("rejoin", (client: Client) => {
+      if (this.state.status !== "in-game" || client.sessionId === this.state.hostId) return;
+      this.rejoining.add(client.sessionId);
+      this.clients.find((other) => other.sessionId === this.state.hostId)?.send("world_request", {});
+    });
+
+    this.onMessage("world_snapshot", (client: Client, payload: { world?: unknown }) => {
+      if (client.sessionId !== this.state.hostId || typeof payload?.world !== "object" || payload.world === null) return;
+
+      for (const guest of this.clients.filter((other) => this.rejoining.has(other.sessionId))) {
+        this.rejoining.delete(guest.sessionId);
+        guest.send("game_started", { difficulty: this.state.difficulty, world: payload.world });
+        const name = this.state.players.get(guest.sessionId)?.name ?? "Seu parceiro";
+        client.send("partner_joined", { name });
+      }
+      this.lock();
+    });
+
     // Host inicia a partida
     // O anfitrião manda o mundo dele (o save) para o convidado entrar nele.
     this.onMessage("start_game", (client: Client, payload: { world?: unknown }) => {
@@ -148,18 +172,38 @@ export class GameRoom extends Room<GameRoomOptions> {
       newPlayer.isHost = false;
     }
 
+    // Voltando a uma partida em andamento: mesma aparência de antes (ou a
+    // primeira livre) e já pronto; o jogo dele pede para entrar (`rejoin`).
+    if (this.state.status === "in-game") {
+      const hostSkin = this.state.players.get(this.state.hostId)?.skin;
+      const skins = [this.lastGuestSkin, "veil", "forest", "ember"].filter((skin) => skin && skin !== hostSkin);
+      newPlayer.skin = skins[0] ?? "";
+      newPlayer.isReady = true;
+    }
+
     this.state.players.set(client.sessionId, newPlayer);
   }
 
   onLeave(client: Client, _code?: number) {
     console.log(`[Sala ${this.roomId}] Cliente ${client.sessionId} saiu.`);
+    const player = this.state.players.get(client.sessionId);
     this.state.players.delete(client.sessionId);
+    this.rejoining.delete(client.sessionId);
     this.announceOwners(this.ownership.leave(client.sessionId));
 
-    // Se o host saiu, desconecta a sala inteira
+    // O anfitrião saiu (ou caiu): o mundo é dele, a partida acaba para os dois.
     if (client.sessionId === this.state.hostId) {
-      this.broadcast("room_disbanded", { message: "O anfitrião encerrou a sala." });
+      this.broadcast("room_disbanded", { message: "O anfitrião saiu. A partida cooperativa acabou." });
       this.disconnect();
+      return;
+    }
+
+    // O convidado saiu no meio da partida: o anfitrião segue, e a sala volta
+    // a aceitar entrada para ele poder voltar com o mesmo código.
+    if (this.state.status === "in-game") {
+      this.lastGuestSkin = player?.skin ?? "";
+      this.broadcast("partner_left", { name: player?.name ?? "Seu parceiro" });
+      this.unlock();
     }
   }
 

@@ -3,15 +3,16 @@ import type { Room } from '@colyseus/sdk';
 
 import type { MeleeEnemy } from '../../entities/enemies/MeleeEnemy';
 import type { Player } from '../../entities/player/Player';
+import type { RemotePlayer } from '../../entities/player/RemotePlayer';
 import type { RoomBoss } from '../../maps/types';
 import type { ItemDefinition } from '../../data/items';
 import type { CombatSystem } from '../CombatSystem';
 import { ArenaSync } from './ArenaSync';
 import { BossSync } from './BossSync';
 import { EnemySync } from './EnemySync';
-import type { ArenaSummonMessage } from './messages';
-import { PlayerSync } from './PlayerSync';
-import { RestSync } from './RestSync';
+import type { ArenaSummonMessage, RestReviveMessage } from './messages';
+import { PlayerSync, type PartnerStatus } from './PlayerSync';
+import { RestSync, type RestPoint } from './RestSync';
 import { RoomControl } from './RoomControl';
 import { WorldSync } from './WorldSync';
 
@@ -31,6 +32,10 @@ export type CoopSessionConfig = {
   onSummoned: (summon: ArenaSummonMessage, partner: string) => void;
   // Aviso curto na tela (ex.: esperando o parceiro na lanterna).
   notify: (message: string) => void;
+  // Este jogador caiu numa luta de boss e está assistindo o parceiro.
+  isSpectating: () => boolean;
+  // Assistindo, o parceiro descansou numa lanterna: volta à vida nela.
+  onRevived: (revive: RestReviveMessage) => void;
 };
 
 // Partida cooperativa numa sala da prisão: junta a sincronização dos
@@ -48,9 +53,9 @@ export class CoopSession {
     const control = new RoomControl(scene, room, roomId, config.combat, player);
     this.enemies = new EnemySync(scene, room, roomId, config.enemies, control);
     this.bosses = new BossSync(room, roomId, config.bosses, control);
-    this.players = new PlayerSync(scene, room, player, roomId, (partner) => control.setPartner(partner));
+    this.players = new PlayerSync(scene, room, player, roomId, (partner) => control.setPartner(partner), config.isSpectating);
     const world = new WorldSync(scene.game, room, config.onSharedProgress);
-    this.rest = new RestSync(room, roomId, player, config.notify);
+    this.rest = new RestSync(scene.game, room, roomId, player, () => this.players.partnerStatus, config.notify, config.onRevived);
     const arena = new ArenaSync(room, roomId, config.arena, config.onSummoned);
 
     this.cleanups.push(
@@ -73,9 +78,18 @@ export class CoopSession {
     this.rest.update();
   }
 
+  // O parceiro nesta sala (para a câmera do espectador) e onde ele está.
+  get partner(): RemotePlayer | undefined {
+    return this.players.partner;
+  }
+
+  get partnerStatus(): PartnerStatus | undefined {
+    return this.players.partnerStatus;
+  }
+
   // Sentou numa lanterna: o descanso só acontece com os dois sentados nela.
-  requestRest(bonfireId: string, onBothSeated: () => void): void {
-    this.rest.requestRest(bonfireId, onBothSeated);
+  requestRest(point: RestPoint, onRested: () => void): void {
+    this.rest.requestRest(point, onRested);
   }
 
   private end(): void {
