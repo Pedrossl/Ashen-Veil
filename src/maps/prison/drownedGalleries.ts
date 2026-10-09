@@ -146,15 +146,9 @@ export function createDrownedGalleries(scene: Phaser.Scene, world: WorldState): 
       texture: EXPANSION_ATLASES.cells.key, frame: 'door-closed', x: 420, floorY: TOP_Y, scale: 0.6, depth: 3, tint: STONE_TINT,
       message: 'Trancada por fora. Do outro lado, alguém arrasta correntes.',
     }),
-    new LockedDoor(scene, {
-      texture: EXPANSION_ATLASES.cells.key, frame: 'door-closed', x: 1380, floorY: MID_Y, scale: 0.6, depth: 3, tint: STONE_TINT,
-      message: 'A madeira apodreceu, mas a tranca ainda segura.',
-    }),
-    new LockedDoor(scene, {
-      texture: EXPANSION_ATLASES.cells.key, frame: 'gate-barred', x: 3360, floorY: MID_Y, scale: 0.6, depth: 3, tint: STONE_TINT,
-      message: 'Grade presa a cadeado. Uma chave de carcereiro talvez sirva.',
-    }),
   ];
+  addProp(scene, piece('cells', 'door-open', 1380, MID_Y, 0.6, 3));
+  addProp(scene, piece('cells', 'door-open', 3360, MID_Y, 0.6, 3));
 
   // Boca do bueiro no canal: com E, desce para os esgotos.
   addProp(scene, piece('damp', 'sewer-mouth', SEWER_ENTRANCE_X, LOW_Y + 6, 0.85, 3));
@@ -204,6 +198,8 @@ export function createDrownedGalleries(scene: Phaser.Scene, world: WorldState): 
       boss: { x: 3620, y: TOP_Y, facing: 'left' },
       bonfire: { x: 3310, y: TOP_Y, facing: 'right' },
       sewer: { x: SEWER_ENTRANCE_X + 60, facing: 'right' },
+      'service-wing': { x: 1450, y: MID_Y, facing: 'right' },
+      'cistern-wing': { x: 3435, y: MID_Y, facing: 'right' },
     },
     exits: [
       { side: 'left', x: 60, toRoom: 'prison-chain-well', toEntry: 'ledge', maxFeetY: 0 },
@@ -223,6 +219,8 @@ export function createDrownedGalleries(scene: Phaser.Scene, world: WorldState): 
     bonfires: [bonfire],
     chests: [hiddenChest],
     passages: [
+      { x: 1380, floorY: MID_Y, label: 'Entrar nas alas esquecidas', toRoom: 'prison-service-wing', toEntry: 'galleries' },
+      { x: 3360, floorY: MID_Y, label: 'Entrar na cisterna antiga', toRoom: 'prison-service-wing', toEntry: 'cistern' },
       { x: SEWER_ENTRANCE_X, floorY: LOW_Y, label: 'Entrar no bueiro', toRoom: 'prison-sewers', toEntry: 'galleries' },
     ],
     lockedDoors,

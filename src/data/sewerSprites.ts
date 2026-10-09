@@ -48,7 +48,9 @@ export const SEWER_ANIMATIONS = {
   shallowWater: {
     key: 'sewer-shallow-water',
     path: `${DIR}/animacoes/sprite_sheet_agua_rasa_6_frames.webp`,
-    frameWidth: 724,
+    // A folha é uma grade 3×2: seis quadros quadrados, não seis faixas
+    // horizontais. Ler 724px juntava duas células e criava blocos gigantes.
+    frameWidth: 362,
     frameHeight: 362,
     frames: 6,
     frameRate: 6,

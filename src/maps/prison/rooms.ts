@@ -1,4 +1,5 @@
 import type { RoomBuilder, RoomId } from '../types';
+import { createServiceWing } from './serviceWing';
 import { createBossLair } from './bossLair';
 import { createCellBlockCorridor } from './cellBlockCorridor';
 import { createChainWell } from './chainWell';
@@ -8,6 +9,7 @@ import { createRootArena } from './rootArena';
 import { createCellRoom } from './cellRoom';
 
 export const PRISON_ROOMS: Record<RoomId, RoomBuilder> = {
+  'prison-service-wing': createServiceWing,
   'prison-cell': createCellRoom,
   'prison-cell-block': createCellBlockCorridor,
   'prison-chain-well': createChainWell,

@@ -15,6 +15,7 @@ import type { GroundMessage } from '../entities/world/GroundMessage';
 import type { WorldState } from '../systems/WorldState';
 
 export type RoomId =
+  | 'prison-service-wing'
   | 'prison-cell'
   | 'prison-cell-block'
   | 'prison-chain-well'

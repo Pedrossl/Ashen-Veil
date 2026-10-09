@@ -11,6 +11,7 @@ export const AMBIENCE = {
 export const AMBIENCE_BOSS_FACTOR = 0.45;
 export const AMBIENCE_FADE_MS = 1000;
 export const ROOM_AMBIENCE: Record<RoomId, keyof typeof AMBIENCE> = {
+  'prison-service-wing': 'prison',
   'prison-cell': 'prison',
   'prison-cell-block': 'prison',
   'prison-chain-well': 'prison',

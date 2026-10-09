@@ -3,9 +3,9 @@ import Phaser from 'phaser';
 import { SEWER_ANIMATIONS, SEWER_ATLASES, type SewerAtlas, type SheetAnimation } from '../../data/sewerSprites';
 
 // Medidas dentro dos quadros das animações (pixels do quadro original):
-// a água rasa ocupa x 16–711 com a superfície na linha 171; a espuma da
+// a água rasa ocupa x 16–361 com a superfície na linha 171; a espuma da
 // cachoeira toca o chão em 95% da altura do quadro.
-const SHALLOW_WATER = { left: 16, width: 695, surfaceY: 171 } as const;
+const SHALLOW_WATER = { left: 16, width: 346, surfaceY: 171 } as const;
 const WATERFALL_BASE = 0.95;
 
 export type SewerPieceOptions = {

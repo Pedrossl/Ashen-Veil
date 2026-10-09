@@ -10,17 +10,18 @@ export type WeaponSocketFrame = {
 };
 
 export const PLAYER_WEAPON_SOCKETS: Record<string, ReadonlyArray<WeaponSocketFrame | null>> = {
-  // Caminhada (0–7) e pose parada desarmada (8): espada pendendo da mão da
-  // frente. O y acompanha o balanço do tronco de cada quadro do ciclo.
+  // Caminhada e corrida (0–7) e pose parada desarmada (8). A espada fica no
+  // punho de trás, fechado na cintura, com a lâmina baixa e para trás, como
+  // quem carrega a arma andando ou correndo; o y acompanha o balanço do tronco.
   'player-walk-sheet': [
-    { x: 318, y: 152.8, angle: 158, front: true },
-    { x: 318, y: 149.4, angle: 158, front: true },
-    { x: 318, y: 147.9, angle: 158, front: true },
-    { x: 318, y: 152.0, angle: 158, front: true },
-    { x: 318, y: 150.8, angle: 158, front: true },
-    { x: 318, y: 147.4, angle: 158, front: true },
-    { x: 318, y: 145.9, angle: 158, front: true },
-    { x: 318, y: 150.0, angle: 158, front: true },
+    { x: 176, y: 190.0, angle: 240, front: true },
+    { x: 176, y: 186.6, angle: 240, front: true },
+    { x: 176, y: 185.1, angle: 240, front: true },
+    { x: 176, y: 189.2, angle: 240, front: true },
+    { x: 176, y: 188.0, angle: 240, front: true },
+    { x: 176, y: 184.6, angle: 240, front: true },
+    { x: 176, y: 183.1, angle: 240, front: true },
+    { x: 176, y: 187.2, angle: 240, front: true },
     { x: 318, y: 145.0, angle: 158, front: true },
   ],
   // Golpe de espada: guarda, preparação, estocada e recuperação.

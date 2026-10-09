@@ -43,9 +43,10 @@ const BONFIRE_X = 4880;
 // Baú escondido no fim de uma passarela alta, atrás de uma coluna escura.
 const HIDDEN_CHEST_ID = 'prison-sewers-hidden-chest';
 const HIDDEN_CHEST_X = 2950;
-// A passagem no chão cedeu. Para atravessar, é preciso usar a primeira
-// escada, cruzar a passarela alta e descer do outro lado.
+// A passagem no chão cedeu. Uma escada logo antes dos destroços sobe até a
+// passarela alta, que passa por cima deles; do outro lado, outra desce.
 const COLLAPSED_PASSAGE_X = 1800;
+const DETOUR_LADDER_X = 1690;
 
 const LOW_WALKWAYS: ReadonlyArray<readonly [number, number]> = [
   [700, 1250],
@@ -63,6 +64,7 @@ const HIGH_WALKWAYS: ReadonlyArray<readonly [number, number]> = [
 const LADDERS: ReadonlyArray<readonly [number, number, number]> = [
   ...LOW_WALKWAYS.map(([from]) => [from + 40, FLOOR_Y, LOW_WALK_Y] as const),
   [1180, LOW_WALK_Y, HIGH_WALK_Y],
+  [DETOUR_LADDER_X, FLOOR_Y, HIGH_WALK_Y],
   [1960, FLOOR_Y, HIGH_WALK_Y],
   [2450, LOW_WALK_Y, HIGH_WALK_Y],
   [3850, LOW_WALK_Y, HIGH_WALK_Y],
@@ -178,6 +180,11 @@ export function createSewers(scene: Phaser.Scene, world: WorldState): Room {
     title: 'Esgotos do Grilhão',
     groundMessages: [
       new GroundMessage(scene, { x: 860, floorY: FLOOR_Y, text: 'A água atrasa o passo. O rolamento, não.' }),
+      new GroundMessage(scene, {
+        x: DETOUR_LADDER_X - 90,
+        floorY: FLOOR_Y,
+        text: 'Destroços fecham o túnel. Suba a escada com {up} e siga por cima.',
+      }),
     ],
     subtitle: 'Bloco de Celas · Subsolo',
     floorY: FLOOR_Y,
