@@ -35,7 +35,7 @@ export function grantReward(game: Phaser.Game, world: WorldState, reward: Reward
   const lines: RewardReceived['lines'] = [];
 
   if (reward.ampoules > 0) {
-    world.inventory.add(ITEMS.veiledEmberAmpoule);
+    world.inventory.add(ITEMS.veiledEmberAmpoule, 'reward');
 
     for (let i = 0; i < reward.ampoules; i += 1) {
       applyItemEffect(game, ITEMS.veiledEmberAmpoule);
@@ -45,7 +45,7 @@ export function grantReward(game: Phaser.Game, world: WorldState, reward: Reward
 
   for (const key of reward.items) {
     const item: ItemDefinition = ITEMS[key];
-    world.inventory.add(item);
+    world.inventory.add(item, 'reward');
     applyItemEffect(game, item);
     const effect = (RING_EFFECTS as Record<string, { description: string }>)[item.id];
     lines.push({ text: effect ? `${item.name} — ${effect.description}` : item.name, icon: itemIcon(item.id) });

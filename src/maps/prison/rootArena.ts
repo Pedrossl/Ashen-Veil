@@ -45,6 +45,9 @@ const FADE_GREEN = [8, 34, 20] as const;
 // Depois do fade, a Raiz espera o jogador começar a se levantar para emergir.
 const PIT_BOSS_DELAY_MS = 650;
 const RETURN_DELAY_MS = 3600;
+// Comporta do outro lado: abre com a Raiz vencida e sobe às Galerias Alagadas,
+// junto do bueiro (atalho de volta para antes dos esgotos).
+const SHORTCUT_X = WIDTH - 200;
 
 export function createRootArena(scene: Phaser.Scene, world: WorldState): Room {
   addFarLayer(scene);
@@ -126,9 +129,13 @@ export function createRootArena(scene: Phaser.Scene, world: WorldState): Room {
     .setOrigin(0.5, 1)
     .setScale(0.55)
     .setDepth(4);
+  const isDefeated = (): boolean => world.hasFlag(ROOT_OF_CONDEMNED.defeatedFlag);
+  const sluice = addSewerPiece(scene, 'pipes', isDefeated() ? 'sluice-open' : 'sluice-closed', SHORTCUT_X, FLOOR_Y, 0.95, 4, {
+    tint: STONE_TINT,
+  });
 
   // A Raiz dorme no ninho até o jogador entrar na arena; derrotada, não volta.
-  const boss = world.hasFlag(ROOT_OF_CONDEMNED.defeatedFlag)
+  const boss = isDefeated()
     ? undefined
     : new RootBoss(scene, {
         x: CENTER_X,
@@ -147,13 +154,14 @@ export function createRootArena(scene: Phaser.Scene, world: WorldState): Room {
           grantReward(scene.game, world, inPit ? drowned : normal);
           scene.time.delayedCall(2500, () => {
             gate.setFrame(SEWER_BOSS_GATE.openFrame);
+            sluice.setFrame('sluice-open');
             playSound(scene, 'arenaOpen', gate);
           });
           scene.time.delayedCall(RETURN_DELAY_MS, returnFromPit);
         },
+        // No cooperativo a Raiz é uma só: arrastando um, arrasta os dois.
         onDrowning: dragToPit,
       });
-  addSewerPiece(scene, 'pipes', 'sluice-closed', WIDTH - 200, FLOOR_Y, 0.95, 4, { tint: STONE_TINT });
 
   return {
     title: 'Sumidouro dos Condenados',
@@ -175,6 +183,14 @@ export function createRootArena(scene: Phaser.Scene, world: WorldState): Room {
         toRoom: 'prison-sewers',
         toEntry: 'root-arena',
         isOpen: () => !boss?.isEngaged,
+      },
+      {
+        x: SHORTCUT_X,
+        floorY: FLOOR_Y,
+        label: 'Subir às Galerias Alagadas',
+        toRoom: 'prison-drowned-galleries',
+        toEntry: 'sewer',
+        isOpen: () => isDefeated() && !inPit,
       },
     ],
     bosses: boss ? [boss] : [],
