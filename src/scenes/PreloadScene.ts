@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SERVICE_ATLASES } from '../data/serviceWingSprites';
 import { MUSIC, LOCAL_AMBIENCE } from '../data/soundscape';
 import { SOUND_EFFECTS, soundKey, soundPath, type SoundEffect } from '../data/audio';
 
@@ -44,7 +45,7 @@ export class PreloadScene extends Phaser.Scene {
       PRISON_ATLAS_IMAGE_PATH,
       PRISON_ATLAS_DATA_PATH,
     );
-    for (const atlas of [...Object.values(EXPANSION_ATLASES), ...Object.values(SEWER_ATLASES)]) {
+    for (const atlas of [...Object.values(EXPANSION_ATLASES), ...Object.values(SEWER_ATLASES), ...Object.values(SERVICE_ATLASES)]) {
       this.load.atlas(atlas.key, atlas.imagePath, atlas.dataPath);
     }
     for (const sheet of [...Object.values(SEWER_ANIMATIONS), SEWER_BOSS_GATE]) {

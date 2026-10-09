@@ -10,13 +10,24 @@ type StaircaseConfig = {
   depth: number;
 };
 
-// Distância vertical em que os pés "grudam" na diagonal ao subir ou descer.
+// Distância vertical em que os pés "grudam" na diagonal ao entrar na escada.
 const SNAP_DISTANCE = 26;
+// Já na escada, os pés continuam presos mesmo bem longe da diagonal: correndo
+// ou rolando escada abaixo num quadro longo, o corpo sai da linha e, sem isso,
+// cairia por dentro dela até o chão.
+const ATTACHED_SNAP_DISTANCE = 140;
+// Saindo pelas pontas, os pés ficam presos na altura delas por mais este
+// trecho: correndo, um quadro pula da diagonal (ainda abaixo da galeria) para
+// além do topo, e a plataforma de mão única deixaria o corpo atravessar.
+const EXIT_MARGIN = 60;
 const TILE_SCALE = 0.5;
 
 // Escada de pedra. O Arcade Physics não tem rampas, então a escada guia os
 // pés pela diagonal enquanto o corpo está dentro do vão dela.
 export class Staircase {
+  // Corpos que estavam na diagonal no quadro anterior.
+  private readonly attached = new WeakSet<Phaser.Physics.Arcade.Body>();
+
   constructor(
     scene: Phaser.Scene,
     private readonly config: StaircaseConfig,
@@ -27,28 +38,33 @@ export class Staircase {
   // Chamado depois da física: encaixa o corpo na diagonal se estiver nela.
   // Retorna se encaixou; quem chama decide a gravidade.
   constrain(body: Phaser.Physics.Arcade.Body): boolean {
-    const lineY = this.lineYAt(body.center.x);
+    const isAttached = this.attached.has(body);
+    const lineY = this.lineYAt(body.center.x, isAttached ? EXIT_MARGIN : 0);
+    const reach = isAttached ? ATTACHED_SNAP_DISTANCE : SNAP_DISTANCE;
 
-    if (lineY === undefined || Math.abs(body.bottom - lineY) > SNAP_DISTANCE) {
+    if (lineY === undefined || Math.abs(body.bottom - lineY) > reach) {
+      this.attached.delete(body);
       return false;
     }
 
+    this.attached.add(body);
     body.position.y = lineY - body.height;
     body.velocity.y = Math.min(0, body.velocity.y);
     body.blocked.down = true;
     return true;
   }
 
-  private lineYAt(x: number): number | undefined {
+  // Altura da diagonal em x; até `margin` além das pontas, a altura delas.
+  private lineYAt(x: number, margin: number): number | undefined {
     const { bottom, top } = this.config;
     const minX = Math.min(bottom.x, top.x);
     const maxX = Math.max(bottom.x, top.x);
 
-    if (x < minX || x > maxX) {
+    if (x < minX - margin || x > maxX + margin) {
       return undefined;
     }
 
-    const progress = (x - bottom.x) / (top.x - bottom.x);
+    const progress = Phaser.Math.Clamp((x - bottom.x) / (top.x - bottom.x), 0, 1);
     return bottom.y + (top.y - bottom.y) * progress;
   }
 

@@ -17,6 +17,7 @@ import {
   PLAYER_MOVEMENT,
   PLAYER_SPRITE,
 } from '../../data/player';
+import { getSkin } from '../../data/skins';
 import {
   attackDamage,
   rollCritical,
@@ -36,6 +37,8 @@ import { WeaponSocket } from './WeaponSocket';
 
 const PLAYER_WALK_ANIMATION = 'player-walk';
 const PLAYER_CLIMB_ANIMATION = 'player-climb';
+// Distância até a base ou o topo da escada em que esquerda/direita a soltam.
+const LADDER_STEP_OFF_TOLERANCE = 10;
 const PLAYER_DRAGGED_ANIMATION = 'player-dragged';
 const PLAYER_RISE_ANIMATION = 'player-rise';
 const PLAYER_ANIMATION_LAST_DRAGGED_FRAME = 7;
@@ -126,6 +129,12 @@ export class Player
     this.setScale(PLAYER_SPRITE.scale);
     this.setDepth(10);
     this.setCollideWorldBounds(true);
+
+    // Aplicar skin (tint) escolhida na tela de seleção de personagem.
+    const skin = getSkin(scene.game);
+    if (skin.tint !== 0xffffff) {
+      this.setTint(skin.tint);
+    }
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     const { width, height, offsetX, offsetY } = PLAYER_SPRITE.body;
@@ -664,16 +673,27 @@ export class Player
     return true;
   }
 
-  // Sobe e desce com a caminhada mais lenta; esquerda/direita solta a escada.
+  // Sobe e desce com a caminhada mais lenta. Esquerda/direita só soltam a
+  // escada na base ou no topo (descer para o piso); no meio são ignoradas, para
+  // quem chega correndo com a direção apertada não largar e cair.
   private updateClimb(body: Phaser.Physics.Arcade.Body): void {
     const ladder = this.ladder;
 
-    if (!ladder || this.controls.horizontalAxis() !== 0) {
+    if (!ladder) {
       this.finishClimb(body);
       return;
     }
 
     const vertical = this.controls.verticalAxis();
+    const atFloor = [ladder.bottomY, ladder.topY].some(
+      (floorY) => Math.abs(body.bottom - floorY) <= LADDER_STEP_OFF_TOLERANCE,
+    );
+
+    if (this.controls.horizontalAxis() !== 0 && vertical === 0 && atFloor) {
+      this.finishClimb(body);
+      return;
+    }
+
     body.setVelocity(0, vertical * PLAYER_CLIMB.speed);
 
     if (vertical === 0) {

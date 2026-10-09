@@ -2,6 +2,7 @@ import type Phaser from 'phaser';
 
 import { getDifficulty, setDifficulty, type DifficultyId } from '../data/difficulty';
 import { ITEMS, type ItemDefinition } from '../data/items';
+import { getSkin, setSkin, type SkinId } from '../data/skins';
 import type { WeaponId } from '../data/weapons';
 import { PlayerState } from './PlayerState';
 import { WorldState, type Checkpoint } from './WorldState';
@@ -18,6 +19,7 @@ type SaveData = {
   bonusAmpoules: number;
   rings: string[];
   difficulty: DifficultyId;
+  skinId: SkinId;
 };
 
 const ALL_ITEMS: readonly ItemDefinition[] = Object.values(ITEMS);
@@ -44,6 +46,7 @@ export function saveGame(game: Phaser.Game): void {
     bonusAmpoules: player.bonusAmpouleCount,
     rings: player.ringIds,
     difficulty: getDifficulty(game).id,
+    skinId: getSkin(game).id as SkinId,
   };
 
   try {
@@ -81,6 +84,7 @@ export function loadGame(game: Phaser.Game): Checkpoint | undefined {
   world.inventory.restore(ALL_ITEMS.filter((item) => data.items.includes(item.id)));
   PlayerState.of(game).restore(data.weaponId, data.bonusAmpoules, data.rings);
   setDifficulty(game, data.difficulty);
+  if (data.skinId) setSkin(game, data.skinId);
   return data.checkpoint;
 }
 

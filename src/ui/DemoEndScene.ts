@@ -43,7 +43,7 @@ export class DemoEndScene extends Phaser.Scene {
 
     const shade = this.add.rectangle(0, 0, width, height, 0x030205, 0.86).setOrigin(0).setAlpha(0);
     const title = this.add
-      .text(width / 2, height * 0.32, 'OBRIGADO POR JOGAR', {
+      .text(width / 2, height * 0.32, 'FIM DA DEMO', {
         color: '#e8c97a',
         fontFamily: 'Georgia, serif',
         fontSize: '46px',
@@ -56,7 +56,7 @@ export class DemoEndScene extends Phaser.Scene {
       .text(
         width / 2,
         height * 0.32 + 74,
-        'Você chegou ao fim da demo de Ashen Veil.\nA prisão ainda guarda portas trancadas para o que vem depois.',
+        'Você chegou ao fim da demo de Ashen Veil.\nObrigado por atravessar a prisão sob o Véu.',
         { ...OPTION_STYLE, fontSize: '17px', color: '#b9aed0', align: 'center', lineSpacing: 8 },
       )
       .setOrigin(0.5);
