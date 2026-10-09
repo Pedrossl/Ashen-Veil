@@ -17,6 +17,10 @@ import type { Room, RoomExit, RoomId, RoomPassage } from '../maps/types';
 import { CombatSystem } from '../systems/CombatSystem';
 import { separateEnemies } from '../systems/EnemyCrowding';
 import { GroundMessageSystem } from '../systems/GroundMessageSystem';
+import { CoopSession } from '../systems/coop/CoopSession';
+import type { ArenaSummonMessage } from '../systems/coop/messages';
+import { isCoopSession } from '../systems/Session';
+import { network } from '../net/network';
 import { InteractionSystem } from '../systems/InteractionSystem';
 import { nextWeaponId, ownedWeaponIds, weaponIdForItem } from '../systems/Equipment';
 import { PlayerState } from '../systems/PlayerState';
@@ -39,6 +43,8 @@ type PrisonSceneData = {
   entryId?: string;
   // Recarregada por um descanso: o jogador já começa sentado na lanterna.
   resting?: boolean;
+  // Aviso mostrado ao chegar (ex.: levado à arena pelo parceiro).
+  notice?: string;
 };
 
 // Carrega uma sala da prisão por vez; trocar de sala reinicia a scene.
@@ -51,6 +57,10 @@ export class PrisonScene extends Phaser.Scene {
   private room?: Room;
   private terrain?: TerrainSystem;
   private groundMessages?: GroundMessageSystem;
+  private coop?: CoopSession;
+  // Chamado pelo parceiro para uma arena de boss (cooperativo).
+  private summon?: ArenaSummonMessage;
+  private summonNotice?: string;
   private roomId: RoomId = PRISON_START_ROOM;
   private isTransitioning = false;
   private controls?: Controls;
@@ -136,11 +146,15 @@ export class PrisonScene extends Phaser.Scene {
     if (data.resting) {
       this.resumeRest(data.entryId);
     }
+    if (data.notice) {
+      this.interactions.showMessage(data.notice);
+    }
     this.room.lockedDoors?.forEach((door) => this.registerLockedDoor(door));
     this.room.passages?.forEach((passage) => this.registerPassage(passage));
     this.player.setLadders(this.room.ladders ?? []);
     this.room.onPlayerSpawned?.(this.player);
     this.groundMessages = new GroundMessageSystem(this, this.room.groundMessages ?? []);
+    this.startCoop(roomId, data);
 
     this.setUpCamera(this.room, this.player);
     startSoundscape(this, roomId);
@@ -178,6 +192,8 @@ export class PrisonScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    this.coop?.update(delta);
+
     if (!this.player || !this.room || this.isTransitioning) {
       return;
     }
@@ -193,6 +209,11 @@ export class PrisonScene extends Phaser.Scene {
       this.handleDeath();
       return;
     }
+
+    if (this.summon) {
+      this.followSummon(this.summon);
+      return;
+    }
     const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
     if (!this.player.isClimbing) {
       const onStairs = this.room.stairs.some((stairs) => stairs.constrain(playerBody));
@@ -201,7 +222,8 @@ export class PrisonScene extends Phaser.Scene {
     this.terrain?.update(this.player, this.room.slowZones, delta);
     this.groundMessages?.update(this.player);
     this.room.enemies.forEach((enemy) => enemy.update(delta));
-    separateEnemies(this.room.enemies);
+    // Inimigos comandados pelo parceiro (cooperativo) já chegam na posição certa.
+    separateEnemies(this.room.enemies.filter((enemy) => !enemy.isRemoteControlled));
     this.room.bosses?.forEach((boss) => boss.update(delta));
     this.combat?.update();
     this.interactions?.update();
@@ -297,13 +319,27 @@ export class PrisonScene extends Phaser.Scene {
   }
 
   private goTo(exit: RoomExit): void {
+    this.travel({ roomId: exit.toRoom, entryId: exit.toEntry });
+  }
+
+  private travel(data: PrisonSceneData): void {
     this.isTransitioning = true;
     (this.player?.body as Phaser.Physics.Arcade.Body | undefined)?.setVelocityX(0);
 
     this.cameras.main.fadeOut(TRANSITION_FADE_MS, 4, 3, 8);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.scene.restart({ roomId: exit.toRoom, entryId: exit.toEntry });
+      this.scene.restart(data);
     });
+  }
+
+  // O parceiro entrou numa arena de boss: este jogo vai junto, na próxima
+  // atualização em que estiver livre (com o inventário aberto, espera fechar).
+  private followSummon({ roomId, entryId }: ArenaSummonMessage): void {
+    this.summon = undefined;
+
+    if (roomId in PRISON_ROOMS) {
+      this.travel({ roomId: roomId as RoomId, entryId, notice: this.summonNotice });
+    }
   }
 
   private registerPickup(pickup: ItemPickup): void {
@@ -324,6 +360,70 @@ export class PrisonScene extends Phaser.Scene {
     });
   }
 
+  // Cooperativo: parceiro visível nesta sala, progresso e inimigos
+  // compartilhados. No solo não há sessão e nada disso roda.
+  private startCoop(roomId: RoomId, data: PrisonSceneData): void {
+    const room = isCoopSession(this.game) ? network.getRoom() : undefined;
+    this.summon = undefined;
+
+    if (!room || !this.player || !this.room || !this.combat) {
+      this.coop = undefined;
+      return;
+    }
+
+    // Chegou andando numa arena com boss vivo: chama o parceiro.
+    const hasLivingBoss = (this.room.bosses?.length ?? 0) > 0;
+    const arena = hasLivingBoss && !data.resting && data.entryId ? { roomId, entryId: data.entryId } : undefined;
+
+    this.coop = new CoopSession(this, {
+      room,
+      player: this.player,
+      roomId,
+      arena,
+      enemies: this.room.enemies,
+      bosses: this.room.bosses ?? [],
+      combat: this.combat,
+      onSharedProgress: (message, item) => this.applySharedProgress(message, item),
+      onSummoned: (summon, partner) => {
+        this.summon = summon;
+        this.summonNotice = `${partner} entrou na arena. Você foi levado junto.`;
+      },
+      notify: (message) => this.interactions?.showMessage(message),
+    });
+  }
+
+  // Cooperativo: o parceiro pegou um item ou abriu algo. Os objetos desta sala
+  // passam a refletir o mundo compartilhado (a chave some do chão, o portão
+  // sobe, o baú abre, a lanterna acende).
+  private applySharedProgress(message?: string, item?: ItemDefinition): void {
+    const world = this.world;
+    const room = this.room;
+
+    if (!world || !room) return;
+
+    room.pickups
+      .filter((pickup) => !pickup.isCollected && world.inventory.has(pickup.item.id))
+      .forEach((pickup) => pickup.collect());
+    room.gates.filter((gate) => gate.isClosed && world.hasFlag(gate.id)).forEach((gate) => gate.open());
+    room.chests?.filter((chest) => !chest.isOpen && world.hasFlag(chest.id)).forEach((chest) => chest.open());
+    room.bonfires?.filter((bonfire) => !bonfire.isLit && world.hasFlag(bonfire.id)).forEach((bonfire) => bonfire.kindle());
+
+    // Arma achada pelo parceiro: entra na mão de quem ainda está de punhos.
+    const weaponId = item && weaponIdForItem(item.id);
+    const state = PlayerState.of(this.game);
+
+    if (weaponId && state.weapon.category === 'unarmed') {
+      state.equip(weaponId);
+    }
+
+    if (message) {
+      this.interactions?.showMessage(message);
+    }
+    this.player?.refreshWeapon();
+    // O anfitrião guarda no save o que o parceiro pegou.
+    saveGame(this.game);
+  }
+
   // Descansar recupera tudo e faz desta fogueira o ponto de renascimento.
   private registerBonfire(bonfire: Bonfire): void {
     this.interactions?.add({
@@ -335,18 +435,27 @@ export class PrisonScene extends Phaser.Scene {
       label: () => (bonfire.isLit ? 'Descansar' : 'Acender a lanterna'),
       interact: () => {
         this.player?.rest(bonfire.x, () => {
-          const state = PlayerState.of(this.game);
-          bonfire.kindle();
-          state.health.restore();
-          state.stamina.restore();
-          state.refillAmpoules();
-          this.world?.setFlag(bonfire.id);
-          this.world?.setCheckpoint(bonfire.checkpoint);
-          this.game.events.emit(GAME_EVENTS.playerRested);
-          this.reviveRoom(bonfire);
+          // Cooperativo: descansa quando o parceiro também sentar nesta lanterna.
+          if (this.coop) {
+            this.coop.requestRest(bonfire.id, () => this.completeRest(bonfire));
+          } else {
+            this.completeRest(bonfire);
+          }
         });
       },
     });
+  }
+
+  private completeRest(bonfire: Bonfire): void {
+    const state = PlayerState.of(this.game);
+    bonfire.kindle();
+    state.health.restore();
+    state.stamina.restore();
+    state.refillAmpoules();
+    this.world?.setFlag(bonfire.id);
+    this.world?.setCheckpoint(bonfire.checkpoint);
+    this.game.events.emit(GAME_EVENTS.playerRested);
+    this.reviveRoom(bonfire);
   }
 
   // Morte: mensagem, tela escurece e renasce na última fogueira com tudo cheio.

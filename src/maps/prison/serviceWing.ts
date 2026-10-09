@@ -20,7 +20,7 @@ const LADDER_X = [980, 1830, 2540, 3250, 3990];
 const SPAWNS: MeleeEnemyConfig[] = [
   { kind: 'chainedPrisoner', x: 760, floorY: UPPER, patrolMinX: 580, patrolMaxX: 860, facing: 'left' },
   { kind: 'shackleRat', x: 700, floorY: FLOOR_Y, patrolMinX: 580, patrolMaxX: 840, facing: 'left' },
-  { kind: 'shackleRat', x: 1380, floorY: FLOOR_Y, patrolMinX: 1270, patrolMaxX: 1610, facing: 'left' },
+  { kind: 'prisonSurgeon', x: 1510, floorY: FLOOR_Y, patrolMinX: 1320, patrolMaxX: 1740, facing: 'left' },
   { kind: 'veilJailer', x: 2200, floorY: UPPER, patrolMinX: 2000, patrolMaxX: 2370, facing: 'left' },
   { kind: 'sludgeSupplicant', x: 2940, floorY: FLOOR_Y, patrolMinX: 2780, patrolMaxX: 3080, facing: 'left' },
   { kind: 'shackleRat', x: 3570, floorY: UPPER, patrolMinX: 3420, patrolMaxX: 3710, facing: 'left' },

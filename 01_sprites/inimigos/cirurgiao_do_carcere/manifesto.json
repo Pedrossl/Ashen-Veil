@@ -1,0 +1,19 @@
+{
+  "nome": "Cirurgião do Cárcere",
+  "direcao": "direita",
+  "grade_origem": "4x2 por folha",
+  "quadros_por_acao": 8,
+  "runtime": {
+    "arquivo": "public/assets/enemies/sprite_sheet_cirurgiao_do_carcere.webp",
+    "quadro": [420, 360],
+    "colunas": 8,
+    "ordem": {
+      "idle": [0, 7],
+      "caminhada": [8, 15],
+      "seringa": [16, 23],
+      "serra": [24, 31],
+      "dano": [32, 33],
+      "morte": [34, 39]
+    }
+  }
+}

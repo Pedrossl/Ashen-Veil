@@ -117,6 +117,30 @@ export const VEIL_JAILER_SPRITE = {
   },
 } as const satisfies EnemySpriteDefinition;
 
+// Cirurgião do Cárcere: elite humanoide das Alas Esquecidas. As cinco folhas
+// de origem foram normalizadas em uma grade de 8 colunas por 5 linhas.
+export const PRISON_SURGEON_SPRITE = {
+  key: 'enemy-prison-surgeon',
+  path: 'assets/enemies/sprite_sheet_cirurgiao_do_carcere.webp',
+  frameWidth: 420,
+  frameHeight: 360,
+  feetX: 210,
+  feetY: 350,
+  scale: 0.49,
+  animations: {
+    idle: { start: 0, end: 7, frameRate: 5 },
+    walk: { start: 8, end: 15, frameRate: 8 },
+    hit: { start: 32, end: 33, frameRate: 10 },
+    death: { start: 34, end: 39, frameRate: 8 },
+  },
+  attacks: {
+    syringeThrust: { windup: [16, 18], active: [19, 20], recovery: [21, 23] },
+    deepInjection: { windup: [16, 19], active: [20, 21], recovery: [22, 23] },
+    sawSlash: { windup: [24, 26], active: [27, 28], recovery: [29, 31] },
+    sawExecution: { windup: [24, 27], active: [28, 29], recovery: [30, 31] },
+  },
+} as const satisfies EnemySpriteDefinition;
+
 // Detrito de lodo (pedra, osso e lodo) girando: 6 quadros de 80x76.
 export const SLUDGE_BALL_SPRITE = {
   key: 'projectile-sludge-debris',

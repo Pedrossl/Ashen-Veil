@@ -1,6 +1,7 @@
 import type { HitboxDefinition } from './combat';
 import {
   CHAINED_PRISONER_SPRITE,
+  PRISON_SURGEON_SPRITE,
   SHACKLE_RAT_SPRITE,
   SLUDGE_SUPPLICANT_SPRITE,
   VEIL_JAILER_SPRITE,
@@ -63,7 +64,74 @@ export type EnemyDefinition = {
   closeAttackChance: number;
 };
 
+// Escolha de alvo dos inimigos comuns quando há mais de um jogador (cooperativo).
+// Pontuação de cada alvo = ameaça + proximidade. Colado, o alvo vale até
+// `proximityRange * proximityWeight` (48); a 100 px, 38. Dano vira ameaça
+// (`threatPerDamage`): no cooperativo um soco tira 4 (inimigo com vida em
+// dobro) e dá 16 de ameaça; uns 2 golpes de quem está um pouco mais longe
+// roubam o inimigo do parceiro colado (margem `switchMargin` incluída), e um
+// golpe forte da Espada Sombria já basta. A ameaça esfria devagar
+// (`threatDecayPerSecond`): parar de bater devolve o inimigo ao mais perto
+// em alguns segundos. No solo há um alvo só e nada disso muda.
+export const ENEMY_AGGRO = {
+  proximityRange: 480,
+  proximityWeight: 0.1,
+  threatPerDamage: 4,
+  threatDecayPerSecond: 6,
+  // Só troca de alvo se o outro passar o atual por esta margem.
+  switchMargin: 15,
+  retargetMs: 350,
+} as const;
+
 export const ENEMIES = {
+  // Elite das Alas Esquecidas: quatro ataques divididos entre seringa de
+  // alcance médio e serra de curta distância. Forte, mas vulnerável durante
+  // as recuperações longas dos golpes pesados.
+  prisonSurgeon: {
+    id: 'prison-surgeon',
+    name: 'Cirurgião do Cárcere',
+    sprite: PRISON_SURGEON_SPRITE,
+    maxHealth: 115,
+    moveSpeed: 82,
+    detectionRange: 390,
+    loseInterestRange: 560,
+    alertMs: 540,
+    hitStunMs: 280,
+    staggerChance: 0.22,
+    staggerChanceWhileAttacking: 0.06,
+    hurtbox: { width: 62, height: 160 },
+    attacks: {
+      sawSlash: {
+        animation: 'sawSlash', damage: 20, range: 92,
+        windupMs: 360, activeMs: 180, recoveryMs: 500,
+        hitbox: { forward: 12, up: 115, width: 92, height: 92 },
+        cooldownMs: 440, cooldownJitterMs: 260,
+        motion: { windupDrawBackSpeed: 24, lungeSpeed: 245, effect: 'sweep-arc' },
+      },
+      sawExecution: {
+        animation: 'sawExecution', damage: 34, range: 115,
+        windupMs: 820, activeMs: 220, recoveryMs: 980,
+        hitbox: { forward: 18, up: 145, width: 118, height: 145 },
+        cooldownMs: 720, cooldownJitterMs: 380,
+        motion: { windupDrawBackSpeed: 38, lungeSpeed: 320, effect: 'ground-smash' },
+      },
+      syringeThrust: {
+        animation: 'syringeThrust', damage: 24, range: 155,
+        windupMs: 520, activeMs: 150, recoveryMs: 620,
+        hitbox: { forward: 42, up: 116, width: 145, height: 48 },
+        cooldownMs: 560, cooldownJitterMs: 300,
+        motion: { windupDrawBackSpeed: 32, lungeSpeed: 360, effect: 'none' },
+      },
+      deepInjection: {
+        animation: 'deepInjection', damage: 42, range: 128,
+        windupMs: 960, activeMs: 180, recoveryMs: 1150,
+        hitbox: { forward: 24, up: 128, width: 122, height: 62 },
+        cooldownMs: 900, cooldownJitterMs: 450,
+        motion: { windupDrawBackSpeed: 52, lungeSpeed: 430, effect: 'sweep-arc' },
+      },
+    },
+    closeAttackChance: 0.58,
+  },
   // Primeiro inimigo da prisão (sprite: sprite_sheet_morto_vivo_acorrentado).
   chainedPrisoner: {
     id: 'chained-prisoner',
