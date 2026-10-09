@@ -24,7 +24,8 @@ export type RoomId =
   | 'prison-drowned-galleries'
   | 'prison-sewers'
   | 'prison-root-arena'
-  | 'prison-boss-lair';
+  | 'prison-boss-lair'
+  | 'prison-surgical-theater';
 
 export type RoomEntry = {
   x: number;
@@ -62,6 +63,8 @@ export type RoomPassage = {
 // components/FoeControl.ts).
 export type RoomBoss = Attacker &
   Damageable & {
+    // Acordado e lutando (a porta da arena fica fechada).
+    readonly isEngaged: boolean;
     setTarget(target: EnemyTarget): void;
     addTarget(target: EnemyTarget): void;
     removeTarget(target: EnemyTarget): void;

@@ -73,3 +73,29 @@ export const ROOT_SPIT_SPRITE = {
   frameRate: 12,
   displayWidth: 64,
 } as const;
+
+// Cirurgião Rubro: seis animações de 6 quadros das folhas de
+// `01_sprites/bosses/cirurgiao_rubro/`, com a mesma escala e alinhadas pelos
+// pés (`scripts/prepare_crimson_surgeon.py`). Quadros de 546x345, uma linha
+// por animação. A arte olha para a direita.
+export const CRIMSON_SURGEON_SPRITE = {
+  key: 'boss-crimson-surgeon',
+  path: 'assets/bosses/sprite_sheet_cirurgiao_rubro.webp',
+  frameWidth: 546,
+  frameHeight: 345,
+  feetX: 278,
+  feetY: 339,
+  scale: 1,
+  // Quadros por animação e a duração de cada um (ms): o aviso dos golpes é
+  // o quadro segurado antes do acerto.
+  animations: {
+    idle: { start: 0, frameMs: [190, 190, 190, 190, 190, 190] },
+    run: { start: 6, frameMs: [85, 85, 85, 85, 85, 85] },
+    stab: { start: 12, frameMs: [140, 150, 420, 90, 110, 330], active: [3, 4] },
+    arc: { start: 18, frameMs: [150, 380, 110, 90, 110, 340], active: [2, 4] },
+    slam: { start: 24, frameMs: [140, 220, 480, 120, 260, 300], active: [3, 3] },
+    serum: { start: 30, frameMs: [200, 260, 300, 340, 300, 520], release: 4 },
+  },
+} as const;
+
+export type CrimsonSurgeonAnimation = keyof typeof CRIMSON_SURGEON_SPRITE.animations;

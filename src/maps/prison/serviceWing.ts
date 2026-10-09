@@ -1,4 +1,4 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import { SERVICE_ATLASES } from '../../data/serviceWingSprites';
 import { ITEMS, ITEM_IMAGES } from '../../data/items';
 import { MeleeEnemy, type MeleeEnemyConfig } from '../../entities/enemies/MeleeEnemy';
@@ -13,6 +13,9 @@ const WIDTH = 4200;
 const UPPER = 180;
 const CHECKPOINT = 'bonfire:prison-service-wing';
 const CHEST = 'prison-service-wing-infirmary-chest';
+// Porta do Anfiteatro Cirúrgico (último boss), no fim do andar de baixo,
+// depois da lanterna.
+const THEATER_DOOR_X = 4080;
 // O bloco central interrompe o piso; a passarela e as duas escadas permitem
 // cruzá-lo nos dois sentidos. Todos os patamares têm uma escada de retorno.
 const PLATFORMS = [[80, 1120], [1740, 2650], [3120, 4120]] as const;
@@ -66,6 +69,12 @@ export function createServiceWing(scene: Phaser.Scene, world: WorldState): Room 
   prop(scene, 'workshop', 'wall-worn', 2110, FLOOR_Y, 245, 5).setDisplaySize(220, 245);
   prop(scene, 'isolation', 'door', 240, UPPER, 230, 3);
   prop(scene, 'cistern', 'door', 3920, UPPER, 230, 3);
+  prop(scene, 'isolation', 'door', THEATER_DOOR_X, FLOOR_Y, 250, 3);
+  const theaterGlow = scene.add
+    .ellipse(THEATER_DOOR_X, FLOOR_Y - 100, 150, 210, 0xb0121e, 0.12)
+    .setDepth(2.9)
+    .setBlendMode(Phaser.BlendModes.ADD);
+  scene.tweens.add({ targets: theaterGlow, alpha: { from: 0.5, to: 1 }, duration: 2200, yoyo: true, repeat: -1 });
   prop(scene, 'furniture', 'keys', 460, UPPER, 150);
   prop(scene, 'furniture', 'stretcher', 350, FLOOR_Y, 115);
   prop(scene, 'furniture', 'cauldron', 1330, FLOOR_Y, 115);
@@ -88,11 +97,13 @@ export function createServiceWing(scene: Phaser.Scene, world: WorldState): Room 
       galleries: { x: 330, y: UPPER, facing: 'right' },
       cistern: { x: 3820, y: UPPER, facing: 'left' },
       bonfire: { x: 3590, facing: 'left' },
+      theater: { x: 3960, facing: 'left' },
     },
     exits: [],
     passages: [
       { x: 240, floorY: UPPER, label: 'Voltar às galerias', toRoom: 'prison-drowned-galleries', toEntry: 'service-wing' },
       { x: 3920, floorY: UPPER, label: 'Abrir passagem às galerias', toRoom: 'prison-drowned-galleries', toEntry: 'cistern-wing' },
+      { x: THEATER_DOOR_X, floorY: FLOOR_Y, label: 'Entrar no anfiteatro', toRoom: 'prison-surgical-theater', toEntry: 'wing' },
     ],
     colliders: [
       createStaticCollider(scene, WIDTH / 2, FLOOR_Y + 30, WIDTH, 60),

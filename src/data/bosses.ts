@@ -162,3 +162,76 @@ export const ROOT_OF_CONDEMNED = {
     glowTint: 0x9dffb0,
   },
 } as const;
+
+// Cirurgião Rubro (05_documentacao/bosses/CIRURGIAO_RUBRO.md), último boss da
+// prisão. Golpes nos quadros ativos do sprite (CRIMSON_SURGEON_SPRITE). O soro
+// espalha bolhas de sangue: enquanto alguma existir, ele se cura e a barra de
+// sangue sobe; cheia, o anfiteatro alaga.
+export const CRIMSON_SURGEON = {
+  id: 'crimson-surgeon',
+  name: 'Cirurgião Rubro',
+  defeatedFlag: 'boss-defeated:crimson-surgeon',
+  // Vencido: o Anel do Bisturi Rubro (+15% de dano).
+  reward: { ampoules: 0, items: ['crimsonScalpelRing'] },
+  maxHealth: 480,
+  runSpeed: 300,
+  // Desperta quando o jogador passa desta linha (sai da mesa de operação).
+  awakenX: 760,
+  introMs: 1400,
+  hurtbox: { width: 150, height: 280 },
+  maxRunMs: 1500,
+  cooldownMs: 520,
+  cooldownJitterMs: 420,
+  // Abaixo desta vida tudo fica mais rápido.
+  phaseTwo: { healthRatio: 0.5, speedMultiplier: 1.2 },
+  // Distâncias até o alvo em que cada golpe é escolhido.
+  stab: { range: 300, damage: 30, hitbox: { forward: 40, up: 205, width: 270, height: 80 } },
+  arc: { range: 230, damage: 26, hitbox: { forward: -60, up: 235, width: 330, height: 170 } },
+  slam: {
+    range: 210,
+    damage: 38,
+    // A base do suporte bate no chão à frente e levanta lascas.
+    hitbox: { forward: 40, up: 140, width: 250, height: 150 },
+    impactForward: 150,
+  },
+  serum: {
+    // Primeiro soro um pouco depois de a luta começar; depois, a cada tanto.
+    firstMs: 7000,
+    cooldownMs: 21000,
+    // Escolhido com esta chance quando pronto (senão tenta de novo depois).
+    chance: 0.7,
+    bubbles: 3,
+    // Bolhas: caem longe dele e umas das outras, dentro da arena.
+    bubbleHealth: 22,
+    // Cooperativo: mais bolhas e um pouco mais resistentes. O dano dos
+    // jogadores já cai pela metade no cooperativo (COOP_MODIFIERS), então
+    // 15 aqui valem 30 de vida efetiva, contra 22 no solo.
+    coop: { bubbles: 4, bubbleHealth: 15 },
+    bubbleMinGap: 380,
+    bubbleMinDistanceFromBoss: 260,
+    flightMs: 900,
+    // Por bolha viva, por segundo.
+    healPerSecond: 2,
+    bloodPerSecond: 2.4,
+  },
+  blood: {
+    max: 100,
+    // Sem bolhas, a barra esvazia devagar.
+    drainPerSecond: 3,
+    // Cheia: o anfiteatro alaga. Dano bem baixo e 20% mais lento.
+    floodMs: 20000,
+    floodDamagePerSecond: 1.2,
+    floodSpeedFactor: 0.8,
+  },
+  sounds: {
+    wake: 'reaperWake',
+    stab: 'sword',
+    arc: 'reaperSlash',
+    slam: 'chainSmash',
+    serum: 'heal',
+    bubblePop: 'sludgeSplat',
+    flood: 'waterLand',
+    phase: 'reaperPhase',
+    death: 'reaperDeath',
+  },
+} as const;

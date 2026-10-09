@@ -18,8 +18,9 @@ import { CombatSystem } from '../systems/CombatSystem';
 import { separateEnemies } from '../systems/EnemyCrowding';
 import { GroundMessageSystem } from '../systems/GroundMessageSystem';
 import { CoopSession } from '../systems/coop/CoopSession';
-import type { ArenaSummonMessage } from '../systems/coop/messages';
-import { isCoopSession } from '../systems/Session';
+import type { ArenaSummonMessage, RestReviveMessage } from '../systems/coop/messages';
+import { hasCoopEnded } from '../systems/coop/CoopPresence';
+import { isCoopActive, isCoopSession } from '../systems/Session';
 import { network } from '../net/network';
 import { InteractionSystem } from '../systems/InteractionSystem';
 import { nextWeaponId, ownedWeaponIds, weaponIdForItem } from '../systems/Equipment';
@@ -63,6 +64,10 @@ export class PrisonScene extends Phaser.Scene {
   private summonNotice?: string;
   private roomId: RoomId = PRISON_START_ROOM;
   private isTransitioning = false;
+  // Cooperativo: caiu numa luta de boss e está assistindo o parceiro.
+  private spectating = false;
+  private spectateNotice?: 'watching' | 'victory';
+  private spectateCamera?: Phaser.GameObjects.GameObject;
   private controls?: Controls;
 
   constructor() {
@@ -93,12 +98,27 @@ export class PrisonScene extends Phaser.Scene {
     };
     this.game.events.on(INVENTORY_ITEM_ADDED, onPickup);
     this.game.events.on(GAME_EVENTS.bossDefeated, onBossDefeated);
+    // Cooperativo: avisos de presença (o parceiro saiu/voltou) e fim da
+    // partida (o anfitrião saiu ou a conexão caiu: volta ao menu).
+    const onCoopNotice = (text: string): void => this.interactions?.showMessage(text);
+    const onCoopEnded = (): void => this.leaveToMenu();
+    this.game.events.on(INVENTORY_ITEM_ADDED, onPickup);
+    this.game.events.on(GAME_EVENTS.bossDefeated, onBossDefeated);
+    this.game.events.on(GAME_EVENTS.coopNotice, onCoopNotice);
+    this.game.events.on(GAME_EVENTS.coopEnded, onCoopEnded);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off(INVENTORY_ITEM_ADDED, onPickup);
       this.game.events.off(GAME_EVENTS.bossDefeated, onBossDefeated);
+      this.game.events.off(GAME_EVENTS.coopNotice, onCoopNotice);
+      this.game.events.off(GAME_EVENTS.coopEnded, onCoopEnded);
+      // Inventário aberto por cima não sobrevive à troca de sala.
+      this.scene.stop('InventoryScene');
     });
     if (data.resting) playSound(this, 'rest');
     this.isTransitioning = false;
+    this.spectating = false;
+    this.spectateNotice = undefined;
+    this.spectateCamera = undefined;
     this.game.events.emit(GAME_EVENTS.bossDismissed);
     this.world = WorldState.of(this.game);
     this.cameras.main.setBackgroundColor('#040307');
@@ -139,10 +159,6 @@ export class PrisonScene extends Phaser.Scene {
     this.room.chests?.forEach((chest) => this.registerChest(chest));
     this.room.bonfires?.forEach((bonfire) => this.registerBonfire(bonfire));
 
-    // Voltando do inventário: a arma pode ter mudado.
-    this.events.off(Phaser.Scenes.Events.RESUME);
-    this.events.on(Phaser.Scenes.Events.RESUME, () => this.player?.refreshWeapon());
-
     if (data.resting) {
       this.resumeRest(data.entryId);
     }
@@ -162,6 +178,18 @@ export class PrisonScene extends Phaser.Scene {
     this.watchForDemoEnd();
     // Toda chegada numa sala (troca de sala, descanso, renascimento) salva.
     saveGame(this.game);
+
+    // A partida cooperativa acabou no meio da troca de sala.
+    if (hasCoopEnded(this.game)) {
+      this.leaveToMenu();
+    }
+  }
+
+  // Fim da partida cooperativa: o menu mostra o motivo.
+  private leaveToMenu(): void {
+    this.isTransitioning = true;
+    this.scene.stop('InventoryScene');
+    this.scene.start('MenuScene');
   }
 
   private isDemoOver(): boolean {
@@ -177,8 +205,13 @@ export class PrisonScene extends Phaser.Scene {
       this.time.delayedCall(delay, () => {
         if (this.isDemoOver() && !this.isTransitioning && this.player?.isAlive) {
           this.world?.setFlag(DEMO.finishedFlag);
-          this.scene.pause();
-          this.scene.launch('DemoEndScene');
+          // No cooperativo o mundo não pode parar: o parceiro segue jogando.
+          if (isCoopSession(this.game)) {
+            this.openOverlay('DemoEndScene');
+          } else {
+            this.scene.pause();
+            this.scene.launch('DemoEndScene');
+          }
         }
       });
     };
@@ -199,15 +232,17 @@ export class PrisonScene extends Phaser.Scene {
     }
 
     this.player.update();
-    this.toggleDevInfiniteHealth();
+    this.toggleCheatMode();
+    this.handleEquipmentKeys();
 
-    if (this.handleEquipmentKeys()) {
+    if (this.player.isDead && !this.spectating && !this.startSpectating()) {
+      this.handleDeath();
       return;
     }
 
-    if (this.player.isDead) {
-      this.handleDeath();
-      return;
+    if (this.spectating) {
+      this.updateSpectating();
+      if (this.isTransitioning) return;
     }
 
     if (this.summon) {
@@ -237,17 +272,16 @@ export class PrisonScene extends Phaser.Scene {
     }
   }
 
-  // Tecla I (só em desenvolvimento): liga/desliga a vida infinita.
-  // Q troca de arma na hora; Tab abre o inventário (pausa o jogo por baixo).
-  private handleEquipmentKeys(): boolean {
+  // Q troca de arma na hora; Tab abre o inventário por cima, sem pausar o
+  // jogo (inimigos e parceiro seguem; o personagem fica parado).
+  private handleEquipmentKeys(): void {
     if (!this.player?.isFree || !this.controls || !this.world) {
-      return false;
+      return;
     }
 
     if (this.controls.justPressed('inventory')) {
-      this.scene.pause();
-      this.scene.launch('InventoryScene');
-      return true;
+      this.openOverlay('InventoryScene');
+      return;
     }
 
     if (this.controls.justPressed('switchWeapon')) {
@@ -262,18 +296,29 @@ export class PrisonScene extends Phaser.Scene {
         this.interactions?.showMessage(state.weapon.name);
       }
     }
-
-    return false;
   }
 
-  private toggleDevInfiniteHealth(): void {
-    if (!import.meta.env.DEV || !this.controls?.justPressed('devInfiniteHealth')) {
+  // Tela por cima do jogo (inventário, fim da demo no cooperativo) sem
+  // pausá-lo: o personagem fica sem comandos até ela fechar.
+  private openOverlay(key: 'InventoryScene' | 'DemoEndScene'): void {
+    const controls = this.controls;
+    controls?.setEnabled(false);
+    this.scene.launch(key);
+    this.scene.get(key).events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      controls?.setEnabled(true);
+      if (this.controls === controls) this.player?.refreshWeapon();
+    });
+  }
+
+  // Código secreto (V, I, D e A juntas): liga/desliga o modo VIDA.
+  private toggleCheatMode(): void {
+    if (!this.controls?.cheatCodeEntered()) {
       return;
     }
 
     const state = PlayerState.of(this.game);
-    state.infiniteHealth = !state.infiniteHealth;
-    this.interactions?.showMessage(`Vida infinita ${state.infiniteHealth ? 'ligada' : 'desligada'}`);
+    state.cheatMode = !state.cheatMode;
+    this.interactions?.showMessage(`Modo VIDA ${state.cheatMode ? 'ligado: vida infinita e dano x10' : 'desligado'}`);
   }
 
   private setUpCamera(room: Room, player: Player): void {
@@ -389,6 +434,8 @@ export class PrisonScene extends Phaser.Scene {
         this.summonNotice = `${partner} entrou na arena. Você foi levado junto.`;
       },
       notify: (message) => this.interactions?.showMessage(message),
+      isSpectating: () => this.spectating,
+      onRevived: (revive) => this.reviveFromSpectating(revive),
     });
   }
 
@@ -437,7 +484,7 @@ export class PrisonScene extends Phaser.Scene {
         this.player?.rest(bonfire.x, () => {
           // Cooperativo: descansa quando o parceiro também sentar nesta lanterna.
           if (this.coop) {
-            this.coop.requestRest(bonfire.id, () => this.completeRest(bonfire));
+            this.coop.requestRest({ bonfireId: bonfire.id, ...bonfire.checkpoint }, () => this.completeRest(bonfire));
           } else {
             this.completeRest(bonfire);
           }
@@ -468,19 +515,82 @@ export class PrisonScene extends Phaser.Scene {
     this.game.events.emit(GAME_EVENTS.playerDied);
 
     this.events.once(GAME_EVENTS.playerDeathAnimationCompleted, () => {
-      this.time.delayedCall(PLAYER_ANIMATION.deathMs, () => {
-        this.cameras.main.fadeOut(900, 0, 0, 0);
-        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-          const state = PlayerState.of(this.game);
-          state.health.restore();
-          state.stamina.restore();
-          state.refillAmpoules();
-
-          const checkpoint = this.world?.checkpoint;
-          this.scene.restart({ roomId: checkpoint?.roomId, entryId: checkpoint?.entryId });
-        });
-      });
+      this.time.delayedCall(PLAYER_ANIMATION.deathMs, () => this.respawn());
     });
+  }
+
+  // Volta inteiro na última lanterna (ou na indicada, já sentado nela).
+  private respawn(at?: { roomId: string; entryId: string }, resting = false): void {
+    this.isTransitioning = true;
+    this.cameras.main.fadeOut(900, 0, 0, 0);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      const state = PlayerState.of(this.game);
+      state.health.restore();
+      state.stamina.restore();
+      state.refillAmpoules();
+
+      const checkpoint = at ?? this.world?.checkpoint;
+      this.scene.restart({ roomId: checkpoint?.roomId, entryId: checkpoint?.entryId, resting });
+    });
+  }
+
+  // Cooperativo: caiu na luta de um boss com o parceiro ainda de pé na
+  // arena. Em vez de renascer, assiste: se o parceiro também cair, os dois
+  // voltam à lanterna; se ele vencer, este jogo vence junto (itens inclusos)
+  // e volta à vida quando o parceiro descansar numa lanterna.
+  private startSpectating(): boolean {
+    const partner = this.coop?.partner;
+    const inBossFight = this.room?.bosses?.some((boss) => boss.isEngaged) ?? false;
+
+    if (!isCoopActive(this.game) || !inBossFight || !partner?.isAlive) {
+      return false;
+    }
+
+    this.spectating = true;
+    this.spectateNotice = 'watching';
+    this.game.events.emit(GAME_EVENTS.playerDied);
+    // O fosso da Raiz fica fora da câmera normal: o espectador vê a sala toda.
+    const { x, y, width, height } = this.room?.bounds ?? { x: 0, y: 0, width: 0, height: 0 };
+    this.cameras.main.setBounds(x, y, width, height);
+    this.events.once(GAME_EVENTS.playerDeathAnimationCompleted, () => {
+      if (this.spectating) this.interactions?.showMessage(`Você caiu. Assistindo ${partner.name}...`);
+    });
+    return true;
+  }
+
+  private updateSpectating(): void {
+    const partner = this.coop?.partner;
+    const status = this.coop?.partnerStatus;
+    const bossAlive = this.room?.bosses?.some((boss) => boss.isAlive) ?? false;
+
+    if (partner && this.spectateCamera !== partner) {
+      this.spectateCamera = partner;
+      this.cameras.main.startFollow(partner, true, 0.12, 0.12);
+    }
+
+    // O parceiro caiu também (ou saiu): os dois voltam à lanterna.
+    const partnerDown = !status?.alive || status.spectating || status.roomId !== this.roomId;
+    if (!isCoopActive(this.game) || (bossAlive && partnerDown)) {
+      this.spectating = false;
+      this.respawn();
+      return;
+    }
+
+    if (!bossAlive && this.spectateNotice !== 'victory') {
+      this.spectateNotice = 'victory';
+      this.interactions?.showMessage(`${partner?.name ?? 'Seu parceiro'} venceu! Espere ele descansar numa lanterna para voltar.`);
+    }
+  }
+
+  // Assistindo, o parceiro descansou numa lanterna: volta à vida nela.
+  private reviveFromSpectating({ roomId, entryId }: RestReviveMessage): void {
+    if (!this.spectating || !(roomId in PRISON_ROOMS)) {
+      return;
+    }
+
+    this.spectating = false;
+    this.world?.setCheckpoint({ roomId: roomId as RoomId, entryId });
+    this.respawn({ roomId, entryId }, true);
   }
 
   // Abrir o baú usa a animação de coleta; a arma já sai equipada.
