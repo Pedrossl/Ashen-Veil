@@ -1,0 +1,91 @@
+{
+  "frames": {
+    "stretcher": {
+      "frame": {
+        "x": 33,
+        "y": 179,
+        "w": 737,
+        "h": 490
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 737,
+        "h": 490
+      },
+      "sourceSize": {
+        "w": 737,
+        "h": 490
+      }
+    },
+    "keys": {
+      "frame": {
+        "x": 770,
+        "y": 27,
+        "w": 451,
+        "h": 636
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 451,
+        "h": 636
+      },
+      "sourceSize": {
+        "w": 451,
+        "h": 636
+      }
+    },
+    "bench": {
+      "frame": {
+        "x": 24,
+        "y": 722,
+        "w": 701,
+        "h": 428
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 701,
+        "h": 428
+      },
+      "sourceSize": {
+        "w": 701,
+        "h": 428
+      }
+    },
+    "cauldron": {
+      "frame": {
+        "x": 725,
+        "y": 765,
+        "w": 520,
+        "h": 395
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 520,
+        "h": 395
+      },
+      "sourceSize": {
+        "w": 520,
+        "h": 395
+      }
+    }
+  },
+  "meta": {
+    "image": "furniture.webp",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    }
+  }
+}

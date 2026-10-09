@@ -1,0 +1,131 @@
+{
+  "frames": {
+    "floor": {
+      "frame": {
+        "x": 20,
+        "y": 57,
+        "w": 290,
+        "h": 198
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 290,
+        "h": 198
+      },
+      "sourceSize": {
+        "w": 290,
+        "h": 198
+      }
+    },
+    "wall": {
+      "frame": {
+        "x": 29,
+        "y": 280,
+        "w": 280,
+        "h": 290
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 280,
+        "h": 290
+      },
+      "sourceSize": {
+        "w": 280,
+        "h": 290
+      }
+    },
+    "wall-worn": {
+      "frame": {
+        "x": 332,
+        "y": 286,
+        "w": 283,
+        "h": 283
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 283,
+        "h": 283
+      },
+      "sourceSize": {
+        "w": 283,
+        "h": 283
+      }
+    },
+    "wall-marked": {
+      "frame": {
+        "x": 640,
+        "y": 284,
+        "w": 290,
+        "h": 286
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 290,
+        "h": 286
+      },
+      "sourceSize": {
+        "w": 290,
+        "h": 286
+      }
+    },
+    "door": {
+      "frame": {
+        "x": 330,
+        "y": 565,
+        "w": 335,
+        "h": 335
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 335,
+        "h": 335
+      },
+      "sourceSize": {
+        "w": 335,
+        "h": 335
+      }
+    },
+    "column": {
+      "frame": {
+        "x": 738,
+        "y": 570,
+        "w": 137,
+        "h": 330
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 137,
+        "h": 330
+      },
+      "sourceSize": {
+        "w": 137,
+        "h": 330
+      }
+    }
+  },
+  "meta": {
+    "image": "workshop.webp",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    }
+  }
+}

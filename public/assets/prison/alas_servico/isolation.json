@@ -1,0 +1,131 @@
+{
+  "frames": {
+    "floor": {
+      "frame": {
+        "x": 15,
+        "y": 59,
+        "w": 297,
+        "h": 168
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 297,
+        "h": 168
+      },
+      "sourceSize": {
+        "w": 297,
+        "h": 168
+      }
+    },
+    "wall": {
+      "frame": {
+        "x": 24,
+        "y": 270,
+        "w": 280,
+        "h": 295
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 280,
+        "h": 295
+      },
+      "sourceSize": {
+        "w": 280,
+        "h": 295
+      }
+    },
+    "wall-worn": {
+      "frame": {
+        "x": 337,
+        "y": 268,
+        "w": 272,
+        "h": 297
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 272,
+        "h": 297
+      },
+      "sourceSize": {
+        "w": 272,
+        "h": 297
+      }
+    },
+    "wall-marked": {
+      "frame": {
+        "x": 950,
+        "y": 268,
+        "w": 274,
+        "h": 297
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 274,
+        "h": 297
+      },
+      "sourceSize": {
+        "w": 274,
+        "h": 297
+      }
+    },
+    "door": {
+      "frame": {
+        "x": 337,
+        "y": 570,
+        "w": 266,
+        "h": 298
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 266,
+        "h": 298
+      },
+      "sourceSize": {
+        "w": 266,
+        "h": 298
+      }
+    },
+    "column": {
+      "frame": {
+        "x": 710,
+        "y": 565,
+        "w": 143,
+        "h": 307
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 143,
+        "h": 307
+      },
+      "sourceSize": {
+        "w": 143,
+        "h": 307
+      }
+    }
+  },
+  "meta": {
+    "image": "isolation.webp",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    }
+  }
+}
