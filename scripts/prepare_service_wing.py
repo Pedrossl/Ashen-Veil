@@ -14,6 +14,11 @@ for name, filename, boxes in [
         'floor': (12, 45, 312, 235), 'wall': (20, 265, 310, 565),
         'wall-worn': (330, 265, 620, 565), 'wall-marked': (950, 265, 1240, 565),
         'door': (325, 570, 610, 880), 'column': (710, 565, 875, 880),
+        # Peças extras usadas no Anfiteatro Cirúrgico.
+        'floor-banded': (630, 45, 935, 235), 'wall-window': (630, 265, 935, 565),
+        'door-closed': (10, 570, 320, 885), 'column-broken': (1000, 565, 1190, 880),
+        'arch-left': (15, 880, 305, 1200), 'arch-right': (330, 880, 615, 1200),
+        'lintel': (620, 895, 940, 1060),
     }),
     ('workshop', 'tilesets/prisao_alas_variadas/tileset_prisao_oficinas_fornalhas_16_pecas.png', {
         'floor': (20, 50, 310, 255), 'wall': (20, 280, 315, 570),
