@@ -4,6 +4,7 @@ import { MUSIC, LOCAL_AMBIENCE } from '../data/soundscape';
 import { SOUND_EFFECTS, soundKey, soundPath, type SoundEffect } from '../data/audio';
 
 import {
+  CRIMSON_SURGEON_SPRITE,
   REAPER_KING_SPRITE,
   ROOT_BOSS_SPRITE,
   ROOT_SPIT_SPRITE,
@@ -52,7 +53,7 @@ export class PreloadScene extends Phaser.Scene {
       this.load.spritesheet(sheet.key, sheet.path, { frameWidth: sheet.frameWidth, frameHeight: sheet.frameHeight });
     }
     this.load.image(SEWER_BACKGROUND.key, SEWER_BACKGROUND.path);
-    for (const sheet of [ROOT_BOSS_SPRITE, ROOT_TRAIL_SPRITE, ROOT_SPIT_SPRITE]) {
+    for (const sheet of [ROOT_BOSS_SPRITE, ROOT_TRAIL_SPRITE, ROOT_SPIT_SPRITE, CRIMSON_SURGEON_SPRITE]) {
       this.load.spritesheet(sheet.key, sheet.path, { frameWidth: sheet.frameWidth, frameHeight: sheet.frameHeight });
     }
     this.load.spritesheet(PRISON_CHEST_SPRITE.key, PRISON_CHEST_SPRITE.path, {

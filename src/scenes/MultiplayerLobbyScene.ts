@@ -6,6 +6,8 @@ import { PLAYER_SPRITE, PLAYER_ANIMATION } from '../data/player';
 import { SKINS, SKIN_ORDER, setSkin, type SkinId } from '../data/skins';
 import { setDifficulty, type DifficultyId } from '../data/difficulty';
 import { startCoopAsGuest, startCoopAsHost, type WorldSnapshot } from '../systems/SaveGame';
+import { watchCoopRoom } from '../systems/coop/CoopPresence';
+import { COOP_MESSAGES } from '../systems/coop/messages';
 
 const TITLE_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
   color: '#d9c8f2',
@@ -46,6 +48,8 @@ export class MultiplayerLobbyScene extends Phaser.Scene {
   private room?: Room;
   private controls?: Controls;
   private leaving = false;
+  // Já pediu para voltar a uma partida em andamento.
+  private rejoinRequested = false;
 
   // UI - Topo
   private roomCodeText?: Phaser.GameObjects.Text;
@@ -94,6 +98,7 @@ export class MultiplayerLobbyScene extends Phaser.Scene {
     this.otherPlayerSkin = '';
     this.currentDifficulty = 'normal';
     this.skinButtons = [];
+    this.rejoinRequested = false;
   }
 
   create(): void {
@@ -436,6 +441,14 @@ export class MultiplayerLobbyScene extends Phaser.Scene {
     if (!state || !state.players) return;
 
     this.isHost = state.hostId === this.localPlayerId;
+
+    // Entrou numa partida em andamento (voltando depois de sair): pede para
+    // entrar; o mundo atual do anfitrião chega com `game_started`.
+    if (state.status === 'in-game' && !this.isHost && !this.rejoinRequested) {
+      this.rejoinRequested = true;
+      this.statusBanner?.setText('Voltando à partida...').setColor('#ffe8b0');
+      this.room?.send(COOP_MESSAGES.rejoin, {});
+    }
     this.currentDifficulty = (state.difficulty as DifficultyId) || 'normal';
 
     // Atualiza frase de dificuldade
@@ -606,6 +619,9 @@ export class MultiplayerLobbyScene extends Phaser.Scene {
       setSkin(this.game, this.myCurrentSkin as SkinId);
     }
     setDifficulty(this.game, difficulty);
+    // Daqui em diante a sala é vigiada pela partida inteira (quedas, volta
+    // do convidado).
+    if (this.room) watchCoopRoom(this.game, this.room);
 
     // Os dois começam onde o anfitrião parou (a última lanterna dele).
     const { roomId, entryId } = world.checkpoint;

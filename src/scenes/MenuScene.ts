@@ -5,6 +5,7 @@ import { Controls } from '../core/controls';
 import { DEMO } from '../data/demo';
 import { setDifficulty, type DifficultyId } from '../data/difficulty';
 import { hasSave, loadGame, startNewGame } from '../systems/SaveGame';
+import { takeCoopEndedNotice } from '../systems/coop/CoopPresence';
 import { network } from '../net/network';
 import { showCreateRoomModal, showJoinRoomModal } from '../ui/RoomDialog';
 import type { Room } from '@colyseus/sdk';
@@ -93,6 +94,8 @@ export class MenuScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     const keyboard = this.input.keyboard;
+    // A partida cooperativa acabou (anfitrião saiu, conexão caiu): mostra o motivo.
+    const coopEnded = takeCoopEndedNotice(this.game);
 
     if (!keyboard) {
       throw new Error('Teclado indisponível para o menu.');
@@ -129,7 +132,7 @@ export class MenuScene extends Phaser.Scene {
 
     // ── Mensagem de status / erro no rodapé ──
     this.statusText = this.add
-      .text(width / 2, height * 0.88, '', { ...PHRASE_STYLE, color: '#e8b860', fontSize: '15px' })
+      .text(width / 2, height * 0.88, coopEnded ?? '', { ...PHRASE_STYLE, color: '#e8b860', fontSize: '15px' })
       .setOrigin(0.5);
 
     // ── Rodapé ──
@@ -470,12 +473,12 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
-  // Novo jogo apaga o save anterior e vai para a seleção de aparência.
+  // Novo jogo apaga o save anterior e começa na cela.
   private startGame(difficulty: DifficultyId): void {
     if (this.leaving) return;
     startNewGame(this.game);
     setDifficulty(this.game, difficulty);
-    this.leaveToCharacter({});
+    this.leaveTo({});
   }
 
   // Continua na última lanterna em que descansou, já sentado nela.
@@ -493,16 +496,6 @@ export class MenuScene extends Phaser.Scene {
     this.cameras.main.fadeOut(FADE_MS, 4, 3, 8);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       this.scene.start('PrisonScene', data);
-    });
-  }
-
-  // Novo jogo: vai para a seleção de aparência antes de iniciar.
-  private leaveToCharacter(launchData: object): void {
-    playSound(this, 'uiConfirm');
-    this.leaving = true;
-    this.cameras.main.fadeOut(FADE_MS, 4, 3, 8);
-    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.scene.start('CharacterScene', { launchData });
     });
   }
 
