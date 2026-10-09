@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_EVENTS } from '../core/gameEvents';
-import { MUSIC, LOCAL_AMBIENCE, SOUNDSCAPE } from '../data/soundscape';
+import { BOSS_MUSIC, MUSIC, LOCAL_AMBIENCE, SOUNDSCAPE } from '../data/soundscape';
 import type { RoomId } from '../maps/types';
 import { playSound } from './SoundEffects';
 
@@ -16,7 +16,7 @@ export function addAmbientSource(scene: Phaser.Scene, kind: LocalKind, x: number
 }
 
 export function startSoundscape(scene: Phaser.Scene, room: RoomId): void {
-  const bossTrack = room === 'prison-root-arena' ? 'root' : room === 'prison-boss-lair' ? 'reaper' : undefined;
+  const bossTrack = BOSS_MUSIC[room];
   let combat = false;
   let dead = false;
   const configs = { ...MUSIC, ...LOCAL_AMBIENCE };

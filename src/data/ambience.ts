@@ -19,4 +19,5 @@ export const ROOM_AMBIENCE: Record<RoomId, keyof typeof AMBIENCE> = {
   'prison-drowned-galleries': 'sewer',
   'prison-sewers': 'sewer',
   'prison-root-arena': 'sewer',
+  'prison-surgical-theater': 'prison',
 };
