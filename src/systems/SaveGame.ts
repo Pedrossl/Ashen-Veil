@@ -1,6 +1,6 @@
 import type Phaser from 'phaser';
 
-import { getDifficulty, setDifficulty, type DifficultyId } from '../data/difficulty';
+import { getDifficulty, setDifficulty } from '../data/difficulty';
 import { ITEMS, type ItemDefinition } from '../data/items';
 import { DEFAULT_SKIN, setSkin } from '../data/skins';
 import type { WeaponId } from '../data/weapons';
@@ -8,9 +8,10 @@ import { PlayerState } from './PlayerState';
 import { getCoopRole, setCoopSession } from './Session';
 import { WorldState, type Checkpoint } from './WorldState';
 
-// No itch.io todos os jogos HTML dividem o mesmo localStorage: a chave tem o
-// nome do jogo. Mudou o formato, troque o `v1`; o save antigo é ignorado.
-const SAVE_KEY = 'ashen-veil:save:v1';
+import { readSlots, writeSlot, type SaveSlot, type SaveChoice, type SaveData } from './SaveSlots';
+export type { SaveChoice } from './SaveSlots';
+
+const ACTIVE_SLOT = 'active-save-slot';
 
 // Mundo e progresso do personagem: o que o save guarda e o que o anfitrião
 // manda ao convidado no início da partida cooperativa.
@@ -23,9 +24,6 @@ export type WorldSnapshot = {
   rings: string[];
 };
 
-type SaveData = WorldSnapshot & {
-  difficulty: DifficultyId;
-};
 
 const ALL_ITEMS: readonly ItemDefinition[] = Object.values(ITEMS);
 
@@ -72,33 +70,30 @@ export function saveGame(game: Phaser.Game): void {
   };
 
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    let slot = game.registry.get(ACTIVE_SLOT) as SaveSlot | undefined;
+    slot ??= { id: crypto.randomUUID(), name: 'Jornada', updatedAt: 0, data };
+    slot = { ...slot, data, updatedAt: Date.now() };
+    game.registry.set(ACTIVE_SLOT, slot);
+    writeSlot(slot);
   } catch {
     // Sem armazenamento (aba anônima, bloqueado): o jogo segue sem salvar.
   }
 }
 
-function readSave(): SaveData | undefined {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    return raw ? (JSON.parse(raw) as SaveData) : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 export function hasSave(): boolean {
-  return !isDisabled() && readSave() !== undefined;
+  return !isDisabled() && readSlots().length > 0;
 }
 
 // Carrega o save no registry; devolve o checkpoint onde continuar.
-export function loadGame(game: Phaser.Game): Checkpoint | undefined {
-  const data = readSave();
+export function loadGame(game: Phaser.Game, id?: string): Checkpoint | undefined {
+  const slot = id ? readSlots().find(s => s.id === id) : readSlots()[0];
+  const data = slot?.data;
 
   if (!data) {
     return undefined;
   }
 
+  game.registry.set(ACTIVE_SLOT, slot);
   applyWorld(game, data);
   setCoopSession(game, undefined);
   setDifficulty(game, data.difficulty);
@@ -108,18 +103,15 @@ export function loadGame(game: Phaser.Game): Checkpoint | undefined {
   return data.checkpoint;
 }
 
-// Novo jogo: apaga o save e o estado da partida atual.
-export function startNewGame(game: Phaser.Game): void {
-  try {
-    localStorage.removeItem(SAVE_KEY);
-  } catch {
-    // Nada a apagar.
-  }
-
+// Uma nova jornada ganha um slot próprio; os anteriores permanecem disponíveis.
+export function startNewGame(game: Phaser.Game, name = 'Nova jornada'): void {
   WorldState.reset(game);
   PlayerState.reset(game);
   setCoopSession(game, undefined);
   setSkin(game, DEFAULT_SKIN);
+  game.registry.set(ACTIVE_SLOT, {
+    id: crypto.randomUUID(), name: name.trim().slice(0, 40) || 'Nova jornada', updatedAt: 0,
+  });
 }
 
 // Cooperativo, anfitrião: o mundo como está agora (para o convidado que volta
@@ -128,18 +120,13 @@ export function currentWorld(game: Phaser.Game): WorldSnapshot {
   return captureWorld(game);
 }
 
-// Cooperativo, anfitrião: joga o próprio mundo (o save dele ou, sem save, um
-// novo). Devolve o mundo para mandar ao convidado.
-export function startCoopAsHost(game: Phaser.Game): WorldSnapshot {
-  const data = isDisabled() ? undefined : readSave();
-
-  if (data) {
-    applyWorld(game, data);
+// O anfitrião escolhe explicitamente o mundo antes de abrir a sala.
+export function startCoopAsHost(game: Phaser.Game, choice: SaveChoice): WorldSnapshot {
+  if (choice.kind === 'existing') {
+    if (!loadGame(game, choice.id)) throw new Error('O save escolhido não está disponível.');
   } else {
-    WorldState.reset(game);
-    PlayerState.reset(game);
+    startNewGame(game, choice.name);
   }
-
   setCoopSession(game, 'host');
   return captureWorld(game);
 }
