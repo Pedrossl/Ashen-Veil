@@ -12,7 +12,6 @@ export const RELAYED_MESSAGES = [
   "rest_ready",
   "rest_cancel",
   "rest_revive",
-  "arena_summon",
 ] as const;
 
 // Cada um anda livre pelo mundo do anfitrião. Numa sala da prisão com os dois,

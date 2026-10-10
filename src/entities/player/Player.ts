@@ -185,6 +185,10 @@ export class Player
     return this.action === 'climb';
   }
 
+  get isAttacking(): boolean {
+    return this.action === 'attack';
+  }
+
   get isDead(): boolean {
     return this.action === 'dead';
   }

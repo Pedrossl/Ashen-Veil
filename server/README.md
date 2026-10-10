@@ -99,6 +99,10 @@ jogar em `http://localhost:5173` ou pelo mesmo endereço do ngrok.
 | `world_event`    | item ou marcação do parceiro + `id` |
 | `room_owner`     | `{ roomId, ownerId }` — quem comanda os inimigos e bosses da sala |
 
+## Entrada cooperativa nas arenas
+
+Quando um jogador entra numa arena com boss vivo, o servidor guarda a sala e a entrada. Se o outro cliente estiver trocando de cena ou chegar depois, `enter_room` reenvia a mesma entrada válida. As entradas são validadas no servidor para evitar que uma mensagem antiga leve o jogador ao checkpoint errado.
+
 ## Ainda não existe
 
 Cooperativo no estilo do Lords of the Fallen: o mundo é do anfitrião e cada um

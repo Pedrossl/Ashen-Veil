@@ -93,6 +93,10 @@ export class PlayerSync {
       alive: player.isAlive && !player.isDead,
       invulnerable: player.isInvulnerable,
       spectating: this.isSpectating(),
+      velocityX: Math.round((player.body as Phaser.Physics.Arcade.Body).velocity.x),
+      velocityY: Math.round((player.body as Phaser.Physics.Arcade.Body).velocity.y),
+      attacking: player.isAttacking,
+      dodging: player.isInvulnerable,
     };
     this.room.send(COOP_MESSAGES.playerState, snapshot);
   }

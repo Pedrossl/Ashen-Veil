@@ -15,16 +15,15 @@ export class ArenaSync {
   ) {}
 
   listen(): Array<() => void> {
-    if (this.arena) {
-      this.room.send(COOP_MESSAGES.arenaSummon, this.arena);
-    }
-
-    return [
+    const cleanups = [
       this.room.onMessage(COOP_MESSAGES.arenaSummon, (summon: FromPartner<ArenaSummonMessage>) => {
-        if (summon.roomId !== this.roomId) {
+        if (summon.roomId !== this.roomId && summon.entryId) {
           this.onSummoned({ roomId: summon.roomId, entryId: summon.entryId }, partnerName(this.room, summon.id));
         }
       }),
     ];
+    // O listener vem antes do anúncio; o servidor também retém a arena.
+    if (this.arena) this.room.send(COOP_MESSAGES.arenaSummon, this.arena);
+    return cleanups;
   }
 }

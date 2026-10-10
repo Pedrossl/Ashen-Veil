@@ -19,8 +19,9 @@ import {
 // sala, cada um comanda a sua, como no solo. Os grupos (FoeSync) seguem as
 // mudanças por `onChange`.
 export class RoomControl {
-  // Até o servidor responder, cada um comanda a própria sala.
-  private owner = true;
+  // Ninguém comanda até o servidor escolher um dono. Isso evita duas IAs
+  // aplicarem golpes diferentes durante a primeira fração da transição.
+  private owner = false;
   private remote?: RemotePlayer;
   private readonly listeners: Array<() => void> = [];
 

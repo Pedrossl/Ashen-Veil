@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import type { Room } from '@colyseus/sdk';
 
-import { GAME_EVENTS } from '../../core/gameEvents';
+import { GAME_EVENTS, type CoopConnectionStatus } from '../../core/gameEvents';
 import { network } from '../../net/network';
 import { currentWorld } from '../SaveGame';
 import { getCoopRole, setCoopSession, setPartnerConnected } from '../Session';
@@ -24,6 +24,7 @@ export function watchCoopRoom(game: Phaser.Game, room: Room): void {
   const notice = (text: string): void => {
     game.events.emit(GAME_EVENTS.coopNotice, text);
   };
+  const status = (value: CoopConnectionStatus): void => { game.events.emit(GAME_EVENTS.coopStatusChanged, value); };
 
   const onLeave = (): void => {
     // Saída pedida por este jogo (voltar ao menu): não é queda.
@@ -31,15 +32,18 @@ export function watchCoopRoom(game: Phaser.Game, room: Room): void {
     endCoop(game, reason ?? 'A conexão com a sala caiu. A partida cooperativa acabou.');
   };
   room.onLeave(onLeave);
+  status('connected');
 
   const cleanups = [
     () => room.onLeave.remove(onLeave),
     room.onMessage(COOP_MESSAGES.partnerLeft, ({ name }: PresenceMessage) => {
       setPartnerConnected(game, false);
+      status('partner-disconnected');
       notice(`${name} saiu da partida. Ele pode voltar com o código da sala.`);
     }),
     room.onMessage(COOP_MESSAGES.partnerJoined, ({ name }: PresenceMessage) => {
       setPartnerConnected(game, true);
+      status('connected');
       notice(`${name} voltou à partida.`);
     }),
     room.onMessage(COOP_MESSAGES.roomDisbanded, ({ message }: { message: string }) => {
@@ -63,6 +67,7 @@ function endCoop(game: Phaser.Game, message: string): void {
   network.leaveRoom();
   setCoopSession(game, undefined);
   game.registry.set(ENDED_KEY, message);
+  game.events.emit(GAME_EVENTS.coopStatusChanged, 'room-closed');
   game.events.emit(GAME_EVENTS.coopEnded, message);
 }
 

@@ -22,6 +22,10 @@ export type PlayerSnapshot = {
   invulnerable: boolean;
   // Caiu numa luta de boss e está assistindo o parceiro (cooperativo).
   spectating: boolean;
+  velocityX: number;
+  velocityY: number;
+  attacking: boolean;
+  dodging: boolean;
 };
 
 // Quanto da distância até a última posição recebida ele anda por quadro de 60 FPS.
@@ -43,6 +47,10 @@ export class RemotePlayer extends Phaser.GameObjects.Sprite implements Damageabl
   private readonly nameTag: Phaser.GameObjects.Text;
   private targetX: number;
   private targetY: number;
+  private targetVelocityX = 0;
+  private targetVelocityY = 0;
+  private attacking = false;
+  private dodging = false;
   private skinId?: SkinId;
   private weaponId?: WeaponId;
 
@@ -53,6 +61,10 @@ export class RemotePlayer extends Phaser.GameObjects.Sprite implements Damageabl
     this.setOrigin(0.5, 1).setScale(PLAYER_SPRITE.scale).setDepth(9.9);
     this.targetX = snapshot.x;
     this.targetY = snapshot.y;
+    this.targetVelocityX = snapshot.velocityX;
+    this.targetVelocityY = snapshot.velocityY;
+    this.attacking = snapshot.attacking;
+    this.dodging = snapshot.dodging;
     this.weaponSocket = new WeaponSocket(scene, this, () => (this.skinId ? SKINS[this.skinId].tint : 0xffffff));
     this.nameTag = scene.add
       .text(snapshot.x, snapshot.y - NAME_OFFSET_Y, name, {
@@ -71,6 +83,10 @@ export class RemotePlayer extends Phaser.GameObjects.Sprite implements Damageabl
   applySnapshot(snapshot: PlayerSnapshot): void {
     this.targetX = snapshot.x;
     this.targetY = snapshot.y;
+    this.targetVelocityX = snapshot.velocityX;
+    this.targetVelocityY = snapshot.velocityY;
+    this.attacking = snapshot.attacking;
+    this.dodging = snapshot.dodging;
 
     if (Phaser.Math.Distance.Between(this.x, this.y, snapshot.x, snapshot.y) > SNAP_DISTANCE) {
       this.setPosition(snapshot.x, snapshot.y);
@@ -126,8 +142,12 @@ export class RemotePlayer extends Phaser.GameObjects.Sprite implements Damageabl
   // Desliza até a última posição recebida (as mensagens chegam ~15 vezes por segundo).
   follow(delta: number): void {
     const t = 1 - Math.pow(1 - FOLLOW_RATE, delta / (1000 / 60));
-    this.x = Phaser.Math.Linear(this.x, this.targetX, t);
-    this.y = Phaser.Math.Linear(this.y, this.targetY, t);
+    const dt = delta / 1000;
+    const predictedX = this.targetX + this.targetVelocityX * Math.min(dt + 0.045, 0.09);
+    const predictedY = this.targetY + this.targetVelocityY * Math.min(dt + 0.045, 0.09);
+    this.x = Phaser.Math.Linear(this.x, predictedX, t);
+    this.y = Phaser.Math.Linear(this.y, predictedY, t);
+    this.setAlpha(this.dodging ? 0.78 : this.attacking ? 0.96 : 1);
     this.nameTag.setPosition(this.x, this.y - NAME_OFFSET_Y);
   }
 

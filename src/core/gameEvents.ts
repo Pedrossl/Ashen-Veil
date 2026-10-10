@@ -33,7 +33,10 @@ export const GAME_EVENTS = {
   coopNotice: 'coop:notice',
   // Cooperativo: a partida acabou (o anfitrião saiu ou a conexão caiu).
   coopEnded: 'coop:ended',
+  coopStatusChanged: 'coop:status-changed',
 } as const;
+
+export type CoopConnectionStatus = 'connected' | 'reconnecting' | 'partner-disconnected' | 'room-closed' | 'syncing';
 
 export type GroundMessageShown = {
   text: string;

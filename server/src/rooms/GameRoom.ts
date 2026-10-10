@@ -1,6 +1,7 @@
 import { Room, Client } from "@colyseus/core";
 import { GameState, PlayerState } from "./schema/GameState";
 import { RELAYED_MESSAGES, RoomOwnership } from "./CoopRelay";
+import { ARENA_ENTRIES } from "./arenaEntries";
 
 interface GameRoomOptions {
   state: GameState;
@@ -15,6 +16,8 @@ export class GameRoom extends Room<GameRoomOptions> {
   private lastGuestSkin = "";
   // Convidados voltando à partida, esperando o mundo atual do anfitrião.
   private readonly rejoining = new Set<string>();
+  // Retém a entrada durante o restart da PrisonScene para não perder a transição.
+  private readonly activeArenas = new Map<string, { roomId: string; entryId: string }>();
 
   onCreate(options: any) {
     this.setState(new GameState());
@@ -79,6 +82,9 @@ export class GameRoom extends Room<GameRoomOptions> {
     for (const type of RELAYED_MESSAGES) {
       this.onMessage(type, (client: Client, payload: Record<string, unknown>) => {
         if (this.state.status !== "in-game" || typeof payload !== "object" || payload === null) return;
+        if (type === "world_event" && payload.kind === "flag" && typeof payload.flag === "string" && payload.flag.startsWith("boss-defeated:")) {
+          for (const [roomId] of this.activeArenas) this.activeArenas.delete(roomId);
+        }
         this.broadcast(type, { ...payload, id: client.sessionId }, { except: client });
       });
     }
@@ -87,6 +93,16 @@ export class GameRoom extends Room<GameRoomOptions> {
     this.onMessage("enter_room", (client: Client, payload: { roomId?: unknown }) => {
       if (this.state.status !== "in-game" || typeof payload?.roomId !== "string") return;
       this.announceOwners(this.ownership.enter(client.sessionId, payload.roomId));
+      const arena = this.activeArenas.get(payload.roomId);
+      if (arena) client.send("arena_summon", arena);
+    });
+
+    this.onMessage("arena_summon", (client: Client, payload: { roomId?: unknown; entryId?: unknown }) => {
+      if (this.state.status !== "in-game" || typeof payload?.roomId !== "string" || typeof payload.entryId !== "string") return;
+      if (!ARENA_ENTRIES[payload.roomId]?.includes(payload.entryId)) return;
+      const arena = { roomId: payload.roomId, entryId: payload.entryId };
+      this.activeArenas.set(payload.roomId, arena);
+      this.broadcast("arena_summon", arena, { except: client });
     });
 
     // Convidado voltando a uma partida em andamento: pede o mundo atual ao
