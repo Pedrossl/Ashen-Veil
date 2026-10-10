@@ -23,6 +23,11 @@ export const ITEMS = {
     name: 'Espada Medieval Sombria',
     category: 'weapon',
   },
+  colossalEmberSword: {
+    id: 'colossal-ember-sword',
+    name: 'Espada Colossal da Brasa Rubra',
+    category: 'weapon',
+  },
   veiledEmberAmpoule: {
     id: 'veiled-ember-ampoule',
     name: 'Ampola da Brasa Velada',
@@ -51,6 +56,12 @@ export const ITEM_IMAGES = {
   'dark-sword': {
     key: 'item-dark-sword',
     path: 'assets/weapons/arma_espada_medieval_sombria.webp',
+  },
+  // Original em 03_itens_e_armas/armas/espada_colossal_brasa_rubra/
+  // (scripts/prepare_colossal_sword.py).
+  'colossal-ember-sword': {
+    key: 'item-colossal-ember-sword',
+    path: 'assets/weapons/arma_espada_colossal_brasa_rubra.webp',
   },
   'veiled-ember-ampoule': {
     key: 'item-veiled-ember-ampoule',

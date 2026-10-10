@@ -13,6 +13,10 @@ const WIDTH = 4200;
 const UPPER = 180;
 const CHECKPOINT = 'bonfire:prison-service-wing';
 const CHEST = 'prison-service-wing-infirmary-chest';
+// Espada Colossal da Brasa Rubra: na passarela do meio, depois do Carcereiro,
+// escondida atrás do guincho (só um brilho fraco de brasa escapa por trás).
+const SWORD_CHEST = 'prison-service-wing-colossal-sword-chest';
+const SWORD_CHEST_X = 2450;
 // Porta do Anfiteatro Cirúrgico (último boss), no fim do andar de baixo,
 // depois da lanterna.
 const THEATER_DOOR_X = 4080;
@@ -80,7 +84,12 @@ export function createServiceWing(scene: Phaser.Scene, world: WorldState): Room 
   prop(scene, 'furniture', 'cauldron', 1330, FLOOR_Y, 115);
   prop(scene, 'furniture', 'bench', 1600, FLOOR_Y, 130);
   prop(scene, 'mechanisms', 'cart', 2340, FLOOR_Y, 120);
-  prop(scene, 'mechanisms', 'winch', 2450, UPPER, 120);
+  prop(scene, 'mechanisms', 'winch', SWORD_CHEST_X, UPPER, 120, 9);
+  const ember = scene.add
+    .ellipse(SWORD_CHEST_X + 20, UPPER - 40, 90, 50, 0xff4a20, 0.06)
+    .setDepth(8.5)
+    .setBlendMode(Phaser.BlendModes.ADD);
+  scene.tweens.add({ targets: ember, alpha: { from: 0.4, to: 1 }, duration: 1800, ease: 'Sine.InOut', yoyo: true, repeat: -1 });
   prop(scene, 'mechanisms', 'pump', 3020, FLOOR_Y, 150);
   prop(scene, 'mechanisms', 'lift', 3420, FLOOR_Y, 260, 2).setTint(0x777080);
   for (const [x, y] of [[340, UPPER], [1300, FLOOR_Y], [1920, UPPER], [2450, FLOOR_Y], [3790, UPPER]]) {
@@ -122,6 +131,10 @@ export function createServiceWing(scene: Phaser.Scene, world: WorldState): Room 
       id: CHEST, x: 160, floorY: FLOOR_Y, scale: 0.55, tint: 0xd8cede, depth: 8,
       item: ITEMS.veiledEmberAmpoule, itemTextureKey: ITEM_IMAGES['veiled-ember-ampoule'].key,
       startsOpen: world.hasFlag(CHEST),
+    }), new Chest(scene, {
+      id: SWORD_CHEST, x: SWORD_CHEST_X, floorY: UPPER, scale: 0.55, tint: 0xd8cede, depth: 8,
+      item: ITEMS.colossalEmberSword, itemTextureKey: ITEM_IMAGES['colossal-ember-sword'].key,
+      startsOpen: world.hasFlag(SWORD_CHEST),
     })],
   };
 }

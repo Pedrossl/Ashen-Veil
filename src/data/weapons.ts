@@ -115,6 +115,31 @@ export const WEAPONS = {
       },
     },
   },
+  // Escondida nas Alas Esquecidas: espadão de ferro em brasa. Bem lenta (o
+  // golpe leva ~1,15 s e acerta aos ~0,44 s, ainda dentro das brechas dos
+  // bosses), mas cada acerto vale quase dois da Sombria.
+  colossalEmberSword: {
+    id: 'colossal-ember-sword',
+    name: 'Espada Colossal da Brasa Rubra',
+    category: 'sword',
+    baseDamage: 52,
+    critChance: 0.1,
+    critMultiplier: 1.6,
+    sprite: 'item-colossal-ember-sword',
+    bladeScale: 1.75,
+    // Cabo longo de duas mãos: a mão fica no alto dele, abaixo da guarda.
+    gripOriginY: 0.805,
+    attackSpeed: 0.55,
+    moveset: {
+      light: {
+        animation: 'sword-light',
+        damageMultiplier: 1,
+        staminaCost: 42,
+        hitbox: { forward: 30, up: 165, width: 175, height: 155 },
+        activeFrames: { from: 2, to: 2 },
+      },
+    },
+  },
 } as const satisfies Record<string, WeaponDefinition>;
 
 export type WeaponId = keyof typeof WEAPONS;
