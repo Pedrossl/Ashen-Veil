@@ -29,15 +29,17 @@ export type ReaperKingAnimation = keyof typeof REAPER_KING_SPRITE.animations;
 // Raiz dos Condenados: as 10 animações do corpo de
 // `public/assets/bosses/raiz_dos_condenados/` (células e escalas diferentes)
 // normalizadas pela largura do corpo e alinhadas pelos pés. Quadros de
-// 478x412, grade de 10 colunas. Índices de `active`/`fire` são relativos ao
-// início de cada animação, como no manifesto.
+// 358x309 (reduzidos de 478x412), grade de 10 colunas. Índices de
+// `active`/`fire` são relativos ao início de cada animação, como no manifesto.
 export const ROOT_BOSS_SPRITE = {
   key: 'boss-root-of-condemned',
   path: 'assets/bosses/sprite_sheet_raiz_dos_condenados.webp',
-  frameWidth: 478,
-  frameHeight: 412,
-  feetY: 408,
-  scale: 1.1,
+  // Reduzida a 75% para pesar menos (scripts/shrink_root_boss_sheet.py); a
+  // escala compensa, e o tamanho na tela é o mesmo de antes (1.1 em 478x412).
+  frameWidth: 358,
+  frameHeight: 309,
+  feetY: 306,
+  scale: 1.1 * (412 / 309),
   animations: {
     idle: { start: 0, end: 5, frameRate: 5 },
     crawl: { start: 6, end: 13, frameRate: 8 },
