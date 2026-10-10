@@ -4,10 +4,11 @@ import { playSound } from '../systems/SoundEffects';
 import { Controls } from '../core/controls';
 import { DEMO } from '../data/demo';
 import { setDifficulty, type DifficultyId } from '../data/difficulty';
-import { hasSave, loadGame, startNewGame } from '../systems/SaveGame';
+import { hasSave, loadGame, startNewGame, type SaveChoice } from '../systems/SaveGame';
 import { takeCoopEndedNotice } from '../systems/coop/CoopPresence';
 import { network } from '../net/network';
 import { showCreateRoomModal, showJoinRoomModal } from '../ui/RoomDialog';
+import { showSaveDialog } from '../ui/SaveDialog';
 import type { Room } from '@colyseus/sdk';
 
 type MenuOption = {
@@ -86,6 +87,7 @@ export class MenuScene extends Phaser.Scene {
   private currentEntries: MenuOption[] = [];
   // Modal aberto ou conectando ao servidor: ignora o teclado do menu.
   private busy = false;
+  private saveChoice?: SaveChoice;
 
   constructor() {
     super('MenuScene');
@@ -106,6 +108,7 @@ export class MenuScene extends Phaser.Scene {
     network.leaveRoom();
     this.leaving = false;
     this.busy = false;
+    this.saveChoice = undefined;
     this.selected = 0;
     this.phase = 'main';
     this.cameras.main.setBackgroundColor('#050308');
@@ -144,7 +147,7 @@ export class MenuScene extends Phaser.Scene {
 
     // ── Loop de input ──
     this.events.on(Phaser.Scenes.Events.UPDATE, () => {
-      if (this.leaving || !this.controls) {
+      if (this.leaving || this.busy || !this.controls) {
         return;
       }
 
@@ -163,8 +166,8 @@ export class MenuScene extends Phaser.Scene {
   private buildMainMenu(width: number, height: number): void {
     const saved = hasSave();
     const entries: MenuOption[] = [
-      ...(saved ? [{ label: 'Continuar', select: () => this.continueGame() }] : []),
-      { label: saved ? 'Novo jogo' : 'Iniciar', select: () => this.showDifficulty() },
+      ...(saved ? [{ label: 'Continuar / Saves', select: () => void this.chooseSoloSave() }] : []),
+      { label: saved ? 'Novo jogo' : 'Iniciar', select: () => void this.chooseSoloSave(true) },
       { label: 'Multiplayer', select: () => this.showMultiplayer() },
       { label: 'Sair', select: () => this.quitGame() },
     ];
@@ -279,6 +282,9 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private async createRoom(): Promise<void> {
+    const choice = await this.askInModal(() => showSaveDialog());
+    if (!choice) return;
+    this.saveChoice = choice;
     const data = await this.askInModal(showCreateRoomModal);
 
     if (!data) return;
@@ -287,6 +293,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private async joinRoom(): Promise<void> {
+    this.saveChoice = undefined;
     const data = await this.askInModal(showJoinRoomModal);
 
     if (!data) return;
@@ -341,7 +348,7 @@ export class MenuScene extends Phaser.Scene {
     this.leaving = true;
     this.cameras.main.fadeOut(FADE_MS, 4, 3, 8);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.scene.start('MultiplayerLobbyScene', { room });
+      this.scene.start('MultiplayerLobbyScene', { room, saveChoice: this.saveChoice });
     });
   }
 
@@ -473,18 +480,27 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
-  // Novo jogo apaga o save anterior e começa na cela.
+  private async chooseSoloSave(newOnly = false): Promise<void> {
+    const choice = await this.askInModal(() => showSaveDialog(newOnly));
+    if (!choice) return;
+    this.saveChoice = choice;
+    if (choice.kind === 'existing') this.continueGame(choice.id);
+    else this.showDifficulty();
+  }
+
+  // Novo jogo cria um slot separado e começa na cela.
   private startGame(difficulty: DifficultyId): void {
     if (this.leaving) return;
-    startNewGame(this.game);
+    startNewGame(this.game, this.saveChoice?.kind === 'new' ? this.saveChoice.name : undefined);
     setDifficulty(this.game, difficulty);
     this.leaveTo({});
   }
 
   // Continua na última lanterna em que descansou, já sentado nela.
-  private continueGame(): void {
+  private continueGame(id: string): void {
     if (this.leaving) return;
-    const checkpoint = loadGame(this.game);
+    const checkpoint = loadGame(this.game, id);
+    if (!checkpoint) { this.statusText?.setText('Save indisponível. Escolha outro.'); return; }
     // Sem descanso ainda, o checkpoint é a cela (não há lanterna para sentar).
     const resting = checkpoint !== undefined && checkpoint.roomId !== 'prison-cell';
     this.leaveTo(checkpoint ? { roomId: checkpoint.roomId, entryId: checkpoint.entryId, resting } : {});

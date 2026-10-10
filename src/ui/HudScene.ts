@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 import {
   GAME_EVENTS,
+  type CoopConnectionStatus,
   type BossEngaged,
   type BossGaugeChanged,
   type ConsumableChange,
@@ -33,6 +34,8 @@ export class HudScene extends Phaser.Scene {
   private consumable?: { icon: Phaser.GameObjects.Image; count: Phaser.GameObjects.Text };
   private health?: StatBar;
   private stamina?: StatBar;
+  private coopStatus?: Phaser.GameObjects.Container;
+  private coopStatusText?: Phaser.GameObjects.Text;
 
   public constructor() {
     super({ key: 'HudScene', active: true });
@@ -77,6 +80,7 @@ export class HudScene extends Phaser.Scene {
     this.listenForDeath();
     this.listenForRewards();
     this.createGroundMessageBox();
+    this.createCoopStatus();
   }
 
   public update(): void {
@@ -88,11 +92,39 @@ export class HudScene extends Phaser.Scene {
       this.weaponIcon?.setVisible(visible && this.weaponIcon.texture.key !== '__DEFAULT');
       this.consumable?.icon.setVisible(visible && this.consumable.icon.texture.key !== '__DEFAULT');
       this.consumable?.count.setVisible(visible && this.consumable.icon.texture.key !== '__DEFAULT');
+      this.coopStatus?.setVisible(visible && this.coopStatusText?.text !== '');
 
       if (visible) {
         this.scene.bringToTop();
       }
     }
+  }
+
+  private createCoopStatus(): void {
+    const dot = this.add.circle(0, 0, 4, 0x78c58a);
+    this.coopStatusText = this.add.text(12, -8, '', {
+      color: '#c6b9d2', fontFamily: 'Georgia, serif', fontSize: '12px',
+      stroke: '#07050b', strokeThickness: 3,
+    });
+    this.coopStatus = this.add.container(this.scale.width - 190, 22, [dot, this.coopStatusText]).setDepth(100).setVisible(false);
+    const onStatus = (status: CoopConnectionStatus): void => {
+      const labels: Record<CoopConnectionStatus, [string, number]> = {
+        connected: ['Conectado', 0x78c58a],
+        reconnecting: ['Reconectando…', 0xe8b860],
+        'partner-disconnected': ['Parceiro desconectado', 0xd46b6b],
+        'room-closed': ['Sala encerrada', 0xd46b6b],
+        syncing: ['Sincronizando…', 0xc9b8ef],
+      };
+      const [label, color] = labels[status];
+      this.coopStatusText?.setText(label);
+      dot.setFillStyle(color);
+      this.coopStatus?.setVisible(true);
+      if (status === 'connected') this.time.delayedCall(2200, () => {
+        if (this.coopStatusText?.text === 'Conectado') this.coopStatus?.setVisible(false);
+      });
+    };
+    this.game.events.on(GAME_EVENTS.coopStatusChanged, onStatus);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(GAME_EVENTS.coopStatusChanged, onStatus));
   }
 
   // Barra do boss: nome em cima e a barra longa de vida, no centro de baixo.

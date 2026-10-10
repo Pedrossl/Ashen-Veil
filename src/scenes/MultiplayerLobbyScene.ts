@@ -5,7 +5,7 @@ import { Controls } from '../core/controls';
 import { PLAYER_SPRITE, PLAYER_ANIMATION } from '../data/player';
 import { SKINS, SKIN_ORDER, setSkin, type SkinId } from '../data/skins';
 import { setDifficulty, type DifficultyId } from '../data/difficulty';
-import { startCoopAsGuest, startCoopAsHost, type WorldSnapshot } from '../systems/SaveGame';
+import { startCoopAsGuest, startCoopAsHost, type WorldSnapshot, type SaveChoice } from '../systems/SaveGame';
 import { watchCoopRoom } from '../systems/coop/CoopPresence';
 import { COOP_MESSAGES } from '../systems/coop/messages';
 
@@ -42,12 +42,15 @@ type GameStartedMessage = {
 
 type LobbyData = {
   room: Room;
+  saveChoice?: SaveChoice;
 };
 
 export class MultiplayerLobbyScene extends Phaser.Scene {
   private room?: Room;
+  private saveChoice?: SaveChoice;
   private controls?: Controls;
   private leaving = false;
+  private starting = false;
   // Já pediu para voltar a uma partida em andamento.
   private rejoinRequested = false;
 
@@ -93,7 +96,9 @@ export class MultiplayerLobbyScene extends Phaser.Scene {
 
   init(data: LobbyData): void {
     this.room = data?.room;
+    this.saveChoice = data?.saveChoice;
     this.leaving = false;
+    this.starting = false;
     this.myCurrentSkin = '';
     this.otherPlayerSkin = '';
     this.currentDifficulty = 'normal';
@@ -421,6 +426,7 @@ export class MultiplayerLobbyScene extends Phaser.Scene {
       () => room.onStateChange.remove(onState),
       () => room.onLeave.remove(onLeave),
       room.onMessage('error', (data: { message: string }) => {
+        this.starting = false;
         playSound(this, 'uiMove');
         this.statusBanner?.setText(data.message).setColor('#d46b6b');
       }),
@@ -601,9 +607,16 @@ export class MultiplayerLobbyScene extends Phaser.Scene {
   // O mundo é do anfitrião: ele carrega o próprio save (ou começa um novo)
   // e o manda junto com o início, para o convidado entrar no mesmo mundo.
   private startGameHost(): void {
-    if (!this.isHost) return;
-    playSound(this, 'uiConfirm');
-    this.room?.send('start_game', { world: startCoopAsHost(this.game) });
+    if (!this.isHost || !this.saveChoice || this.starting) return;
+    this.starting = true;
+    try {
+      const world = startCoopAsHost(this.game, this.saveChoice);
+      playSound(this, 'uiConfirm');
+      this.room?.send('start_game', { world });
+    } catch {
+      this.starting = false;
+      this.statusBanner?.setText('Save indisponível. Volte ao menu e escolha outra jornada.').setColor('#d46b6b');
+    }
   }
 
   private onGameStarted({ difficulty, world }: GameStartedMessage): void {
