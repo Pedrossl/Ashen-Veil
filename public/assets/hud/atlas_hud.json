@@ -1,0 +1,112 @@
+{
+ "frames": {
+  "slots": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 150
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 133,
+    "h": 150
+   },
+   "sourceSize": {
+    "w": 133,
+    "h": 150
+   }
+  },
+  "frame": {
+   "frame": {
+    "x": 0,
+    "y": 152,
+    "w": 380,
+    "h": 126
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 380,
+    "h": 126
+   },
+   "sourceSize": {
+    "w": 380,
+    "h": 126
+   }
+  },
+  "frame-overlay": {
+   "frame": {
+    "x": 0,
+    "y": 280,
+    "w": 380,
+    "h": 126
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 380,
+    "h": 126
+   },
+   "sourceSize": {
+    "w": 380,
+    "h": 126
+   }
+  },
+  "health-fill": {
+   "frame": {
+    "x": 0,
+    "y": 408,
+    "w": 268,
+    "h": 9
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 268,
+    "h": 9
+   },
+   "sourceSize": {
+    "w": 268,
+    "h": 9
+   }
+  },
+  "stamina-fill": {
+   "frame": {
+    "x": 270,
+    "y": 408,
+    "w": 238,
+    "h": 8
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 238,
+    "h": 8
+   },
+   "sourceSize": {
+    "w": 238,
+    "h": 8
+   }
+  }
+ },
+ "meta": {
+  "image": "atlas_hud.png",
+  "size": {
+   "w": 512,
+   "h": 417
+  },
+  "scale": "1"
+ }
+}

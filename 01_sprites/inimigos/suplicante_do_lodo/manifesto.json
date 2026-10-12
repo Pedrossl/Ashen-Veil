@@ -1,0 +1,51 @@
+{
+  "id": "suplicante_do_lodo",
+  "nome": "Suplicante do Lodo",
+  "direcaoBase": "direita",
+  "origemSugerida": { "x": 0.5, "y": 0.92 },
+  "animacoes": {
+    "suplicando": {
+      "arquivo": "suplicando_8_frames.png",
+      "quadros": 8,
+      "grade": { "colunas": 4, "linhas": 2, "larguraQuadro": 418, "alturaQuadro": 470 },
+      "fps": 6,
+      "repetir": true
+    },
+    "caminhada_manca": {
+      "arquivo": "caminhada_manca_8_frames.png",
+      "quadros": 8,
+      "grade": { "colunas": 4, "linhas": 2, "larguraQuadro": 443, "alturaQuadro": 443 },
+      "fps": 8,
+      "repetir": true
+    },
+    "ataque_arremesso": {
+      "arquivo": "ataque_arremesso_12_frames.png",
+      "quadros": 12,
+      "grade": { "colunas": 4, "linhas": 3, "larguraQuadro": 362, "alturaQuadro": 362 },
+      "fps": 12,
+      "repetir": false,
+      "quadroDeDisparo": 6
+    },
+    "dano": {
+      "arquivo": "dano_4_frames.png",
+      "quadros": 4,
+      "grade": { "colunas": 2, "linhas": 2, "larguraQuadro": 724, "alturaQuadro": 543 },
+      "fps": 10,
+      "repetir": false
+    },
+    "morte": {
+      "arquivo": "morte_8_frames.png",
+      "quadros": 8,
+      "grade": { "colunas": 4, "linhas": 2, "larguraQuadro": 443, "alturaQuadro": 443 },
+      "fps": 8,
+      "repetir": false
+    },
+    "projetil_detrito": {
+      "arquivo": "projetil_detrito_6_frames.png",
+      "quadros": 6,
+      "grade": { "colunas": 3, "linhas": 2, "larguraQuadro": 512, "alturaQuadro": 512 },
+      "fps": 12,
+      "repetir": true
+    }
+  }
+}

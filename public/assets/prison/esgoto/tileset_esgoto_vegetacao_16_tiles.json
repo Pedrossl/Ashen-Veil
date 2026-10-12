@@ -1,0 +1,332 @@
+{
+ "frames": {
+  "vine-thick": {
+   "frame": {
+    "x": 95,
+    "y": 32,
+    "w": 193,
+    "h": 269
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 193,
+    "h": 269
+   },
+   "sourceSize": {
+    "w": 193,
+    "h": 269
+   }
+  },
+  "vine-wide": {
+   "frame": {
+    "x": 402,
+    "y": 69,
+    "w": 293,
+    "h": 228
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 293,
+    "h": 228
+   },
+   "sourceSize": {
+    "w": 293,
+    "h": 228
+   }
+  },
+  "vine-thin": {
+   "frame": {
+    "x": 784,
+    "y": 32,
+    "w": 132,
+    "h": 269
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 132,
+    "h": 269
+   },
+   "sourceSize": {
+    "w": 132,
+    "h": 269
+   }
+  },
+  "vine-garland": {
+   "frame": {
+    "x": 1053,
+    "y": 40,
+    "w": 354,
+    "h": 261
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 354,
+    "h": 261
+   },
+   "sourceSize": {
+    "w": 354,
+    "h": 261
+   }
+  },
+  "roots-a": {
+   "frame": {
+    "x": 64,
+    "y": 310,
+    "w": 270,
+    "h": 262
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 270,
+    "h": 262
+   },
+   "sourceSize": {
+    "w": 270,
+    "h": 262
+   }
+  },
+  "roots-b": {
+   "frame": {
+    "x": 433,
+    "y": 315,
+    "w": 284,
+    "h": 257
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 284,
+    "h": 257
+   },
+   "sourceSize": {
+    "w": 284,
+    "h": 257
+   }
+  },
+  "roots-long": {
+   "frame": {
+    "x": 753,
+    "y": 331,
+    "w": 353,
+    "h": 241
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 353,
+    "h": 241
+   },
+   "sourceSize": {
+    "w": 353,
+    "h": 241
+   }
+  },
+  "moss-curtain": {
+   "frame": {
+    "x": 1161,
+    "y": 326,
+    "w": 248,
+    "h": 246
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 248,
+    "h": 246
+   },
+   "sourceSize": {
+    "w": 248,
+    "h": 246
+   }
+  },
+  "moss-a": {
+   "frame": {
+    "x": 76,
+    "y": 612,
+    "w": 259,
+    "h": 192
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 259,
+    "h": 192
+   },
+   "sourceSize": {
+    "w": 259,
+    "h": 192
+   }
+  },
+  "moss-b": {
+   "frame": {
+    "x": 438,
+    "y": 613,
+    "w": 229,
+    "h": 194
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 229,
+    "h": 194
+   },
+   "sourceSize": {
+    "w": 229,
+    "h": 194
+   }
+  },
+  "moss-c": {
+   "frame": {
+    "x": 776,
+    "y": 612,
+    "w": 236,
+    "h": 214
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 236,
+    "h": 214
+   },
+   "sourceSize": {
+    "w": 236,
+    "h": 214
+   }
+  },
+  "fern-wall": {
+   "frame": {
+    "x": 1149,
+    "y": 592,
+    "w": 228,
+    "h": 219
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 228,
+    "h": 219
+   },
+   "sourceSize": {
+    "w": 228,
+    "h": 219
+   }
+  },
+  "fern-a": {
+   "frame": {
+    "x": 36,
+    "y": 821,
+    "w": 255,
+    "h": 235
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 255,
+    "h": 235
+   },
+   "sourceSize": {
+    "w": 255,
+    "h": 235
+   }
+  },
+  "fern-b": {
+   "frame": {
+    "x": 334,
+    "y": 820,
+    "w": 418,
+    "h": 230
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 418,
+    "h": 230
+   },
+   "sourceSize": {
+    "w": 418,
+    "h": 230
+   }
+  },
+  "fungus-wall": {
+   "frame": {
+    "x": 863,
+    "y": 861,
+    "w": 155,
+    "h": 194
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 155,
+    "h": 194
+   },
+   "sourceSize": {
+    "w": 155,
+    "h": 194
+   }
+  },
+  "overgrowth-big": {
+   "frame": {
+    "x": 1063,
+    "y": 784,
+    "w": 354,
+    "h": 286
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 354,
+    "h": 286
+   },
+   "sourceSize": {
+    "w": 354,
+    "h": 286
+   }
+  }
+ },
+ "meta": {
+  "image": "tileset_esgoto_vegetacao_16_tiles.png",
+  "size": {
+   "w": 1444,
+   "h": 1084
+  },
+  "scale": "1"
+ }
+}

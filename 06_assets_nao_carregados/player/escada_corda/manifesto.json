@@ -1,0 +1,42 @@
+{
+  "id": "jogador_escada_corda",
+  "direcaoVisual": "tres_quartos_lateral",
+  "escadaInclusaNoSprite": false,
+  "alturaVisualSugerida": 150,
+  "origemSugerida": {
+    "x": 0.5,
+    "y": 0.92
+  },
+  "animacoes": {
+    "entrada": {
+      "arquivo": "entrada_8_frames.png",
+      "quadros": 8,
+      "colunas": 4,
+      "linhas": 2,
+      "larguraQuadro": 443,
+      "alturaQuadro": 443,
+      "fps": 10,
+      "repetir": 0
+    },
+    "subida": {
+      "arquivo": "subida_8_frames.png",
+      "quadros": 8,
+      "colunas": 4,
+      "linhas": 2,
+      "larguraQuadro": 443,
+      "alturaQuadro": 443,
+      "fps": 9,
+      "repetir": -1
+    },
+    "saidaTopo": {
+      "arquivo": "saida_8_frames.png",
+      "quadros": 8,
+      "colunas": 4,
+      "linhas": 2,
+      "larguraQuadro": 443,
+      "alturaQuadro": 443,
+      "fps": 10,
+      "repetir": 0
+    }
+  }
+}

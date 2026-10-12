@@ -1,0 +1,99 @@
+{
+  "id": "raiz_dos_condenados",
+  "nome": "Raiz dos Condenados",
+  "area": "esgoto_da_prisao",
+  "direcaoBase": "direita",
+  "origemSugerida": { "x": 0.5, "y": 0.9 },
+  "animacoes": {
+    "idle": {
+      "arquivo": "idle_6_frames.png",
+      "quadros": 6,
+      "grade": { "colunas": 3, "linhas": 2, "larguraQuadro": 512, "alturaQuadro": 512 },
+      "fps": 5,
+      "repetir": true
+    },
+    "rastejo": {
+      "arquivo": "rastejo_8_frames.png",
+      "quadros": 8,
+      "grade": { "colunas": 4, "linhas": 2, "larguraQuadro": 443, "alturaQuadro": 443 },
+      "fps": 8,
+      "repetir": true
+    },
+    "mordida_comporta": {
+      "arquivo": "mordida_comporta_12_frames.png",
+      "quadros": 12,
+      "grade": { "colunas": 4, "linhas": 3, "larguraQuadro": 362, "alturaQuadro": 362 },
+      "fps": 12,
+      "repetir": false,
+      "quadrosAtivos": [5, 6, 7]
+    },
+    "varredura_grilhoes": {
+      "arquivo": "varredura_grilhoes_12_frames.png",
+      "quadros": 12,
+      "grade": { "colunas": 4, "linhas": 3, "larguraQuadro": 384, "alturaQuadro": 341 },
+      "fps": 11,
+      "repetir": false,
+      "quadrosAtivos": [5, 6, 7]
+    },
+    "cuspe_sumidouro": {
+      "arquivo": "cuspe_sumidouro_12_frames.png",
+      "quadros": 12,
+      "grade": { "colunas": 4, "linhas": 3, "larguraQuadro": 384, "alturaQuadro": 341 },
+      "fps": 10,
+      "repetir": false,
+      "quadroDeDisparo": 6
+    },
+    "carcere_raizes": {
+      "arquivo": "carcere_raizes_12_frames.png",
+      "quadros": 12,
+      "grade": { "colunas": 4, "linhas": 3, "larguraQuadro": 362, "alturaQuadro": 362 },
+      "fps": 10,
+      "repetir": false,
+      "quadrosAtivos": [5, 6, 7, 8]
+    },
+    "entrar_terra": {
+      "arquivo": "entrar_terra_8_frames.png",
+      "quadros": 8,
+      "grade": { "colunas": 4, "linhas": 2, "larguraQuadro": 443, "alturaQuadro": 443 },
+      "fps": 9,
+      "repetir": false,
+      "intangivelAPartirDoQuadro": 5
+    },
+    "rastro_subterraneo": {
+      "arquivo": "rastro_subterraneo_6_frames.png",
+      "quadros": 6,
+      "grade": { "colunas": 3, "linhas": 2, "larguraQuadro": 512, "alturaQuadro": 512 },
+      "fps": 10,
+      "repetir": true
+    },
+    "sair_terra": {
+      "arquivo": "sair_terra_8_frames.png",
+      "quadros": 8,
+      "grade": { "colunas": 4, "linhas": 2, "larguraQuadro": 443, "alturaQuadro": 443 },
+      "fps": 9,
+      "repetir": false,
+      "quadrosAtivos": [2, 3, 4]
+    },
+    "projetil_cuspe": {
+      "arquivo": "projetil_cuspe_6_frames.png",
+      "quadros": 6,
+      "grade": { "colunas": 3, "linhas": 2, "larguraQuadro": 512, "alturaQuadro": 512 },
+      "fps": 12,
+      "repetir": true
+    },
+    "dano": {
+      "arquivo": "dano_4_frames.png",
+      "quadros": 4,
+      "grade": { "colunas": 2, "linhas": 2, "larguraQuadro": 887, "alturaQuadro": 443 },
+      "fps": 10,
+      "repetir": false
+    },
+    "morte": {
+      "arquivo": "morte_12_frames.png",
+      "quadros": 12,
+      "grade": { "colunas": 4, "linhas": 3, "larguraQuadro": 362, "alturaQuadro": 362 },
+      "fps": 8,
+      "repetir": false
+    }
+  }
+}

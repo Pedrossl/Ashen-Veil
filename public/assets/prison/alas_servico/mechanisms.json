@@ -1,0 +1,91 @@
+{
+  "frames": {
+    "winch": {
+      "frame": {
+        "x": 13,
+        "y": 0,
+        "w": 612,
+        "h": 580
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 612,
+        "h": 580
+      },
+      "sourceSize": {
+        "w": 612,
+        "h": 580
+      }
+    },
+    "pump": {
+      "frame": {
+        "x": 655,
+        "y": 10,
+        "w": 599,
+        "h": 580
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 599,
+        "h": 580
+      },
+      "sourceSize": {
+        "w": 599,
+        "h": 580
+      }
+    },
+    "lift": {
+      "frame": {
+        "x": 95,
+        "y": 580,
+        "w": 457,
+        "h": 642
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 457,
+        "h": 642
+      },
+      "sourceSize": {
+        "w": 457,
+        "h": 642
+      }
+    },
+    "cart": {
+      "frame": {
+        "x": 602,
+        "y": 870,
+        "w": 642,
+        "h": 352
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 642,
+        "h": 352
+      },
+      "sourceSize": {
+        "w": 642,
+        "h": 352
+      }
+    }
+  },
+  "meta": {
+    "image": "mechanisms.webp",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    }
+  }
+}

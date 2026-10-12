@@ -1,0 +1,612 @@
+{
+ "frames": {
+  "ladder": {
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 55,
+    "h": 250
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 55,
+    "h": 250
+   },
+   "sourceSize": {
+    "w": 55,
+    "h": 250
+   }
+  },
+  "hanging-chains": {
+   "frame": {
+    "x": 57,
+    "y": 0,
+    "w": 155,
+    "h": 205
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 155,
+    "h": 205
+   },
+   "sourceSize": {
+    "w": 155,
+    "h": 205
+   }
+  },
+  "wall-ring": {
+   "frame": {
+    "x": 214,
+    "y": 0,
+    "w": 136,
+    "h": 201
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 136,
+    "h": 201
+   },
+   "sourceSize": {
+    "w": 136,
+    "h": 201
+   }
+  },
+  "pillar": {
+   "frame": {
+    "x": 352,
+    "y": 0,
+    "w": 66,
+    "h": 200
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 66,
+    "h": 200
+   },
+   "sourceSize": {
+    "w": 66,
+    "h": 200
+   }
+  },
+  "arch-passage": {
+   "frame": {
+    "x": 420,
+    "y": 0,
+    "w": 270,
+    "h": 200
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 270,
+    "h": 200
+   },
+   "sourceSize": {
+    "w": 270,
+    "h": 200
+   }
+  },
+  "corridor-torch": {
+   "frame": {
+    "x": 692,
+    "y": 0,
+    "w": 152,
+    "h": 199
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 152,
+    "h": 199
+   },
+   "sourceSize": {
+    "w": 152,
+    "h": 199
+   }
+  },
+  "wall-banner": {
+   "frame": {
+    "x": 846,
+    "y": 0,
+    "w": 131,
+    "h": 185
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 131,
+    "h": 185
+   },
+   "sourceSize": {
+    "w": 131,
+    "h": 185
+   }
+  },
+  "cell-gate-frame": {
+   "frame": {
+    "x": 979,
+    "y": 0,
+    "w": 122,
+    "h": 166
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 122,
+    "h": 166
+   },
+   "sourceSize": {
+    "w": 122,
+    "h": 166
+   }
+  },
+  "cell-gate-bars": {
+   "frame": {
+    "x": 1103,
+    "y": 0,
+    "w": 122,
+    "h": 166
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 122,
+    "h": 166
+   },
+   "sourceSize": {
+    "w": 122,
+    "h": 166
+   }
+  },
+  "iron-door": {
+   "frame": {
+    "x": 1227,
+    "y": 0,
+    "w": 71,
+    "h": 164
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 71,
+    "h": 164
+   },
+   "sourceSize": {
+    "w": 71,
+    "h": 164
+   }
+  },
+  "hanging-cage": {
+   "frame": {
+    "x": 1300,
+    "y": 0,
+    "w": 56,
+    "h": 157
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 56,
+    "h": 157
+   },
+   "sourceSize": {
+    "w": 56,
+    "h": 157
+   }
+  },
+  "hanging-cage-small": {
+   "frame": {
+    "x": 1358,
+    "y": 0,
+    "w": 39,
+    "h": 137
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 39,
+    "h": 137
+   },
+   "sourceSize": {
+    "w": 39,
+    "h": 137
+   }
+  },
+  "standing-torch-tall": {
+   "frame": {
+    "x": 0,
+    "y": 252,
+    "w": 51,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 51,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 51,
+    "h": 136
+   }
+  },
+  "standing-torch": {
+   "frame": {
+    "x": 53,
+    "y": 252,
+    "w": 44,
+    "h": 134
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 44,
+    "h": 134
+   },
+   "sourceSize": {
+    "w": 44,
+    "h": 134
+   }
+  },
+  "bonfire": {
+   "frame": {
+    "x": 99,
+    "y": 252,
+    "w": 101,
+    "h": 124
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 101,
+    "h": 124
+   },
+   "sourceSize": {
+    "w": 101,
+    "h": 124
+   }
+  },
+  "barred-window": {
+   "frame": {
+    "x": 202,
+    "y": 252,
+    "w": 56,
+    "h": 104
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 56,
+    "h": 104
+   },
+   "sourceSize": {
+    "w": 56,
+    "h": 104
+   }
+  },
+  "wall-shackles": {
+   "frame": {
+    "x": 260,
+    "y": 252,
+    "w": 95,
+    "h": 97
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 95,
+    "h": 97
+   },
+   "sourceSize": {
+    "w": 95,
+    "h": 97
+   }
+  },
+  "bones": {
+   "frame": {
+    "x": 357,
+    "y": 252,
+    "w": 207,
+    "h": 96
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 207,
+    "h": 96
+   },
+   "sourceSize": {
+    "w": 207,
+    "h": 96
+   }
+  },
+  "stone-tile-cracked": {
+   "frame": {
+    "x": 566,
+    "y": 252,
+    "w": 130,
+    "h": 91
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 130,
+    "h": 91
+   },
+   "sourceSize": {
+    "w": 130,
+    "h": 91
+   }
+  },
+  "spike-fence": {
+   "frame": {
+    "x": 698,
+    "y": 252,
+    "w": 61,
+    "h": 88
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 88
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 88
+   }
+  },
+  "stone-tile": {
+   "frame": {
+    "x": 761,
+    "y": 252,
+    "w": 83,
+    "h": 87
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 83,
+    "h": 87
+   },
+   "sourceSize": {
+    "w": 83,
+    "h": 87
+   }
+  },
+  "stone-ledge": {
+   "frame": {
+    "x": 846,
+    "y": 252,
+    "w": 393,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 393,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 393,
+    "h": 84
+   }
+  },
+  "stool": {
+   "frame": {
+    "x": 1241,
+    "y": 252,
+    "w": 72,
+    "h": 60
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 72,
+    "h": 60
+   },
+   "sourceSize": {
+    "w": 72,
+    "h": 60
+   }
+  },
+  "rubble": {
+   "frame": {
+    "x": 0,
+    "y": 390,
+    "w": 147,
+    "h": 59
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 147,
+    "h": 59
+   },
+   "sourceSize": {
+    "w": 147,
+    "h": 59
+   }
+  },
+  "clay-pot": {
+   "frame": {
+    "x": 149,
+    "y": 390,
+    "w": 48,
+    "h": 56
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 48,
+    "h": 56
+   },
+   "sourceSize": {
+    "w": 48,
+    "h": 56
+   }
+  },
+  "bucket": {
+   "frame": {
+    "x": 199,
+    "y": 390,
+    "w": 43,
+    "h": 53
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 43,
+    "h": 53
+   },
+   "sourceSize": {
+    "w": 43,
+    "h": 53
+   }
+  },
+  "skull-small": {
+   "frame": {
+    "x": 244,
+    "y": 390,
+    "w": 41,
+    "h": 39
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 41,
+    "h": 39
+   },
+   "sourceSize": {
+    "w": 41,
+    "h": 39
+   }
+  },
+  "skull": {
+   "frame": {
+    "x": 287,
+    "y": 390,
+    "w": 43,
+    "h": 37
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 43,
+    "h": 37
+   },
+   "sourceSize": {
+    "w": 43,
+    "h": 37
+   }
+  },
+  "chest-base": {
+   "frame": {
+    "x": 332,
+    "y": 390,
+    "w": 76,
+    "h": 28
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 28
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 28
+   }
+  },
+  "chest-lid": {
+   "frame": {
+    "x": 410,
+    "y": 390,
+    "w": 76,
+    "h": 13
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 13
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 13
+   }
+  }
+ },
+ "meta": {
+  "image": "atlas_cela_prisao.png",
+  "size": {
+   "w": 1400,
+   "h": 449
+  },
+  "scale": "1"
+ }
+}

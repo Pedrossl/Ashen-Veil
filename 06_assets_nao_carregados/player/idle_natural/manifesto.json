@@ -1,0 +1,18 @@
+{
+  "id": "jogador_idle_natural",
+  "arquivo": "idle_natural_8_frames.png",
+  "direcaoBase": "direita",
+  "colunas": 4,
+  "linhas": 2,
+  "quadros": 8,
+  "larguraQuadro": 443,
+  "alturaQuadro": 443,
+  "fps": 6,
+  "repetir": -1,
+  "origemSugerida": {
+    "x": 0.5,
+    "y": 0.92
+  },
+  "alturaVisualSugerida": 150,
+  "pesPlantados": true
+}

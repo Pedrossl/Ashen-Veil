@@ -1,0 +1,131 @@
+{
+  "frames": {
+    "floor": {
+      "frame": {
+        "x": 13,
+        "y": 77,
+        "w": 297,
+        "h": 170
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 297,
+        "h": 170
+      },
+      "sourceSize": {
+        "w": 297,
+        "h": 170
+      }
+    },
+    "wall": {
+      "frame": {
+        "x": 13,
+        "y": 280,
+        "w": 292,
+        "h": 255
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 292,
+        "h": 255
+      },
+      "sourceSize": {
+        "w": 292,
+        "h": 255
+      }
+    },
+    "wall-worn": {
+      "frame": {
+        "x": 332,
+        "y": 287,
+        "w": 293,
+        "h": 248
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 293,
+        "h": 248
+      },
+      "sourceSize": {
+        "w": 293,
+        "h": 248
+      }
+    },
+    "wall-marked": {
+      "frame": {
+        "x": 640,
+        "y": 285,
+        "w": 285,
+        "h": 249
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 285,
+        "h": 249
+      },
+      "sourceSize": {
+        "w": 285,
+        "h": 249
+      }
+    },
+    "door": {
+      "frame": {
+        "x": 365,
+        "y": 542,
+        "w": 336,
+        "h": 358
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 336,
+        "h": 358
+      },
+      "sourceSize": {
+        "w": 336,
+        "h": 358
+      }
+    },
+    "column": {
+      "frame": {
+        "x": 769,
+        "y": 546,
+        "w": 116,
+        "h": 352
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 116,
+        "h": 352
+      },
+      "sourceSize": {
+        "w": 116,
+        "h": 352
+      }
+    }
+  },
+  "meta": {
+    "image": "cistern.webp",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    }
+  }
+}

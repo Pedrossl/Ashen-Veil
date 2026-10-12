@@ -1,0 +1,23 @@
+{
+  "versao": 1,
+  "grade": {
+    "colunas": 4,
+    "linhas": 4,
+    "larguraQuadro": 362,
+    "alturaQuadro": 271
+  },
+  "tilesets": [
+    {
+      "arquivo": "tileset_prisao_corredores_e_arcos_16_tiles.png",
+      "uso": "corredores, plataformas, paredes, colunas, arcos e escadas"
+    },
+    {
+      "arquivo": "tileset_prisao_umida_e_drenos_16_tiles.png",
+      "uso": "alas inundadas, infiltrações, canais, grades e saídas de esgoto"
+    },
+    {
+      "arquivo": "tileset_prisao_celas_e_correntes_16_tiles.png",
+      "uso": "portas, grades, correntes, algemas, suportes e mobiliário de cela"
+    }
+  ]
+}

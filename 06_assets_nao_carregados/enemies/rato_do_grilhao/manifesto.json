@@ -1,0 +1,65 @@
+{
+  "id": "rato_do_grilhao",
+  "nome": "Rato do Grilhão",
+  "direcaoBase": "direita",
+  "alturaVisualSugerida": 64,
+  "origemSugerida": {
+    "x": 0.5,
+    "y": 0.86
+  },
+  "animacoes": {
+    "idle": {
+      "arquivo": "idle_8_frames.png",
+      "quadros": 8,
+      "colunas": 4,
+      "linhas": 2,
+      "larguraQuadro": 443,
+      "alturaQuadro": 443,
+      "fps": 6,
+      "repetir": -1
+    },
+    "corrida": {
+      "arquivo": "corrida_8_frames.png",
+      "quadros": 8,
+      "colunas": 4,
+      "linhas": 2,
+      "larguraQuadro": 443,
+      "alturaQuadro": 443,
+      "fps": 12,
+      "repetir": -1
+    },
+    "ataqueMordida": {
+      "arquivo": "ataque_mordida_12_frames.png",
+      "quadros": 12,
+      "colunas": 4,
+      "linhas": 3,
+      "larguraQuadro": 362,
+      "alturaQuadro": 362,
+      "fps": 14,
+      "repetir": 0,
+      "preparacao": [0, 3],
+      "ativo": [4, 6],
+      "recuperacao": [7, 11]
+    },
+    "dano": {
+      "arquivo": "dano_4_frames.png",
+      "quadros": 4,
+      "colunas": 2,
+      "linhas": 2,
+      "larguraQuadro": 886,
+      "alturaQuadro": 443,
+      "fps": 12,
+      "repetir": 0
+    },
+    "morte": {
+      "arquivo": "morte_8_frames.png",
+      "quadros": 8,
+      "colunas": 4,
+      "linhas": 2,
+      "larguraQuadro": 443,
+      "alturaQuadro": 443,
+      "fps": 10,
+      "repetir": 0
+    }
+  }
+}

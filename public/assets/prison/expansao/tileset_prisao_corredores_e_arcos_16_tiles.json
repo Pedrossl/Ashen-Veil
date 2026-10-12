@@ -1,0 +1,332 @@
+{
+ "frames": {
+  "platform-long": {
+   "frame": {
+    "x": 51,
+    "y": 86,
+    "w": 325,
+    "h": 147
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 325,
+    "h": 147
+   },
+   "sourceSize": {
+    "w": 325,
+    "h": 147
+   }
+  },
+  "platform-drip": {
+   "frame": {
+    "x": 416,
+    "y": 87,
+    "w": 335,
+    "h": 140
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 335,
+    "h": 140
+   },
+   "sourceSize": {
+    "w": 335,
+    "h": 140
+   }
+  },
+  "platform-rubble": {
+   "frame": {
+    "x": 779,
+    "y": 88,
+    "w": 313,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 313,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 313,
+    "h": 136
+   }
+  },
+  "platform-short": {
+   "frame": {
+    "x": 1186,
+    "y": 89,
+    "w": 179,
+    "h": 131
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 179,
+    "h": 131
+   },
+   "sourceSize": {
+    "w": 179,
+    "h": 131
+   }
+  },
+  "wall-block": {
+   "frame": {
+    "x": 76,
+    "y": 255,
+    "w": 275,
+    "h": 226
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 275,
+    "h": 226
+   },
+   "sourceSize": {
+    "w": 275,
+    "h": 226
+   }
+  },
+  "wall-cracked": {
+   "frame": {
+    "x": 438,
+    "y": 255,
+    "w": 246,
+    "h": 226
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 246,
+    "h": 226
+   },
+   "sourceSize": {
+    "w": 246,
+    "h": 226
+   }
+  },
+  "wall-corner": {
+   "frame": {
+    "x": 793,
+    "y": 249,
+    "w": 248,
+    "h": 226
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 248,
+    "h": 226
+   },
+   "sourceSize": {
+    "w": 248,
+    "h": 226
+   }
+  },
+  "wall-pillar-block": {
+   "frame": {
+    "x": 1177,
+    "y": 254,
+    "w": 191,
+    "h": 227
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 191,
+    "h": 227
+   },
+   "sourceSize": {
+    "w": 191,
+    "h": 227
+   }
+  },
+  "column": {
+   "frame": {
+    "x": 139,
+    "y": 507,
+    "w": 119,
+    "h": 250
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 119,
+    "h": 250
+   },
+   "sourceSize": {
+    "w": 119,
+    "h": 250
+   }
+  },
+  "column-broken": {
+   "frame": {
+    "x": 462,
+    "y": 521,
+    "w": 199,
+    "h": 237
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 199,
+    "h": 237
+   },
+   "sourceSize": {
+    "w": 199,
+    "h": 237
+   }
+  },
+  "arch": {
+   "frame": {
+    "x": 734,
+    "y": 505,
+    "w": 362,
+    "h": 254
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 362,
+    "h": 254
+   },
+   "sourceSize": {
+    "w": 362,
+    "h": 254
+   }
+  },
+  "arch-half-right": {
+   "frame": {
+    "x": 1162,
+    "y": 508,
+    "w": 185,
+    "h": 253
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 185,
+    "h": 253
+   },
+   "sourceSize": {
+    "w": 185,
+    "h": 253
+   }
+  },
+  "arch-half-left": {
+   "frame": {
+    "x": 114,
+    "y": 778,
+    "w": 189,
+    "h": 251
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 189,
+    "h": 251
+   },
+   "sourceSize": {
+    "w": 189,
+    "h": 251
+   }
+  },
+  "stone-steps": {
+   "frame": {
+    "x": 402,
+    "y": 839,
+    "w": 296,
+    "h": 175
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 296,
+    "h": 175
+   },
+   "sourceSize": {
+    "w": 296,
+    "h": 175
+   }
+  },
+  "rubble-slope": {
+   "frame": {
+    "x": 768,
+    "y": 828,
+    "w": 312,
+    "h": 191
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 312,
+    "h": 191
+   },
+   "sourceSize": {
+    "w": 312,
+    "h": 191
+   }
+  },
+  "passage": {
+   "frame": {
+    "x": 1107,
+    "y": 838,
+    "w": 290,
+    "h": 171
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 290,
+    "h": 171
+   },
+   "sourceSize": {
+    "w": 290,
+    "h": 171
+   }
+  }
+ },
+ "meta": {
+  "image": "tileset_prisao_corredores_e_arcos_16_tiles.png",
+  "size": {
+   "w": 1448,
+   "h": 1084
+  },
+  "scale": "1"
+ }
+}

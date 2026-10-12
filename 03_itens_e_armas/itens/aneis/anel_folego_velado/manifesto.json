@@ -1,0 +1,26 @@
+{
+  "nome": "Anel do Fôlego Velado",
+  "finalidade": "Recompensa da Raiz dos Condenados vencida no Fosso Afogado: stamina regenera 40% mais rápido.",
+  "estilo": "Dark fantasy gótico painterly, prata escurecida, roxo e pedra verde.",
+  "origem": "Ferramenta integrada image_gen",
+  "original": "item_anel_folego_velado_original.png",
+  "transparente": true,
+  "variantes": [
+    {
+      "arquivo": "item_anel_folego_velado_pequeno_32.png",
+      "largura": 32,
+      "altura": 32
+    },
+    {
+      "arquivo": "item_anel_folego_velado_medio_64.png",
+      "largura": 64,
+      "altura": 64
+    },
+    {
+      "arquivo": "item_anel_folego_velado_grande_128.png",
+      "largura": 128,
+      "altura": 128
+    }
+  ],
+  "observacao": "Mesmo desenho nos três tamanhos; não representam níveis diferentes do item."
+}
